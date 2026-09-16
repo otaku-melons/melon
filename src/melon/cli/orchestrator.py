@@ -180,7 +180,7 @@ class CommandsOrchestrator:
 		"""
 
 		self.__load_processors(module_name)
-		self.__terminalyzer.set_commands_groups(tuple(self.__groups.values()))
+		self.__terminalyzer.set_models_groups(tuple(self.__groups.values()))
 
 		entity = self.__terminalyzer.parse_parameters()
 

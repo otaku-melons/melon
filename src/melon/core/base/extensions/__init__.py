@@ -3,25 +3,28 @@ from typing import TYPE_CHECKING
 
 from pydantic_core import ValidationError
 
-from .options import BaseExtensionOptions
+from .cli import BaseExtensionCLI
 
 if TYPE_CHECKING:
 	from pathlib import Path
 
-	from ....core.base.parsers.components.settings import (
-		CustomSettingsTemplate,
-		ParserSettings,
-	)
 	from ....core.system_objects import SystemObjects
 	from ....core.system_objects.printer import Portals
 	from ..source_operator import BaseSourceOperator, ParserManifest
+	from .options import BaseExtensionOptions
 
-class BaseExtension[SO: "BaseSourceOperator", CSM: "CustomSettingsTemplate", EO: BaseExtensionOptions](ABC):
+class BaseExtension[SO: "BaseSourceOperator", EO: "BaseExtensionOptions"](ABC):
 	"""Базовое расширение."""
 
 	#==========================================================================================#
 	# >>>>> СВОЙСТВА <<<<< #
 	#==========================================================================================#
+
+	@property
+	def cli(self) -> BaseExtensionCLI:
+		"""Оператор CLI расширения."""
+
+		return self._cli
 
 	@property
 	def manifest(self) -> "ParserManifest":
@@ -40,12 +43,6 @@ class BaseExtension[SO: "BaseSourceOperator", CSM: "CustomSettingsTemplate", EO:
 		"""Настройки расширения."""
 
 		return self._options
-
-	@property
-	def parser_settings(self) -> "ParserSettings[CSM]":
-		"""Настройки парсера."""
-
-		return self._source_operator.settings
 
 	@property
 	def portals(self) -> "Portals":
@@ -86,7 +83,7 @@ class BaseExtension[SO: "BaseSourceOperator", CSM: "CustomSettingsTemplate", EO:
 		"""
 
 		try:
-			return self.parser_settings.extensions.get(self._name, self._export_options_model())
+			return self.source_operator.settings.extensions.get(self._name, self._export_options_model())
 
 		except ValidationError as exception:
 
@@ -117,6 +114,16 @@ class BaseExtension[SO: "BaseSourceOperator", CSM: "CustomSettingsTemplate", EO:
 
 		pass
 
+	def _provide_cli(self) -> type[BaseExtensionCLI]:
+		"""
+		Возвращает класс-обработчик CLI.
+
+		:return: Класс-обработчик CLI.
+		:rtype: type[BaseExtensionCLI]
+		"""
+
+		return BaseExtensionCLI
+
 	#==========================================================================================#
 	# >>>>> ПУБЛИЧНЫЕ МЕТОДЫ <<<<< #
 	#==========================================================================================#
@@ -135,6 +142,7 @@ class BaseExtension[SO: "BaseSourceOperator", CSM: "CustomSettingsTemplate", EO:
 		self._source_operator: SO = source_operator
 		self._name: str = self.__module__.split(".")[-1]
 		
+		self._cli: BaseExtensionCLI = self._provide_cli()(self)
 		self._options: EO = self._parse_options()
 		self._temp_directory: "Path" = self._source_operator.system_objects.temper.get_extension_temp_directory(self._source_operator.parser_name, self._name)
 

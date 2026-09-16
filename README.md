@@ -3,8 +3,8 @@
 ![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)
 ![ty](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ty/main/assets/badge/v0.json)
 ![Typed](https://img.shields.io/badge/types-typed-brightgreen)
-![Python version](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fotaku-melons%2Fmelon%2Frefs%2Fheads%2Fmain%2Fpyproject.toml
-)
+![Python version](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fotaku-melons%2Fmelon%2Frefs%2Fheads%2Fmain%2Fpyproject.toml)
+[![KeepChangelog](https://img.shields.io/badge/changelog-Keep%20a%20Changelog%20v1.1.0-%23E05735)](/CHANGELOG.md)
 
 Management system for manga and ranobe parsers modules capable of retrieving titles information, saving it in JSON, requesting updates and compiling content into an easy-to-read format.
 

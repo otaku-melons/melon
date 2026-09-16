@@ -1,3 +1,4 @@
+import importlib
 from typing import TYPE_CHECKING
 
 from dublib.functions.filesystem import json
@@ -95,3 +96,18 @@ class ExtensionsOperator:
 		"""
 
 		return extension(self.__source_operator)
+
+	def run_by_name(self, extension_name: str) -> "BaseExtension":
+		"""
+		Запускает расширение.
+
+		:param extension: Тип расширения.
+		:type extension: type[BaseExtension]
+		:return: Расширение.
+		:rtype: BaseExtension
+		"""
+
+		module_path = f"parsers.{self.__parser_name}.extensions.{extension_name}"
+		module = importlib.import_module(module_path)
+
+		return module.Extension(self.__source_operator)

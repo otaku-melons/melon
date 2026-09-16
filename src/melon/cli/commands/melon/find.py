@@ -82,7 +82,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:rtype: CommandModel
 		"""
 
-		position = model.create_position("QUERY", "Seqrch query", important = True)
+		position = model.create_position("QUERY", "Search query", important = True)
 		position.add_key("--id", value_type = ValidableTypes.UnsignedInteger, description = "Title ID.")
 		position.set_argument(description = "Title slug.")
 
