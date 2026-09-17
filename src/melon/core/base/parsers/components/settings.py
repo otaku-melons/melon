@@ -562,13 +562,16 @@ class ParserSettings[T: CustomSettingsTemplate]:
 		:rtype: dict
 		"""
 
-		BaseSetings: dict = _BASE_SETTINGS.copy()
-		Extensions: tuple[str, ...] = system_objects.manager.parsers.get_operator(parser_name).extensions_names
+		base_settings: dict = _BASE_SETTINGS.copy()
+		parser_operator = system_objects.manager.parsers.get_operator(parser_name)
 
-		for ExtensionName in Extensions:
-			BaseSetings["extensions"][ExtensionName] = {}
+		extensions_names: tuple[str, ...] = parser_operator.extensions_names
 
-		return BaseSetings
+		for extension_name in extensions_names:
+			if parser_operator.is_extension_has_options(extension_name):
+				base_settings["extensions"][extension_name] = {}
+
+		return base_settings
 
 	def parse_custom_settings(self, model: type[T]):
 		"""

@@ -53,12 +53,10 @@ class ParserOperator:
 	def extensions_names(self) -> tuple[str, ...]:
 		"""Последовательность имён расширений парсера."""
 
-		extensions_directory: Path = self.__Parsers.root / f"{self.__Name}/extensions"
-
-		if not extensions_directory.exists():
+		if not self.__extensions_directory.exists():
 			return ()
 
-		return tuple(sorted(entry.name for entry in os.scandir(extensions_directory) if entry.is_dir() and not entry.name.startswith("__")))
+		return tuple(sorted(entry.name for entry in os.scandir(self.__extensions_directory) if entry.is_dir() and not entry.name.startswith("__")))
 
 	@property
 	def is_installed(self) -> bool:
@@ -119,6 +117,8 @@ class ParserOperator:
 
 		self.__Parsers = parsers
 		self.__Name = name
+
+		self.__extensions_directory: Path = self.__Parsers.root / f"{self.__Name}/extensions"
 
 	@run_before_method("_RequireInstallation")
 	def export_settings(self, strategy: ExportStrategies = ExportStrategies.Skip) -> ExportResults:
@@ -187,6 +187,21 @@ class ParserOperator:
 		RequirementsFile = self.path / "requirements.txt"
 		if RequirementsFile.exists():
 			self.__Parsers.manager.packager.install_requirements(RequirementsFile)
+
+	@run_before_method("_RequireInstallation")
+	def is_extension_has_options(self, extension_name: str) -> bool:
+		"""
+		Check if extension provides options by checking `options.py` file existing.
+
+		:param extension_name: Extension name.
+		:type extension_name: str
+		:return: Return `True` if extension provides options.
+		:rtype: bool
+		"""
+		
+		options_file = self.__extensions_directory / extension_name / "options.py"
+
+		return options_file.exists()
 
 	@run_before_method("_RequireInstallation")
 	def launch(self) -> "BaseSourceOperator":
