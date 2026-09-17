@@ -13,6 +13,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Now extensions can create CLI handlers.
 - Command `melon run` for running extensions CLI.
 - Source operator now can launch extension by name (typed as `BaseExtension`).
+- Method `set_extra_data()` for title data.
 
 ### 🎨 Changed
 

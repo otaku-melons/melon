@@ -166,8 +166,8 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 
 		return PreparedData(
 			required_parsers = self._load_required_parsers(entity),
-			force_mode = entity.check_flag("-f"),
-			is_json_output = entity.check_flag("-j")
+			force_mode = entity.check_flag("-f", missing_error = False),
+			is_json_output = entity.check_flag("-j", missing_error = False)
 		)
 
 	def _process_safely(self, parameters: PARAMS) -> bool:

@@ -145,7 +145,7 @@ class CommandsOrchestrator:
 				self.printer.error("Info for command not found.")
 				sys.exit(1)
 
-			self.printer.emit(self.__helper.generate_command_info(model))
+			self.printer.emit(self.__helper.generate_model_info(model))
 
 		else:
 			self.printer.emit(self.__helper.generate_groups_list(self.__terminalyzer.groups))

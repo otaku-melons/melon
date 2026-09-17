@@ -47,7 +47,8 @@ class BaseExtensionCLI[E: "BaseExtension[BaseSourceOperator, BaseExtensionOption
 	def _command_not_found(self):
 		"""Called if no command model matches for parameters."""
 
-		pass
+		self.printer.error("Extension command not found.")
+		self.printer.emit("Execute <b>melon run {PARSER} {EXTENSION} -l</b> to show available commands.")
 
 	def _build_models_group(self, group: ModelsGroup):
 		"""
@@ -87,8 +88,8 @@ class BaseExtensionCLI[E: "BaseExtension[BaseSourceOperator, BaseExtensionOption
 		:param command_name: Command name.
 		:type command_name: str
 		"""
-
-		model = self._terminalyzer.find_model(command_name)
+		
+		model = self._terminalyzer.find_model((command_name,))
 
 		if model is None:
 			self._command_not_found()
