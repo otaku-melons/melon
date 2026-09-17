@@ -712,6 +712,26 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		for CurrentPerson in persons:
 			self.add_person(CurrentPerson)
 
+	def set_extra_data(self, key: str, data: Any, target_key: str | None = None):
+		"""
+		Set extra data dictionary after key.
+
+		:param key: Data key.
+		:type key: str
+		:param data: Extra-data.
+		:type data: Any
+		:param target_key: After it key extra-data will be placed in dictionary.
+		:type target_key: str | None
+		:raises KeyError: Key reserved for important fields.
+		"""
+
+		if target_key:
+			self._data = insert_item(self._data, target_key, (key, data))
+		elif key in self._generate_data_struct():
+			raise KeyError(key)
+		else:
+			self._data[key] = data
+
 	# To-Do: реализовать set_branches().
 
 	#==========================================================================================#
