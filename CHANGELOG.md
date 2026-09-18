@@ -12,12 +12,15 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 ### ✨ Added
 - Now extensions can create CLI handlers.
 - Command `melon run` for running extensions CLI.
-- Source operator now can launch extension by name (typed as `BaseExtension`).
 - Method `set_extra_data()` for title data.
+- Universal method `run_extension()` for source operrator (can run extensions by name as `BaseExtension`).
 
 ### 🎨 Changed
+- Extensions options settings no more appears in parser config if extension doesn't provide options.
+- Extensions operator moved into parser operator property.
 
 ### 🗑️ Deprecated
+- Source operator extension property replaced by extension operator. 
 
 ### 🔥 Removed
 - Property `parser_settings` for extensions (reason is invariant typing issue).

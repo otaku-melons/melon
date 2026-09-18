@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
 	from ...core.base.source_operator import BaseSourceOperator
-	from ...core.system_objects.manager.parsers import ParserOperator
+	from ...core.system_objects.manager.parser import ParserOperator
 	
 @dataclass
 class _InternalStorage:

@@ -105,11 +105,11 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		source_operator = self._launch_source_operator(parameters.required_parser)
 
-		if parameters.extension_name not in parameters.required_parser.extensions_names:
+		if parameters.extension_name not in parameters.required_parser.extensions.names:
 			self.printer.error(f"Extension \"{parameters.extension_name}\" not found for parser \"{parameters.required_parser.name}\".")
 			return False
 
-		extension = source_operator.extensions.run_by_name(parameters.extension_name)
+		extension = source_operator.run_extension(parameters.extension_name)
 
 		if not extension.cli.is_provided:
 			self.printer.error("Extension doesn't provide CLI.")

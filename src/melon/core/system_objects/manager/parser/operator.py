@@ -1,7 +1,5 @@
 import importlib
-import os
 import shutil
-from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -9,37 +7,15 @@ from dublib.functions.data import dictionary
 from dublib.functions.decorators import run_before_method
 from dublib.functions.filesystem import json
 
-from ....core import exceptions
-from ...base.parsers.components.manifest import ParserManifest
-from ...base.parsers.components.settings import ParserSettings
+from .....core import exceptions
+from ....base.parsers.components.manifest import ParserManifest
+from ....base.parsers.components.settings import ParserSettings
+from .enums import ExportResults, ExportStrategies
+from .extensions import ExtensionsOperator
 
 if TYPE_CHECKING:
-	from ...base.source_operator import BaseSourceOperator
-	from . import Manager
-
-#==========================================================================================#
-# >>>>> ПЕРЕЧИСЛЕНИЯ <<<<< #
-#==========================================================================================#
-
-class ExportResults(Enum):
-	"""Результаты экспорта настроек."""
-
-	Missing = 0
-	Installed = 1
-	AlreadyExists = 2
-	Overwtitten = 3
-	Merged = 4
-
-class ExportStrategies(Enum):
-	"""Стратегии экспорта настроек."""
-
-	Skip = "-s"
-	Overwrite = "-o"
-	Merge = "-m"
-
-#==========================================================================================#
-# >>>>> ОПЕРАТОР ПАРСЕРА <<<<< #
-#==========================================================================================#
+	from ....base.source_operator import BaseSourceOperator
+	from . import Parsers
 
 class ParserOperator:
 	"""Оператор парсера."""
@@ -49,14 +25,10 @@ class ParserOperator:
 	#==========================================================================================#
 
 	@property
-	@run_before_method("_RequireInstallation")
-	def extensions_names(self) -> tuple[str, ...]:
-		"""Последовательность имён расширений парсера."""
+	def extensions(self) -> ExtensionsOperator:
+		"""Extensions operator."""
 
-		if not self.__extensions_directory.exists():
-			return ()
-
-		return tuple(sorted(entry.name for entry in os.scandir(self.__extensions_directory) if entry.is_dir() and not entry.name.startswith("__")))
+		return self.__extensions_operator
 
 	@property
 	def is_installed(self) -> bool:
@@ -88,6 +60,12 @@ class ParserOperator:
 
 		return self.path / "requirements.txt"
 
+	@property
+	def temp_directory(self) -> Path:
+		"""Parser temp directory path."""
+
+		return self.__Parsers.manager.system_objects.temper.get_parser_temp_directory(self.__Name)
+
 	#==========================================================================================#
 	# >>>>> НАСЛЕДУЕМЫЕ ВАЛИДАТОРЫ <<<<< #
 	#==========================================================================================#
@@ -118,8 +96,8 @@ class ParserOperator:
 		self.__Parsers = parsers
 		self.__Name = name
 
-		self.__extensions_directory: Path = self.__Parsers.root / f"{self.__Name}/extensions"
-
+		self.__extensions_operator: ExtensionsOperator = ExtensionsOperator(self, self.__Parsers.manager)
+		
 	@run_before_method("_RequireInstallation")
 	def export_settings(self, strategy: ExportStrategies = ExportStrategies.Skip) -> ExportResults:
 		"""
@@ -187,21 +165,6 @@ class ParserOperator:
 		RequirementsFile = self.path / "requirements.txt"
 		if RequirementsFile.exists():
 			self.__Parsers.manager.packager.install_requirements(RequirementsFile)
-
-	@run_before_method("_RequireInstallation")
-	def is_extension_has_options(self, extension_name: str) -> bool:
-		"""
-		Check if extension provides options by checking `options.py` file existing.
-
-		:param extension_name: Extension name.
-		:type extension_name: str
-		:return: Return `True` if extension provides options.
-		:rtype: bool
-		"""
-		
-		options_file = self.__extensions_directory / extension_name / "options.py"
-
-		return options_file.exists()
 
 	@run_before_method("_RequireInstallation")
 	def launch(self) -> "BaseSourceOperator":
@@ -287,86 +250,3 @@ class ParserOperator:
 		if IsStateChanged and requirements: self.install_requirements()
 
 		return IsStateChanged
-
-#==========================================================================================#
-# >>>>> ОСНОВНОЙ КЛАСС <<<<< #
-#==========================================================================================#
-
-class Parsers:
-	"""Менеджер парсеров."""
-
-	#==========================================================================================#
-	# >>>>> СВОЙСТВА <<<<< #
-	#==========================================================================================#
-
-	@property
-	def installed(self) -> list[str]:
-		"""Список названий установленных парсеров."""
-
-		return os.listdir("parsers")
-
-	@property
-	def manager(self) -> "Manager":
-		"""Системный менеджер."""
-
-		return self.__Manager
-
-	@property
-	def root(self) -> Path:
-		"""Путь к корневому модулю всех парсеров."""
-
-		return self.__Root
-
-	#==========================================================================================#
-	# >>>>> ПУБЛИЧНЫЕ МЕТОДЫ <<<<< #
-	#==========================================================================================#
-
-	def __init__(self, manager: "Manager"):
-		"""
-		Менеджер парсеров.
-
-		:param manager: Системный менеджер.
-		:type manager: Manager
-		"""
-
-		self.__Manager = manager
-
-		self.__Root: Path = Path("parsers")
-		self.__Root.mkdir(exist_ok = True)
-
-	def get_operator(self, parser_name: str, require_installation: bool = True) -> ParserOperator:
-		"""
-		Запускает оператор парсера.
-
-		:param parser_name: Имя парсера.
-		:type parser_name: str
-		:param require_installation: Указывает, проводить ли проверку установки парсера.
-		:type require_installation: bool
-		:return: Оператор парсера.
-		:rtype: ParserOperator
-		"""
-
-		if require_installation:
-			self.is_installed(parser_name, exception = True)
-
-		return ParserOperator(self, parser_name)
-
-	def is_installed(self, parser_name: str, exception: bool = True) -> bool:
-		"""
-		Проверяет, установлен ли парсер.
-
-		:param parser_name: Имя парсера.
-		:type parser_name: str
-		:param exception: Указывает, следует ли выбрасывать исключение при отсутствии парсера.
-		:type exception: bool
-		:return: Возвращает `True`, если парсер установлен.
-		:rtype: bool
-		:raises ParserNotFound: Парсер не найден.
-		"""
-
-		IsInstalled: bool = parser_name in self.installed
-
-		if not IsInstalled and exception:
-			raise exceptions.parsers.ParserNotFound(parser_name)
-
-		return IsInstalled

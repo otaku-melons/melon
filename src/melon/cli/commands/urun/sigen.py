@@ -12,7 +12,7 @@ from ..melon._base import CommandProcessorTemplate
 if TYPE_CHECKING:
 	from dublib.cli.terminalyzer import CommandEntity, CommandModel
 
-	from ....core.system_objects.manager.parsers import ParserOperator
+	from ....core.system_objects.manager.parser import ParserOperator
 	from ...base.structs import PreparedData
 
 @dataclass(frozen = True)

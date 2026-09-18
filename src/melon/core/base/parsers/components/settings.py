@@ -565,10 +565,10 @@ class ParserSettings[T: CustomSettingsTemplate]:
 		base_settings: dict = _BASE_SETTINGS.copy()
 		parser_operator = system_objects.manager.parsers.get_operator(parser_name)
 
-		extensions_names: tuple[str, ...] = parser_operator.extensions_names
+		extensions_names: tuple[str, ...] = parser_operator.extensions.names
 
 		for extension_name in extensions_names:
-			if parser_operator.is_extension_has_options(extension_name):
+			if parser_operator.extensions.is_has_options(extension_name):
 				base_settings["extensions"][extension_name] = {}
 
 		return base_settings

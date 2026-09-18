@@ -3,7 +3,7 @@ import subprocess
 from typing import TYPE_CHECKING
 
 from .packager import Packager
-from .parsers import Parsers
+from .parser import Parsers
 from .repositories import Repositories
 
 if TYPE_CHECKING:

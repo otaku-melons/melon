@@ -2,7 +2,7 @@ import importlib
 from abc import ABC, abstractmethod
 from os import PathLike
 from pathlib import Path
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING, Sequence, overload
 
 from dulwich import errors, porcelain
 
@@ -22,13 +22,14 @@ from ..parsers.components.settings import (
 	ParserSettings,
 )
 from ..structs.title import TitleDescriptor
-from .extensions import ExtensionsOperator
 from .properties import SourceProperties
 
 if TYPE_CHECKING:
 	from ...system_objects import SystemObjects
+	from ...system_objects.manager.parser.extensions import ExtensionsOperator
 	from ...system_objects.printer import Portals
 	from ...system_objects.temper import SharedData
+	from ..extensions import BaseExtension
 	from ..parsers.base_parser import BaseParser
 
 __all__ = ["BaseSourceOperator", "SourceProperties"]
@@ -41,10 +42,10 @@ class BaseSourceOperator[CSM: CustomSettingsTemplate](ABC):
 	#==========================================================================================#
 
 	@property
-	def extensions(self) -> ExtensionsOperator:
+	def extensions(self) -> "ExtensionsOperator":
 		"""Оператор расширений."""
 
-		return self._Extensions
+		return self._parser_operator.extensions
 
 	@property
 	def images_downloader(self) -> ImagesDownloader:
@@ -289,7 +290,7 @@ class BaseSourceOperator[CSM: CustomSettingsTemplate](ABC):
 		self._Portals = self._SystemObjects.printer.get_parser_portals(self._Manifest.parser_name)
 		self._SharedData = self._SystemObjects.temper.load_parser_shared_data(self._Manifest.parser_name)
 		
-		self._Extensions = ExtensionsOperator(self)
+		self._parser_operator = self._SystemObjects.manager.parsers.get_operator(self.parser_name)
 
 		self._post_init()
 
@@ -447,6 +448,24 @@ class BaseSourceOperator[CSM: CustomSettingsTemplate](ABC):
 		"""
 
 		return self._extract_slug_from_string(string)
+
+	@overload
+	def run_extension[T: "BaseExtension"](self, extension: type[T]) -> T: ...
+	@overload
+	def run_extension(self, extension: str) -> "BaseExtension": ...
+
+	def run_extension[T: "BaseExtension"](self, extension: type[T] | str) -> "T | BaseExtension":
+		"""
+		Run extension by it class or name. If runned by name return untyped base extension for external using.
+
+		:return: Extension.
+		:rtype: BaseExtension
+		"""
+
+		if isinstance(extension, str):
+			return self.extensions.run_by_name(self, extension)
+		else:
+			return self.extensions.run(self, extension)
 
 	def set_mirror(self, mirror: str | None) -> bool:
 		"""

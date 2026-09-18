@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-	from ...core.system_objects.manager.parsers import ParserOperator
+	from ...core.system_objects.manager.parser import ParserOperator
 
 @dataclass(frozen = True)
 class BaseParameters:

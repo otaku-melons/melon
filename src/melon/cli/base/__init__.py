@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 	from ...core.base.source_operator import BaseSourceOperator
 	from ...core.system_objects import SystemObjects
-	from ...core.system_objects.manager.parsers import ParserOperator
+	from ...core.system_objects.manager.parser import ParserOperator
 	from ...core.system_objects.printer import Printer
 	from .templates import BaseParameters
 

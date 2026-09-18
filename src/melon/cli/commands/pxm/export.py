@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, override
 
-from ....core.system_objects.manager.parsers import ExportStrategies
+from ....core.system_objects.manager.parser.enums import ExportStrategies
 from ...base.templates import T_SingleParserRequired
 from ._base import CommandProcessorTemplate
 

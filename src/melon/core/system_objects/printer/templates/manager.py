@@ -2,7 +2,7 @@ from prettytable import PLAIN_COLUMNS, PrettyTable
 
 from dublib.cli.text_styler import FastStyler
 
-from ....system_objects.manager.parsers import ExportResults
+from ...manager.parser.enums import ExportResults
 from ._base import _BaseTemplatesSection
 
 class ManagerTemplates(_BaseTemplatesSection):
