@@ -18,6 +18,12 @@ class ExtensionsOperator:
 	"""Parser extensions operator."""
 
 	@property
+	def enabled(self) -> tuple[str, ...]:
+		"""Enabled extensions names."""
+
+		return tuple(name for name, state in self.__states.items() if state)
+
+	@property
 	def names(self) -> tuple[str, ...]:
 		"""Последовательность имён расширений парсера."""
 
@@ -58,15 +64,17 @@ class ExtensionsOperator:
 
 		self.load_states()
 
-	def disable(self, extension_name: str):
+	def disable(self, extension_name: str) -> bool:
 		"""
 		Disable extension.
 
 		:param extension_name: Extension name.
 		:type extension_name: str
+		:return: Return `True` if state changed.
+		:rtype: bool
 		"""
 
-		self.set_extension_state(extension_name, False)
+		return self.set_state(extension_name, False)
 
 	def enable(self, extension_name: str):
 		"""
@@ -74,9 +82,11 @@ class ExtensionsOperator:
 
 		:param extension_name: Extension name.
 		:type extension_name: str
+		:return: Return `True` if state changed.
+		:rtype: bool
 		"""
 
-		self.set_extension_state(extension_name, True)
+		return self.set_state(extension_name, True)
 
 	def is_enabled[E: "BaseExtension | str"](self, extension: type[E]) -> bool:
 		"""
@@ -119,7 +129,7 @@ class ExtensionsOperator:
 	def load_states(self):
 		"""Load extensions activation states from `enabled.json` file in extensions temporary directory."""
 
-		self.__activation_states: dict[str, bool] = dict.fromkeys(self.names, False)
+		self.__states: dict[str, bool] = dict.fromkeys(self.names, False)
 
 		if not self.__activation_file.exists():
 			return
@@ -128,7 +138,7 @@ class ExtensionsOperator:
 		
 		for name in self.names:
 			is_enabled = file_states.get(name, False)
-			self.__activation_states[name] = is_enabled
+			self.__states[name] = is_enabled
 
 	def run[E: "BaseExtension"](self, source_operator: "BaseSourceOperator", extension: type[E]) -> E:
 		"""
@@ -166,7 +176,7 @@ class ExtensionsOperator:
 
 		json.write(self.__activation_file, self.__states)
 
-	def set_extension_state(self, extension_name: str, state: bool):
+	def set_state(self, extension_name: str, state: bool) -> bool:
 		"""
 		Set extension activation state.
 
@@ -174,12 +184,15 @@ class ExtensionsOperator:
 		:type extension_name: str
 		:param state: Activation state.
 		:type state: bool
+		:return: Return `True` if state changed.
+		:rtype: bool
 		"""
 
 		self.__check_extension(extension_name)
 
 		if self.__states[extension_name] == state:
-			return
+			return False
 
 		self.__states[extension_name] = state
-		self.save_states()
+
+		return True

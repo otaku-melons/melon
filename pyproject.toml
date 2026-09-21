@@ -19,6 +19,7 @@ dependencies = [
 	"imagehash",
 	"img2pdf",
 	"opencv-python-headless",
+	"pick",
 	"pillow",
 	"python-dotenv",
 	"uv"

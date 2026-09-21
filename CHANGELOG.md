@@ -14,6 +14,8 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Command `melon run` for running extensions CLI.
 - Method `set_extra_data()` for title data.
 - Universal method `run_extension()` for source operrator (can run extensions by name as `BaseExtension`).
+- Parser linter.
+- Extensions activation states manager.
 
 ### 🎨 Changed
 - Extensions options settings no more appears in parser config if extension doesn't provide options.

@@ -183,14 +183,17 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 		try:
 			return self._process(parameters)
 
-		except exceptions.parsers.ParserAlreadyExists as ExceptionData:
-			self.printer.error(f"Parser <b>{ExceptionData}</b> already exists.")
-			
-		except exceptions.parsers.ParserNotFound as ExceptionData:
-			self.printer.error(f"Parser <b>{ExceptionData}</b> not found.")
+		except exceptions.extensions.ExtensionNotFound as exception:
+			self.printer.error(f"Extension <b>{exception}</b> not found.")
 
-		except exceptions.parsers.RepositoryError as ExceptionData:
-			self.printer.error(str(ExceptionData))
+		except exceptions.parsers.ParserAlreadyExists as exception:
+			self.printer.error(f"Parser <b>{exception}</b> already exists.")
+			
+		except exceptions.parsers.ParserNotFound as exception:
+			self.printer.error(f"Parser <b>{exception}</b> not found.")
+
+		except exceptions.parsers.RepositoryError as exception:
+			self.printer.error(f"Repository <b>{exception}</b> not found.")
 
 		return False
 
