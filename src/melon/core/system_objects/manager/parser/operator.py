@@ -12,6 +12,7 @@ from ....base.parsers.components.manifest import ParserManifest
 from ....base.parsers.components.settings import ParserSettings
 from .enums import ExportResults, ExportStrategies
 from .extensions import ExtensionsOperator
+from .linter import CheckResult, Linter
 
 if TYPE_CHECKING:
 	from ....base.source_operator import BaseSourceOperator
@@ -97,6 +98,7 @@ class ParserOperator:
 		self.__Name = name
 
 		self.__extensions_operator: ExtensionsOperator = ExtensionsOperator(self, self.__Parsers.manager)
+		self.__linter: Linter = Linter()
 		
 	@run_before_method("_RequireInstallation")
 	def export_settings(self, strategy: ExportStrategies = ExportStrategies.Skip) -> ExportResults:
@@ -158,6 +160,7 @@ class ParserOperator:
 		)
 
 		self.install_requirements()
+		self.extensions.save_states()
 
 	def install_requirements(self):
 		"""Устанавливает зависимости, если существует файл _requirements.txt_."""
@@ -185,6 +188,17 @@ class ParserOperator:
 		ParserManifest = self.load_manifest()
 
 		return Module.SourceOperator(self.__Parsers.manager.system_objects, ParserManifest)
+
+	@run_before_method("_RequireInstallation")
+	def lint(self) -> tuple[CheckResult, ...]:
+		"""
+		Run parser linting.
+
+		:return: Checks result.
+		:rtype: tuple[CheckResult, ...]
+		"""
+		
+		return self.__linter.check(self)
 
 	@run_before_method("_RequireInstallation")
 	def load_manifest(self) -> ParserManifest:
