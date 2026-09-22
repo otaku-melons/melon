@@ -24,22 +24,27 @@ class ParsingTemplates(_BaseTemplatesSection):
 		Text = f"Amended chapters count: {amended_chapter_count}."
 		self.printer.emit(Text)
 	
-	def chapter_amended(self, chapter: "BaseChapter", message: str | None = None):
+	def chapter_amended(self, chapter: "BaseChapter", progress: tuple[int, int], message: str | None = None):
 		"""
-		Шаблон сообщения: глава дополнена.
+		Message template: chapter amending result (warning if chapter is empty).
 
-		:param chapter: Данные главы.
+		:param chapter: Chapter.
 		:type chapter: BaseChapter
-		:param message: Дополнительное необязательное сообщение о получении главы.
+		:param progress: Progress tuple: processed chapter index (numeration from 1) and total empty chapters count.
+		:type progress: tuple[int, int]
+		:param message: Optional message about chapter amending.
 		:type message: str | None
 		"""
 
-		if message is None: message = ""
-		if message: message = " " + message.strip()
+		progress_string: str = f"[{progress[0]}/{progress[1]}]"
+		chapter_note: str = "Paid chapter" if chapter.is_paid else "Chapter"
+		result: str = "empty after amending" if chapter.is_empty else "amended"
+		message = message.strip() if message else ""
 
-		ChapterNote = "Paid chapter" if chapter.is_paid else "Chapter"
-		Text = f"{ChapterNote} {chapter.id} amended.{message}"
-		self.printer.emit(Text)
+		text = f"{progress_string} {chapter_note} {chapter.id} {result}.{message}"
+		
+		if chapter.is_empty: self.printer.warning(text)
+		else: self.printer.emit(text)
 
 	def chapter_repaired(self, chapter: "BaseChapter"):
 		"""

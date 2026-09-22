@@ -8,36 +8,12 @@ from .base_parser import BaseParser
 
 if TYPE_CHECKING:
 	from pydantic import BaseModel
-	
+
 	from ..formats.manga.chapter import Chapter
 	from ..source_operator import BaseSourceOperator
 
 class BaseMangaParser[SO: "BaseSourceOperator", CSM: "BaseModel"](BaseParser[SO, CSM]):
 	"""Базовый парсер манги."""
-	
-	@override
-	@run_before_method("_require_title")
-	def amend(self):
-		"""Дополняет главы дайными о контенте."""
-
-		Title = cast("Manga", self._title)
-
-		AmendedChaptersCount: int = 0
-		ProgressIndex: int = 0
-
-		for CurrentBranch in Title.data.branches:
-			for CurrentChapter in CurrentBranch.chapters:
-				CurrentChapter = cast("Chapter", CurrentChapter)
-
-				if not CurrentChapter.slides:
-					ProgressIndex += 1
-					Message: str | None = self._amend(CurrentBranch, CurrentChapter)
-
-					if CurrentChapter.slides:
-						self.portals.printer.templates.parsing.chapter_amended(CurrentChapter, Message)
-						AmendedChaptersCount += 1
-
-		self.portals.printer.templates.parsing.amending_end(AmendedChaptersCount)
 
 	@override
 	def init_empty_title(self, slug: str) -> Manga:

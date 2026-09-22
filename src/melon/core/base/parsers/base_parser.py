@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
 	from dublib.web_requestor import WebRequestor
 
+	from ....core.base.formats.base_format.chapter import BaseChapter
 	from ....core.base.formats.base_format.data import BaseTitleData
 	from ....core.base.formats.base_format.structs import SavingResult
 	from ....core.base.parsers.components.manifest import ParserManifest
@@ -237,11 +238,31 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 
 		self._post_init()
 
-	@abstractmethod
+	@run_before_method("_require_title")
 	def amend(self):
-		"""Дополняет главы дайными о контенте."""
+		"""Amend empty chapters with content."""
 
-		pass
+		title = cast("BaseTitleController[BaseTitleData]", self._title)
+		empty_chapters: list[tuple["Branch", "BaseChapter"]] = []
+
+		for branch in title.data.branches:
+			for chapter in branch.chapters:
+				if chapter.is_empty:
+					empty_chapters.append((branch, chapter))
+
+		amended_chapters_count: int = 0
+		empty_chapters_count: int = len(empty_chapters)
+
+		for index in range(empty_chapters_count):
+			branch, chapter = empty_chapters[index]
+			message: str | None = self._amend(branch, chapter)
+			progress: tuple[int, int] = (index + 1, empty_chapters_count)
+
+			if not chapter.is_empty:
+				self.portals.printer.templates.parsing.chapter_amended(chapter, progress, message)
+				amended_chapters_count += 1
+
+		self.portals.printer.templates.parsing.amending_end(amended_chapters_count)
 
 	@run_before_method("_require_title")
 	def download_images(self, force_mode: bool) -> "tuple[ImageDownloadingResult, ...]":

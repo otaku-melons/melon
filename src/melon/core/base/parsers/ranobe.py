@@ -14,30 +14,6 @@ if TYPE_CHECKING:
 
 class BaseRanobeParser[SO: "BaseSourceOperator", CSM: "BaseModel"](BaseParser[SO, CSM]):
 	"""Базовый парсер ранобэ."""
-	
-	@override
-	@run_before_method("_require_title")
-	def amend(self):
-		"""Дополняет главы дайными о контенте."""
-
-		Title = cast("Ranobe", self._title)
-
-		AmendedChaptersCount: int = 0
-		ProgressIndex: int = 0
-
-		for CurrentBranch in Title.data.branches:
-			for CurrentChapter in CurrentBranch.chapters:
-				CurrentChapter = cast("Chapter", CurrentChapter)
-
-				if not CurrentChapter.paragraphs:
-					ProgressIndex += 1
-					Message: str | None = self._amend(CurrentBranch, CurrentChapter)
-
-					if CurrentChapter.paragraphs:
-						self.portals.printer.templates.parsing.chapter_amended(CurrentChapter, Message)
-						AmendedChaptersCount += 1
-
-		self.portals.printer.templates.parsing.amending_end(AmendedChaptersCount)
 
 	@override
 	def init_empty_title(self, slug: str) -> Ranobe:

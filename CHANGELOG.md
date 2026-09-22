@@ -16,10 +16,14 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Universal method `run_extension()` for source operrator (can run extensions by name as `BaseExtension`).
 - Parser linter.
 - Extensions activation states manager.
+- Chapters amending progress.
+- Message if chapter is empty after amending.
 
 ### 🎨 Changed
 - Extensions options settings no more appears in parser config if extension doesn't provide options.
 - Extensions operator moved into parser operator property.
+- Extensions now must use [pydantic](https://github.com/pydantic/PYDANTIC) models for options typing.
+- Unified `amend()` methods of parsers.
 
 ### 🗑️ Deprecated
 - Source operator extension property replaced by extension operator. 
