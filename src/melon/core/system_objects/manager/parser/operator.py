@@ -160,7 +160,6 @@ class ParserOperator:
 		)
 
 		self.install_requirements()
-		self.extensions.save_states()
 
 	def install_requirements(self):
 		"""Устанавливает зависимости, если существует файл _requirements.txt_."""

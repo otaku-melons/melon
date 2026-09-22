@@ -22,7 +22,7 @@ class Check(BaseCheck):
 		:type operator: ParserOperator
 		"""
 
-		allowed_scripts: tuple[str, ...] = ("__init__", "manga", "ranobe", "settings")
+		allowed_scripts: tuple[str, ...] = ("__init__", "manga", "ranobe", "custom")
 
 		for entry in os.scandir(operator.path):
 			if entry.is_file() and entry.name.endswith(".py"):
