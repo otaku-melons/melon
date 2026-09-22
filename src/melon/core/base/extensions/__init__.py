@@ -1,6 +1,6 @@
-from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
+from pydantic import BaseModel
 from pydantic_core import ValidationError
 
 from .cli import BaseExtensionCLI
@@ -11,9 +11,13 @@ if TYPE_CHECKING:
 	from ....core.system_objects import SystemObjects
 	from ....core.system_objects.printer import Portals
 	from ..source_operator import BaseSourceOperator, ParserManifest
-	from .options import BaseExtensionOptions
 
-class BaseExtension[SO: "BaseSourceOperator", EO: "BaseExtensionOptions"](ABC):
+class ModelStub(BaseModel):
+	"""Extension options model stub"""
+
+	pass
+
+class BaseExtension[SO: "BaseSourceOperator", EO: BaseModel = BaseModel]:
 	"""Базовое расширение."""
 
 	#==========================================================================================#
@@ -98,16 +102,15 @@ class BaseExtension[SO: "BaseSourceOperator", EO: "BaseExtensionOptions"](ABC):
 	# >>>>> ПЕРЕОПРЕДЕЛЯЕМЫЕ МЕТОДЫ <<<<< #
 	#==========================================================================================#
 
-	@abstractmethod
 	def _export_options_model(self) -> type[EO]:
 		"""
-		Возвращает модель опций.
+		Export extension options [pydantic](https://github.com/pydantic/pydantic) model. 
 
-		:return: Модель опций.
-		:rtype: type[BaseExtensionOptions]
+		:return: Extension options model.
+		:rtype: type[BaseModel]
 		"""
 
-		pass
+		return cast("type[EO]", ModelStub)
 
 	def _post_init(self):
 		"""Метод, выполняющийся после инициализации объекта."""

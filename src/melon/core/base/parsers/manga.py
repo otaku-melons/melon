@@ -7,11 +7,12 @@ from ..formats.manga.controller import Manga
 from .base_parser import BaseParser
 
 if TYPE_CHECKING:
+	from pydantic import BaseModel
+	
 	from ..formats.manga.chapter import Chapter
 	from ..source_operator import BaseSourceOperator
-	from .components.settings import CustomSettingsTemplate
 
-class BaseMangaParser[SO: "BaseSourceOperator", CSM: "CustomSettingsTemplate"](BaseParser[SO, CSM]):
+class BaseMangaParser[SO: "BaseSourceOperator", CSM: "BaseModel"](BaseParser[SO, CSM]):
 	"""Базовый парсер манги."""
 	
 	@override

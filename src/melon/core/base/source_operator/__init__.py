@@ -17,14 +17,13 @@ from ..parsers.components.images_downloader import (
 	ImagesDownloader,
 )
 from ..parsers.components.manifest import ContentTypes, ParserManifest
-from ..parsers.components.settings import (
-	CustomSettingsTemplate,
-	ParserSettings,
-)
+from ..parsers.components.settings import ParserSettings
 from ..structs.title import TitleDescriptor
 from .properties import SourceProperties
 
 if TYPE_CHECKING:
+	from pydantic import BaseModel
+
 	from ...system_objects import SystemObjects
 	from ...system_objects.manager.parser.extensions import ExtensionsOperator
 	from ...system_objects.printer import Portals
@@ -34,7 +33,7 @@ if TYPE_CHECKING:
 
 __all__ = ["BaseSourceOperator", "SourceProperties"]
 
-class BaseSourceOperator[CSM: CustomSettingsTemplate](ABC):
+class BaseSourceOperator[CSM: "BaseModel"](ABC):
 	"""Базовый оператор источника."""
 
 	#==========================================================================================#
@@ -159,10 +158,10 @@ class BaseSourceOperator[CSM: CustomSettingsTemplate](ABC):
 	@abstractmethod
 	def _export_custom_settings_model(self) -> type[CSM]:
 		"""
-		Экспортирует модель кастомных настроек парсера. Модель должна быть унаследована от `CustomSettingsModel`.
+		Export custom parser settings [pydantic](https://github.com/pydantic/pydantic) model.
 
-		:return: Модель кастомных настроек парсера.
-		:rtype: type[CSM]
+		:return: Custom parser settings model.
+		:rtype: type[BaseModel]
 		"""
 
 		pass

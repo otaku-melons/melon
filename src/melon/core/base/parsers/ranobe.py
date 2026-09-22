@@ -7,11 +7,12 @@ from ..formats import Ranobe
 from .base_parser import BaseParser
 
 if TYPE_CHECKING:
+	from pydantic import BaseModel
+
 	from ..formats.ranobe.chapter import Chapter
 	from ..source_operator import BaseSourceOperator
-	from .components.settings import CustomSettingsTemplate
 
-class BaseRanobeParser[SO: "BaseSourceOperator", CSM: "CustomSettingsTemplate"](BaseParser[SO, CSM]):
+class BaseRanobeParser[SO: "BaseSourceOperator", CSM: "BaseModel"](BaseParser[SO, CSM]):
 	"""Базовый парсер ранобэ."""
 	
 	@override

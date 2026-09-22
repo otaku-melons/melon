@@ -3,14 +3,11 @@ from pathlib import Path
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Literal
 
-from pydantic import TypeAdapter
-from pydantic.dataclasses import dataclass
+from pydantic import BaseModel, ConfigDict
 
 from dublib.functions.data import dictionary, zerotify
 from dublib.functions.filesystem import json
 from dublib.web_requestor import Proxy
-
-from ...extensions.options import BaseExtensionOptions
 
 if TYPE_CHECKING:
 	from .....core.system_objects import SystemObjects
@@ -58,12 +55,6 @@ _BASE_SETTINGS = MappingProxyType({
 #==========================================================================================#
 # >>>>> ВНУТРЕННИЕ СТРУКТУРЫ ДАННЫХ КАТЕГОРИЙ <<<<< #
 #==========================================================================================#
-
-@dataclass(frozen = True)
-class CustomSettingsTemplate:
-	"""Шаблон модели собственных настроек парсера."""
-
-	pass
 
 class TextFilters:
 	"""Фильтры текста."""
@@ -433,27 +424,29 @@ class Extensions:
 
 		self.__extensions_settings: dict[str, dict] = settings
 
-	def get[T: BaseExtensionOptions](self, extension_name: str, container: type[T]) -> T:
+	def get[T: BaseModel](self, extension_name: str, model: type[T]) -> T:
 		"""
-		Возвращает упакованные в контейнер опции расширения.
+		Parse extension options with [pydantic](https://github.com/pydantic/pydantic) model. Also replace model config with `ConfigDict(frozen=True)`.
 
-		:param extension_name: Имя расширения.
+		:param extension_name: Extension name.
 		:type extension_name: str
-		:param container: Тип-контейнер, принимающий `dict | None` и представляющий в дальнейшем интерфейсы доступа к опциям. Наследуется от `BaseExtensionOptions`.
-		:type container: type
-		:return: Контейнер с опциями расширения.
-		:rtype: BaseExtensionOptions
-		:raises pydantic_core._pydantic_core.ValidationError: Неверный набор параметров расширения.
+		:param model: Extension options [pydantic](https://github.com/pydantic/pydantic) model.
+		:type model: BaseModel
+		:return: Validated extension options model.
+		:rtype: BaseModel
+		:raises pydantic_core.ValidationError: Model validation error.
 		"""
-		
-		return TypeAdapter(container).validate_python(self.__extensions_settings[extension_name])
+
+		model.model_config = ConfigDict(frozen = True)
+
+		return model.model_validate(self.__extensions_settings.get(extension_name, {}))
 
 #==========================================================================================#
 # >>>>> ОСНОВНОЙ КЛАСС <<<<< #
 #==========================================================================================#
 
-class ParserSettings[T: CustomSettingsTemplate]:
-	"""Настройки парсера."""
+class ParserSettings[T: BaseModel]:
+	"""Parser settings."""
 
 	#==========================================================================================#
 	# >>>>> КАТЕГОРИИ НАСТРОЕК <<<<< #
@@ -529,7 +522,7 @@ class ParserSettings[T: CustomSettingsTemplate]:
 
 	def __init__(self, system_objects: "SystemObjects", parser_name: str):
 		"""
-		Настройки парсера.
+		Parser settings.
 
 		:param system_objects: Коллекция системных объектов.
 		:type system_objects: SystemObjects
@@ -575,10 +568,11 @@ class ParserSettings[T: CustomSettingsTemplate]:
 
 	def parse_custom_settings(self, model: type[T]):
 		"""
-		Парсит кастомные настройки и подставляет их в структуру параметров.
+		Parse custom settings with [pydantic](https://github.com/pydantic/pydantic) model. Also replace model config with `ConfigDict(frozen=True)`.
 
-		:param model: Модель кастомных настроек, представленная замороженным классом данных [pydantic](https://github.com/pydantic/pydantic), унаследованным от `CustomSettingsTemplate`.
-		:type model: type[T]
+		:param model: Custom settings [pydantic](https://github.com/pydantic/pydantic) model.
+		:type model: type[BaseModel]
 		"""
 
-		self.__custom = model(**self.__settings.get("custom", {}))
+		model.model_config = ConfigDict(frozen = True)
+		self.__custom = model.model_validate(self.__settings.get("custom", {}))

@@ -17,19 +17,18 @@ from ..structs.image import ImageData
 from .components.words_dictionary import WordsDictionary, presets
 
 if TYPE_CHECKING:
+	from pydantic import BaseModel
+
 	from dublib.web_requestor import WebRequestor
 
 	from ....core.base.formats.base_format.data import BaseTitleData
 	from ....core.base.formats.base_format.structs import SavingResult
 	from ....core.base.parsers.components.manifest import ParserManifest
-	from ....core.base.parsers.components.settings import (
-		CustomSettingsTemplate,
-		ParserSettings,
-	)
+	from ....core.base.parsers.components.settings import ParserSettings
 	from ....core.system_objects.printer import Portals
 	from ..source_operator import BaseSourceOperator
 
-class BaseParser[SO: "BaseSourceOperator", CSM: "CustomSettingsTemplate"](ABC):
+class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 	"""Базовый парсер."""
 
 	_Title: "BaseTitleController[BaseTitleData] | None"

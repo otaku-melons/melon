@@ -17,8 +17,9 @@ from .enums import By, ImagesTypes
 from .structs import SavingResult
 
 if TYPE_CHECKING:
+	from pydantic import BaseModel
+	
 	from ...parsers.base_parser import BaseParser
-	from ...parsers.components.settings import CustomSettingsTemplate
 	from ...source_operator import BaseSourceOperator
 	from .data import BaseTitleData
 
@@ -338,7 +339,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 
 	def __init__(self, parser: "BaseParser", slug: str):
 
-		self._parser: "BaseParser[BaseSourceOperator, CustomSettingsTemplate]" = parser
+		self._parser: "BaseParser[BaseSourceOperator, BaseModel]" = parser
 		self._slug: str = slug
 
 		self._data: TD = self._export_data_type()(

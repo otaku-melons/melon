@@ -10,7 +10,7 @@ readme = "README.md"
 authors = [
     { name = "DUB1401", email = "vlad.milosta@outlook.com" }
 ]
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
 	"beautifulsoup4",
 	"dublib>=0.31.0",

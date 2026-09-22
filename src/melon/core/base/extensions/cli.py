@@ -7,9 +7,8 @@ if TYPE_CHECKING:
 	from ....core.system_objects.printer import Portals, Printer
 	from ..source_operator import BaseSourceOperator
 	from . import BaseExtension
-	from .options import BaseExtensionOptions
 
-class BaseExtensionCLI[E: "BaseExtension[BaseSourceOperator, BaseExtensionOptions]"]:
+class BaseExtensionCLI[E: "BaseExtension[BaseSourceOperator]"]:
 	"""Base extension CLI operator."""
 
 	#==========================================================================================#

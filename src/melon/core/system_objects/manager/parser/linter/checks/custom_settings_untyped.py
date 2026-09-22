@@ -34,7 +34,7 @@ class Check(BaseCheck):
 		files: list[str] = os.listdir(operator.path)
 
 		if settings.get("custom"):
-			if "settings.py" not in files:
+			if "custom.py" not in files:
 				self._emit(ChecksStatuses.Error, "Custom settings must provide typing model.")
 		
 		else:
