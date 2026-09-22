@@ -127,7 +127,7 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 
 		self._add_parser_position()
 
-		position = model.create_position("OPERATION", "Switch extension actiovation status.")
+		position = model.create_position("OPERATION", "Switch extension activation status.")
 		position.add_key("--enable", description = "Enable extension.")
 		position.add_key("--disable", description = "Disable extension.")
 
@@ -192,4 +192,3 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 			self.__run_tui(parameters.required_parser.extensions)
 
 		return True
-

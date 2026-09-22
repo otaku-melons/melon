@@ -86,7 +86,7 @@ class Check(BaseCheck):
 
 		extensions_diresctory: "Path" = operator.path / "extensions"
 		if not extensions_diresctory.exists():
-			self._emit(ChecksStatuses.Skipped, "Extensions not found")
+			self._emit(ChecksStatuses.Skipped, "Extensions not found.")
 
 		extensions_module: "Path" = operator.path / "extensions" / "__init__.py"
 		if not extensions_module.exists():
