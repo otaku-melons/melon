@@ -52,7 +52,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 		return self._system_objects
 
 	#==========================================================================================#
-	# >>>>> НАСЛЕДУЕМЫЕ МЕТОДЫ <<<<< #
+	# >>>>> PROTECTED METHODS <<<<< #
 	#==========================================================================================#
 
 	def _check_required_parsers(self, parsers_names: tuple[str, ...]):
@@ -204,7 +204,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 			self._timer = Timer(start = True)
 
 	#==========================================================================================#
-	# >>>>> НАСЛЕДУЕМЫЕ МЕТОДЫ ПОСТРОЕНИЯ МОДЕЛЕЙ <<<<< #
+	# >>>>> PROTECTED METHODS ПОСТРОЕНИЯ МОДЕЛЕЙ <<<<< #
 	#==========================================================================================#
 
 	def _add_force_mode_flag(self):
@@ -261,7 +261,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 		position.add_key(key) if key else position.set_argument()
 
 	#==========================================================================================#
-	# >>>>> ПЕРЕОПРЕДЕЛЯЕМЫЕ МЕТОДЫ <<<<< #
+	# >>>>> OVERRIDABLE METHODS <<<<< #
 	#==========================================================================================#
 
 	@abstractmethod
@@ -327,7 +327,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 		return True
 
 	#==========================================================================================#
-	# >>>>> ПУБЛИЧНЫЕ МЕТОДЫ <<<<< #
+	# >>>>> PUBLIC METHODS <<<<< #
 	#==========================================================================================#
 
 	def __init__(self, system_objects: "SystemObjects", group: "ModelsGroup"):

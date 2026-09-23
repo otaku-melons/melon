@@ -94,7 +94,7 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 		return self._words_dictionary
 
 	#==========================================================================================#
-	# >>>>> НАСЛЕДУЕМЫЕ МЕТОДЫ <<<<< #
+	# >>>>> PROTECTED METHODS <<<<< #
 	#==========================================================================================#
 
 	@run_before_method("_require_title")
@@ -192,13 +192,13 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 	@abstractmethod
 	def _amend(self, branch: Branch, chapter: Any) -> str | None:
 		"""
-		Дополняет главу дайными о контенте.
+		Amend chapter by content.
 
-		:param branch: Ветвь.
+		:param branch: Title content branch.
 		:type branch: Branch
-		:param chapter: Глава.
-		:type chapter: BaseChapter
-		:return: Дополнительное необязательное сообщение о дополнении.
+		:param chapter: Chapter.
+		:type chapter: Any
+		:return: Optional additional message about amending result or `None`.
 		:rtype: str | None
 		"""
 
@@ -206,22 +206,22 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 
 	@abstractmethod
 	def _parse(self):
-		"""Получает основные данные тайтла."""
+		"""Parse title data witchout chapters content."""
 
 		pass
 
 	def _post_init(self):
-		"""Метод, выполняющийся после инициализации объекта."""
+		"""Execute after instance initialization."""
 
 		pass
 
 	def _pre_saver(self):
-		"""Запускается непосредственно перед сохранением тайтла."""
+		"""Run before title saving in descriptive JSON file."""
 
 		pass
 
 	#==========================================================================================#
-	# >>>>> ПУБЛИЧНЫЕ МЕТОДЫ <<<<< #
+	# >>>>> PUBLIC METHODS <<<<< #
 	#==========================================================================================#
 
 	def __init__(self, source_operator: SO):

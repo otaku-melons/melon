@@ -42,7 +42,7 @@ class Parameters(T_SingleParserRequired):
 class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	"""Обработчик команды."""
 	#==========================================================================================#
-	# >>>>> ПРИВАТНЫЕ МЕТОДЫ <<<<< #
+	# >>>>> PRIVATE METHODS <<<<< #
 	#==========================================================================================#
 
 	def __callback_not_found(self, descriptor: "TitleDescriptor"):
@@ -81,7 +81,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		
 		return FilesRemoved
 	#==========================================================================================#
-	# >>>>> ПРИВАТНЫЕ МЕТОДЫ РЕАЛИЗАЦИИ ПРАВИЛ <<<<< #
+	# >>>>> PRIVATE METHODS РЕАЛИЗАЦИИ ПРАВИЛ <<<<< #
 	#==========================================================================================#
 
 	def __clear_all(self, parameters: Parameters) -> bool:
@@ -188,7 +188,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		return True
 
 	#==========================================================================================#
-	# >>>>> ПЕРЕОПРЕДЕЛЯЕМЫЕ МЕТОДЫ <<<<< #
+	# >>>>> OVERRIDABLE METHODS <<<<< #
 	#==========================================================================================#
 
 	@override

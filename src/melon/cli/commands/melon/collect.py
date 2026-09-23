@@ -44,7 +44,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	"""Обработчик команды."""
 
 	#==========================================================================================#
-	# >>>>> ПРИВАТНЫЕ МЕТОДЫ <<<<< #
+	# >>>>> PRIVATE METHODS <<<<< #
 	#==========================================================================================#
 
 	def __collect_from_source(self, collector: utils.Collector, parameters: Parameters) -> int:
@@ -96,7 +96,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		return collector.collect_not_found().added
 
 	#==========================================================================================#
-	# >>>>> ПЕРЕОПРЕДЕЛЯЕМЫЕ МЕТОДЫ <<<<< #
+	# >>>>> OVERRIDABLE METHODS <<<<< #
 	#==========================================================================================#
 
 	@override

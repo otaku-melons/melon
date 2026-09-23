@@ -73,7 +73,7 @@ class BaseExtension[SO: "BaseSourceOperator", EO: BaseModel = BaseModel]:
 		return self._temp_directory
 
 	#==========================================================================================#
-	# >>>>> НАСЛЕДУЕМЫЕ МЕТОДЫ <<<<< #
+	# >>>>> PROTECTED METHODS <<<<< #
 	#==========================================================================================#
 
 	def _parse_options(self) -> EO:
@@ -99,7 +99,7 @@ class BaseExtension[SO: "BaseSourceOperator", EO: BaseModel = BaseModel]:
 			self.portals.printer.critical("Unable parse extension options.", end_work = True)
 
 	#==========================================================================================#
-	# >>>>> ПЕРЕОПРЕДЕЛЯЕМЫЕ МЕТОДЫ <<<<< #
+	# >>>>> OVERRIDABLE METHODS <<<<< #
 	#==========================================================================================#
 
 	def _export_options_model(self) -> type[EO]:
@@ -113,22 +113,22 @@ class BaseExtension[SO: "BaseSourceOperator", EO: BaseModel = BaseModel]:
 		return cast("type[EO]", ModelStub)
 
 	def _post_init(self):
-		"""Метод, выполняющийся после инициализации объекта."""
+		"""Execute after instance initialization."""
 
 		pass
 
 	def _provide_cli(self) -> type[BaseExtensionCLI]:
 		"""
-		Возвращает класс-обработчик CLI.
+		Export CLI processing class.
 
-		:return: Класс-обработчик CLI.
-		:rtype: type[BaseExtensionCLI]
+		:return: CLI processing class.
+		:rtype: type[CLI]
 		"""
 
 		return BaseExtensionCLI
 
 	#==========================================================================================#
-	# >>>>> ПУБЛИЧНЫЕ МЕТОДЫ <<<<< #
+	# >>>>> PUBLIC METHODS <<<<< #
 	#==========================================================================================#
 
 	def __init__(self, source_operator: SO):

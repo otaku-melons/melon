@@ -26,7 +26,7 @@ class CommandsOrchestrator:
 		return self.__system_objects.printer
 
 	#==========================================================================================#
-	# >>>>> ПРИВАТНЫЕ МЕТОДЫ <<<<< #
+	# >>>>> PRIVATE METHODS <<<<< #
 	#==========================================================================================#
 
 	def __build_submodule_name(self, group: str | None, name: str) -> str:
@@ -151,7 +151,7 @@ class CommandsOrchestrator:
 			self.printer.emit(self.__helper.generate_groups_list(self.__terminalyzer.groups))
 
 	#==========================================================================================#
-	# >>>>> ПУБЛИЧНЫЕ МЕТОДЫ <<<<< #
+	# >>>>> PUBLIC METHODS <<<<< #
 	#==========================================================================================#
 
 	def __init__(self, system_objects: "SystemObjects"):

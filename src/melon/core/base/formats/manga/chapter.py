@@ -20,7 +20,7 @@ class Chapter(BaseChapter):
 		return tuple(self.__slides.values())
 	
 	#==========================================================================================#
-	# >>>>> ПРИВАТНЫЕ МЕТОДЫ <<<<< #
+	# >>>>> PRIVATE METHODS <<<<< #
 	#==========================================================================================#
 
 	def __get_new_slide_index(self, start_index: int = 1) -> int:
@@ -41,7 +41,7 @@ class Chapter(BaseChapter):
 			return max(indexes) + 1
 
 	#==========================================================================================#
-	# >>>>> ПЕРЕОПРЕДЕЛЯЕМЫЕ МЕТОДЫ <<<<< #
+	# >>>>> OVERRIDABLE METHODS <<<<< #
 	#==========================================================================================#
 	@override
 	def _clear(self):
@@ -86,7 +86,7 @@ class Chapter(BaseChapter):
 
 	@override
 	def _post_init(self):
-		"""Метод, выполняющийся после инициализации объекта."""
+		"""Execute after instance initialization."""
 
 		self._data["slides"] = []
 		self.__slides: dict[int, ImageData] = {}
@@ -104,7 +104,7 @@ class Chapter(BaseChapter):
 		self._data["slides"] = tuple(SlidesData)
 
 	#==========================================================================================#
-	# >>>>> ПУБЛИЧНЫЕ МЕТОДЫ <<<<< #
+	# >>>>> PUBLIC METHODS <<<<< #
 	#==========================================================================================#
 
 	def add_slide(self, image: "ImageData") -> bool:

@@ -21,7 +21,7 @@ class DevelopmentAssistant:
 	"""Ассистент разработчика."""
 
 	#==========================================================================================#
-	# >>>>> ПРИВАТНЫЕ МЕТОДЫ <<<<< #
+	# >>>>> PRIVATE METHODS <<<<< #
 	#==========================================================================================#
 
 	def __InitFiles(self, path: Path, types: Sequence[ContentTypes], parser_name: str, domain: str):
@@ -91,7 +91,7 @@ class DevelopmentAssistant:
 		json.write(path / "settings.json", ParserSettings.get_base_settings(self.__SystemObjects, path.name))
 
 	#==========================================================================================#
-	# >>>>> ПУБЛИЧНЫЕ МЕТОДЫ <<<<< #
+	# >>>>> PUBLIC METHODS <<<<< #
 	#==========================================================================================#
 
 	def __init__(self, system_objects: "SystemObjects"):

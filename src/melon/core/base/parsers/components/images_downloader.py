@@ -62,7 +62,7 @@ class ImagesDownloader:
 		return self.__CustomRequestor or self.__Requestor
 
 	#==========================================================================================#
-	# >>>>> ПУБЛИЧНЫЕ МЕТОДЫ <<<<< #
+	# >>>>> PUBLIC METHODS <<<<< #
 	#==========================================================================================#
 
 	def __init__(self, source_operator: "BaseSourceOperator"):

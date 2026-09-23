@@ -25,7 +25,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	"""Обработчик команды."""
 
 	#==========================================================================================#
-	# >>>>> ПРИВАТНЫЕ МЕТОДЫ <<<<< #
+	# >>>>> PRIVATE METHODS <<<<< #
 	#==========================================================================================#
 
 	def __print_result(self, parameters: Parameters, descriptor: TitleDescriptor):
@@ -68,7 +68,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 				self.printer.emit(f"{key}: {value}")
 
 	#==========================================================================================#
-	# >>>>> ПЕРЕОПРЕДЕЛЯЕМЫЕ МЕТОДЫ <<<<< #
+	# >>>>> OVERRIDABLE METHODS <<<<< #
 	#==========================================================================================#
 
 	@override

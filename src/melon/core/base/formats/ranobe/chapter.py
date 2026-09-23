@@ -33,7 +33,7 @@ class Chapter(BaseChapter):
 		return ChaptersTypes[self._data["type"]]
 
 	#==========================================================================================#
-	# >>>>> ПЕРЕОПРЕДЕЛЯЕМЫЕ МЕТОДЫ <<<<< #
+	# >>>>> OVERRIDABLE METHODS <<<<< #
 	#==========================================================================================#
 
 	@override
@@ -67,13 +67,13 @@ class Chapter(BaseChapter):
 
 	@override
 	def _post_init(self):
-		"""Метод, выполняющийся после инициализации объекта."""
+		"""Execute after instance initialization."""
 
 		self._data["paragraphs"] = []
 		self._data["footnotes"] = []
 
 	#==========================================================================================#
-	# >>>>> ПУБЛИЧНЫЕ МЕТОДЫ <<<<< #
+	# >>>>> PUBLIC METHODS <<<<< #
 	#==========================================================================================#
 
 	def add_element(self, element: "Paragraph | Image | Header | Blockquote"):

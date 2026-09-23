@@ -128,29 +128,29 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		return self._Temper.get_parser_temp_directory(self._Manifest.parser_name)
 
 	#==========================================================================================#
-	# >>>>> ПЕРЕОПРЕДЕЛЯЕМЫЕ МЕТОДЫ <<<<< #
+	# >>>>> OVERRIDABLE METHODS <<<<< #
 	#==========================================================================================#
 
 	def _authorize(self):
 		"""
-		Выполняется после `_InitializeRequestor()` и обёрнут для отлова исключений `TokenExpiredError`.
+		It is executed after `_InitializeRequestor()` and wrapped to catch `TokenExpiredError` exceptions.
 
-		Используется для установки авторизации на основе заголовка _Authorization_.
+		Used to set up authorization based on the _Authorization_ header.
 		"""
 
 		pass
 
 	def _collect_slugs(self, period: int | None = None, filters: str | None = None, pages: int | None = None) -> Sequence[str]:  # noqa: ARG002
 		"""
-		Собирает список алиасов тайтлов по заданным параметрам.
+		Collect titles slug by parameters.
 
-		:param period: Количество часов до текущего момента, составляющее период получения данных.
+		:param period: Number of hours until the current moment, which constitutes the data parsing period.
 		:type period: int | None
-		:param filters: Строка, описывающая параметры фильтрации.
+		:param filters: Filtering parameters. For more details see parser *README.md*.
 		:type filters: str | None
 		:param pages: Количество запрашиваемых страниц каталога.
 		:type pages: int | None
-		:return: Набор собранных алиасов.
+		:return: Number of requested catalog pages.
 		:rtype: Sequence[str]
 		"""
 
@@ -169,9 +169,9 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 
 	def _export_source_properties(self) -> SourceProperties:
 		"""
-		Экспортирует свойства источника.
+		Export source properties.
 
-		:return: Свойства источника.
+		:return: Source properties.
 		:rtype: SourceProperties
 		"""
 
@@ -181,11 +181,11 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 
 	def _extract_slug_from_string(self, string: str) -> str | None:
 		"""
-		Парсит алиас тайтла из переданной строки. Может использоваться для обработки тайтлов по ссылкам.
+		Extract title slug from string. Can be used to extract slugs from links.
 
-		:param string: Строка, из которой требуется получить алиас.
+		:param string: String to extraction.
 		:type string: str
-		:return: Алиас или `None` в случае неудачи или отсутствия имплементации.
+		:return: Title slug or `None` if extracting failed or not implemented.
 		:rtype: str | None
 		"""
 
@@ -193,9 +193,9 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 
 	def _initialize_requestor(self) -> WebRequestor:
 		"""
-		Инициализирует модуль WEB-запросов.
+		Initialize requests operator.
 
-		:return: Оператор запросов.
+		:return: Requests operator.
 		:rtype: WebRequestor
 		"""
 
@@ -216,26 +216,26 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 
 	def _is_title_exists(self, slug: str) -> bool | None:  # noqa: ARG002
 		"""
-		Проверяет, существует ли тайтл на сервере.
+		Check if title exists in source.
 
-		:param slug: Алиас тайтла.
+		:param slug: Title slug.
 		:type slug: str
-		:return: Возвращает статус существования файла на сервере или `None` при невозможности проверки.
+		:return: Return `True` if title exists in source or `None` if checking failed or not implemented.
 		:rtype: bool | None
 		"""
 
 		return None
 
 	def _post_init(self):
-		"""Метод, выполняющийся после инициализации объекта."""
+		"""Execute after instance initialization."""
 
 		pass
 
 	def _post_mirror_changing(self, mirror: str | None):
 		"""
-		Выполняется после изменения зеркала.
+		Execute after mirror changing.
 
-		:param mirror: Домен зеркала.
+		:param mirror: Mirror domain.
 		:type mirror: str | None
 		"""
 
@@ -243,20 +243,20 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 
 	def _temp_image(self, url: str, force_mode: bool = False) -> ImageDownloadingResult:
 		"""
-		Скачивает изображение по ссылке и сохраняет во временный каталог парсера.
+		Download image into parser temporary directory.
 
-		:param url: Ссылка на изображение.
+		:param url: Link to image.
 		:type url: str
-		:param force_mode: Переключает режим перезаписи существующих изображений.
+		:param force_mode: Enable images overwriting mode.
 		:type force_mode: bool
-		:return: Результат скачивания изображения.
+		:return: Image downloading result.
 		:rtype: ImageDownloadingResult
 		"""
 
 		return self._ImagesDownloader.temp_image(url, force_mode = force_mode)
 
 	#==========================================================================================#
-	# >>>>> ПУБЛИЧНЫЕ МЕТОДЫ <<<<< #
+	# >>>>> PUBLIC METHODS <<<<< #
 	#==========================================================================================#
 
 	def __init__(self, system_objects: "SystemObjects", manifest: "ParserManifest"):
