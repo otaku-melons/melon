@@ -87,7 +87,7 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 			"REPOSITORY": []
 		}
 	
-		for ParserName in self.system_objects.manager.repositories.availabel_parsers:
+		for ParserName in self.system_objects.manager.repositories.available_parsers:
 			RepositoryURL: str = self.system_objects.manager.repositories.get(ParserName, exception = True)
 			Status = "✅" if ParserName in InstalledParsers else "❌"
 			TableData["PARSER"].append(f"{Status} {ParserName}")

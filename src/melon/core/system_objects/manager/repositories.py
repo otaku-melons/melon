@@ -20,7 +20,7 @@ class Repositories:
 	#==========================================================================================#
 
 	@property
-	def availabel_parsers(self) -> tuple[str, ...]:
+	def available_parsers(self) -> tuple[str, ...]:
 		"""Последовательность имён доступных в репозиториях парсеров."""
 
 		return tuple(self.__Repositories.keys())

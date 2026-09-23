@@ -14,7 +14,7 @@ class Temper:
 	"""Дескриптор временных каталогов и объектов."""
 
 	@property
-	def system_obejcts(self) -> "SystemObjects":
+	def system_objects(self) -> "SystemObjects":
 		"""Коллекция системных объектов."""
 
 		return self.__SystemObjects

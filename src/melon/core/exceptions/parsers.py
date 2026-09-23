@@ -42,7 +42,7 @@ class ParserNotFound(Exception):
 
 		super().__init__(parser_name) 
 
-class TitleNotSetted(Exception):
+class TitleNotSet(Exception):
 	"""Исключение: не задан тайтл."""
 
 	def __init__(self):

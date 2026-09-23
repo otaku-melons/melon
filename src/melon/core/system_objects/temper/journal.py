@@ -32,7 +32,7 @@ class Journal:
 		:type slug: str
 		"""
 
-		if not self.__SharedData.temper.system_obejcts.options.USE_CACHE:
+		if not self.__SharedData.temper.system_objects.options.USE_CACHE:
 			return None
 
 		for ID, Slug in self.__Data.items():
@@ -51,7 +51,7 @@ class Journal:
 		:type title_id: int
 		"""
 
-		if not self.__SharedData.temper.system_obejcts.options.USE_CACHE:
+		if not self.__SharedData.temper.system_objects.options.USE_CACHE:
 			return None
 
 		try:

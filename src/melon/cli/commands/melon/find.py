@@ -100,7 +100,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:rtype: str
 		"""
 
-		return "Find title identificator in cache."
+		return "Find title identifier in cache."
 
 	@override
 	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> Parameters:

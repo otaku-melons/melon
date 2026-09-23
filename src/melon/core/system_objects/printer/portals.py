@@ -172,15 +172,15 @@ class Portals:
 		"""
 
 		ChapterType = "Paid chapter " if chapter.is_paid else "Chapter "
-		ChapterIdentificator = ""
+		ChapterIdentifier = ""
 
 		if chapter.id:
-			ChapterIdentificator = str(chapter.id)
+			ChapterIdentifier = str(chapter.id)
 		elif chapter.slug:
-			ChapterIdentificator = f"\"{chapter.slug}\""
+			ChapterIdentifier = f"\"{chapter.slug}\""
 
 		comment = f" {comment}" if comment else ""
-		Text = f"{ChapterType}{ChapterIdentificator} skipped.{comment}"
+		Text = f"{ChapterType}{ChapterIdentifier} skipped.{comment}"
 
 		self.__Printer.emit(Text)
 

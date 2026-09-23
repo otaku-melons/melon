@@ -185,7 +185,7 @@ class Header:
 		"""
 
 		if not self._Text:
-			raise exceptions.parsing.FootnoteCompositionError("Text must be setted before footnotes compositing.")
+			raise exceptions.parsing.FootnoteCompositionError("Text must be set before footnotes compositing.")
 		Text = self._Text
 
 		FootnoteIndex = 0

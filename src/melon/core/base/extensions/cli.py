@@ -105,7 +105,7 @@ class BaseExtensionCLI[E: "BaseExtension[BaseSourceOperator]"]:
 		"""
 		Execute command.
 
-		:param parameters: Command parameters. Starts from command identificator.
+		:param parameters: Command parameters. Starts from command identifier.
 		:type parameters: str
 		"""
 

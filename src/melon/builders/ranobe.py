@@ -121,4 +121,4 @@ class RanobeBuilder(BaseBuilder):
 		FilePath = self._ParserSettings.directories.content / f"{self._Title.data.localized_name}.epub"
 		epub.write_epub(FilePath, Book)
 
-		self._Printer.emit(f"For <i>{self._Title.data.slug}</i> builded {BranchToBuild.chapters_count} chapters.")
+		self._Printer.emit(f"For <i>{self._Title.data.slug}</i> built {BranchToBuild.chapters_count} chapters.")

@@ -71,7 +71,7 @@ class FilteredImages:
 		:rtype: FilteredBy | None
 		"""
 
-		if not self.__shared_data.temper.system_obejcts.options.USE_CACHE:
+		if not self.__shared_data.temper.system_objects.options.USE_CACHE:
 			return None
 
 		link = urlparse(link).path
@@ -103,7 +103,7 @@ class FilteredImages:
 		:rtype: tuple[str, ...]
 		"""
 
-		if not self.__shared_data.temper.system_obejcts.options.USE_CACHE:
+		if not self.__shared_data.temper.system_objects.options.USE_CACHE:
 			return ()
 
 		section: str = self.__reason_to_section_name(filtered_by)

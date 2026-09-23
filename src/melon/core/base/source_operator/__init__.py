@@ -455,7 +455,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 
 	def run_extension[T: "BaseExtension"](self, extension: type[T] | str) -> "T | BaseExtension":
 		"""
-		Run extension by it class or name. If runned by name return untyped base extension for external using.
+		Run extension by it class or name. If ran by name return untyped base extension for external using.
 
 		:return: Extension.
 		:rtype: BaseExtension

@@ -133,7 +133,7 @@ class Cutter:
 		"""
 
 		image = self.__load_image(image_path)
-		cutted_templates_count: int = 0
+		cut_templates_count: int = 0
 
 		for template_path in templates:
 			template = self.__load_image(template_path)
@@ -142,12 +142,12 @@ class Cutter:
 
 			if match_result:
 				image = self.__cut_template(image, match_result)
-				cutted_templates_count += 1
+				cut_templates_count += 1
 
 		if not output_path: output_path = image_path
 		cv2.imwrite(output_path.as_posix(), image)
 
-		return cutted_templates_count
+		return cut_templates_count
 
 	def get_templates_from_directory(self, directory: Path) -> tuple[Path, ...]:
 		"""

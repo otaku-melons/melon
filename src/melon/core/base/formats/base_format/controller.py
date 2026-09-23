@@ -135,12 +135,12 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 		
 		return self._search_file_in_directory(TitlesDirectory, slug, By.Slug)
 
-	def _load_data(self, identificator: int | str, selector_type: By = By.Slug) -> dict | None:
+	def _load_data(self, identifier: int | str, selector_type: By = By.Slug) -> dict | None:
 		"""
 		Открывает локальный JSON файл и считывает его данные.
 
-		:param identificator: Идентификатор тайтла: имя файла (без расширения), ID или алиас тайтла.
-		:type identificator: int | str
+		:param identifier: Идентификатор тайтла: имя файла (без расширения), ID или алиас тайтла.
+		:type identifier: int | str
 		:param selector_type: Режим поиска файла. По умолчанию `By.Slug` – идентификатор соответствует алиасу тайтла.
 		:type selector_type: By
 		:return: Словарь данных тайтла или `None` при отсутствии файла.
@@ -154,31 +154,31 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 		match selector_type:
 
 			case By.Filename:
-				if type(identificator) is not str: raise ValueError("Filename must be str.")
-				DataBuffer = self._load_data_by_filename(identificator)
+				if type(identifier) is not str: raise ValueError("Filename must be str.")
+				DataBuffer = self._load_data_by_filename(identifier)
 				
 			case By.Slug:
-				if type(identificator) is not str: raise ValueError("Slug must be str.")
-				DataBuffer = self._load_data_by_slug(identificator)
+				if type(identifier) is not str: raise ValueError("Slug must be str.")
+				DataBuffer = self._load_data_by_slug(identifier)
 
 			case By.ID:
-				if type(identificator) is not int: raise ValueError("ID must be int.")
-				DataBuffer = self._load_data_by_id(identificator)
+				if type(identifier) is not int: raise ValueError("ID must be int.")
+				DataBuffer = self._load_data_by_id(identifier)
 
 		self._IsLocalFileLoaded = bool(DataBuffer)
 
 		return zerotify(DataBuffer)
 
-	def _search_file_in_directory(self, directory: str | PathLike[str], identificator: int | str, identificator_type: Literal[By.ID, By.Slug]) -> dict | None:
+	def _search_file_in_directory(self, directory: str | PathLike[str], identifier: int | str, identifier_type: Literal[By.ID, By.Slug]) -> dict | None:
 		"""
 		Находит файл JSON в директории по идентификатору определённого типа.
 
 		:param directory: Путь к каталогу файлов.
 		:type directory: str | PathLike[str]
-		:param identificator: Идентификатор: ID или алиас.
-		:type identificator: int | str
-		:param identificator_type: Тип идентификатора.
-		:type identificator_type: Literal[By.ID, By.Slug]
+		:param identifier: Идентификатор: ID или алиас.
+		:type identifier: int | str
+		:param identifier_type: Тип идентификатора.
+		:type identifier_type: Literal[By.ID, By.Slug]
 		:return: Содержимое файла или `None` при отсутствии оного или ошибке.
 		:rtype: dict | None
 		"""
@@ -188,7 +188,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 
 			try: 
 				Data = json.read(Element.path)
-				if Data.get(identificator_type.value) == identificator:
+				if Data.get(identifier_type.value) == identifier:
 					self._local_file_path = Path(Element.path)
 					return Data
 
@@ -370,19 +370,19 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 
 		return directory
 
-	def load(self, identificator: int | str, selector_type: By = By.Slug) -> bool:
+	def load(self, identifier: int | str, selector_type: By = By.Slug) -> bool:
 		"""
 		Открывает локальный JSON файл и интерпретирует его данные.
 
-		:param identificator: Идентификатор тайтла: имя файла (без расширения), ID или алиас тайтла.
-		:type identificator: int | str
+		:param identifier: Идентификатор тайтла: имя файла (без расширения), ID или алиас тайтла.
+		:type identifier: int | str
 		:param selector_type: Режим поиска файла. По умолчанию `By.Slug` – идентификатор соответствует алиасу тайтла.
 		:type selector_type: By
 		:return: Возвращает `True`, если удалось найти и открыть файл.
 		:rtype: bool
 		"""
 
-		data: dict | None = self._load_data(identificator, selector_type)
+		data: dict | None = self._load_data(identifier, selector_type)
 		if data: self._data.from_dict(data)
 
 		return bool(data)

@@ -19,7 +19,7 @@ class Check(BaseCheck):
 		"""
 		Process linter check. 
 
-		Use `_emit()` or `_ok()` to interrupt checking. If no stop signal rised check considered successfully completed.
+		Use `_emit()` or `_ok()` to interrupt checking. If no stop signal raised check considered successfully completed.
 
 		:param operator: Parser operator.
 		:type operator: ParserOperator

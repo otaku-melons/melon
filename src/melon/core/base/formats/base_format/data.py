@@ -213,21 +213,21 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 		self._data["branches"] = sorted(Branches, key = lambda Value: Value["chapters_count"], reverse = True)
 
-	def _build_conent(self, brach_id: int | None = None, sorting: bool = True):
+	def _build_content(self, branch_id: int | None = None, sorting: bool = True):
 		"""
 		Обновляет контент во внутреннем словарном хранилище данных тайтла.
 
-		:param brach_id: Если указать ID ветви, будет обновлена только одна ветвь.
-		:type brach_id: int | None
+		:param branch_id: Если указать ID ветви, будет обновлена только одна ветвь.
+		:type branch_id: int | None
 		:param sorting: Указывает, нужно ли провести сортировку глав на основе их нумерации.
 		:type sorting: bool
 		"""
 
 		for branch in self._branches.values():
-			if brach_id and brach_id == branch.id or not brach_id:
+			if branch_id and branch_id == branch.id or not branch_id:
 				if sorting: branch.sort()
 				self._data["content"][str(branch.id)] = branch.to_list()
-				if brach_id: break
+				if branch_id: break
 
 	def _build_covers(self):
 		"""Обновляет данные обложек во внутреннем словарном хранилище данных тайтла."""
@@ -406,7 +406,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		self._build_covers()
 		self._build_persons()
 		self._update_branches_info()
-		self._build_conent(sorting = sorting)
+		self._build_content(sorting = sorting)
 		
 		return self._data.copy()
 

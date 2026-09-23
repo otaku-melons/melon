@@ -42,9 +42,9 @@ class BaseBuilder:
 		}
 
 		for Replacement in Replacements:
-			Identificator: str = "{" + Replacement + "}"
-			if Identificator in template:
-				template = template.replace(Identificator, Replacements[Replacement])
+			Identifier: str = "{" + Replacement + "}"
+			if Identifier in template:
+				template = template.replace(Identifier, Replacements[Replacement])
 
 			Pattern = "{" + f"if:{Replacement}:(.*)" + "}"
 			Match = re.match(Pattern, template)

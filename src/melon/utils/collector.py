@@ -121,7 +121,7 @@ class Collector:
 	# >>>>> ПРИВАТНЫЕ МЕТОДЫ <<<<< #
 	#==========================================================================================#
 
-	def __BuldResultFormDescriptors(self, descriptors: Sequence[TitleDescriptor]) -> CollectingResult:
+	def __BuildResultFormDescriptors(self, descriptors: Sequence[TitleDescriptor]) -> CollectingResult:
 		"""
 		Строит результат коллекционирования из дескрипторов тайтлов.
 
@@ -312,7 +312,7 @@ class Collector:
 
 		Descriptors = tuple(Descriptor for Descriptor in Descriptors if Descriptor.extra.get("is_broken"))
 
-		return self.__BuldResultFormDescriptors(Descriptors)
+		return self.__BuildResultFormDescriptors(Descriptors)
 
 	def collect_local(self) -> CollectingResult:
 		"""
@@ -322,7 +322,7 @@ class Collector:
 		:rtype: CollectingResult
 		"""
 
-		return self.__BuldResultFormDescriptors(self.__CollectDescriptors())
+		return self.__BuildResultFormDescriptors(self.__CollectDescriptors())
 
 	def collect_not_found(self, autosave: bool = True, callback: Callable[[TitleDescriptor], None] | None = None) -> CollectingResult:
 		"""

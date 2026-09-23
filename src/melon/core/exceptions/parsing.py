@@ -33,14 +33,14 @@ class ChapterNotFound(Exception):
 		:type slug: str | None
 		"""
 
-		ChapterIdentificator = ""
+		ChapterIdentifier = ""
 
 		if chapter_id:
-			ChapterIdentificator = f" {chapter_id}"
+			ChapterIdentifier = f" {chapter_id}"
 		elif slug:
-			ChapterIdentificator = f" \"{slug}\""
+			ChapterIdentifier = f" \"{slug}\""
 
-		super().__init__(f"Chapter{ChapterIdentificator} not found.") 
+		super().__init__(f"Chapter{ChapterIdentifier} not found.") 
 
 class ParsingError(Exception):
 	"""Исключение: ошибка парсинга."""

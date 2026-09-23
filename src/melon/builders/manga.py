@@ -237,7 +237,7 @@ class MangaBuilder(BaseBuilder):
 			TargetDirectory.mkdir(exist_ok = True)
 
 		ChapterPath = self.__FormatsBuilders[self.__OutputFormat]().build_chapter(ChapterName, temp_dir, TargetDirectory)
-		self._Printer.emit(f"Chapter <b>{chapter.id}</b> builded in: <i>{ChapterPath}</i>.")
+		self._Printer.emit(f"Chapter <b>{chapter.id}</b> built in: <i>{ChapterPath}</i>.")
 
 	#==========================================================================================#
 	# >>>>> ПЕРЕОПРЕДЕЛЯЕМЫЕ МЕТОДЫ <<<<< #
@@ -307,7 +307,7 @@ class MangaBuilder(BaseBuilder):
 			self.__BuildChapter(CurrentChapter, Progress)
 
 		ProgressString = self.__GetProgressString(1.0)
-		self._Printer.emit(f"{ProgressString}In branch <b>{BranchToBuild.id}</b> builded {BranchToBuild.chapters_count} chapters.")
+		self._Printer.emit(f"{ProgressString}In branch <b>{BranchToBuild.id}</b> built {BranchToBuild.chapters_count} chapters.")
 
 	def select_output_format(self, output_format: MangaOutputFormats):
 		"""

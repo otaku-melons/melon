@@ -36,7 +36,7 @@ class SharedData:
 		Отключается переменной среды `MELON_USE_CACHE`.
 		"""
 
-		if not self.__temper.system_obejcts.options.USE_CACHE:
+		if not self.__temper.system_objects.options.USE_CACHE:
 			return None
 
 		return self.__data.get("last_parsed_slug")

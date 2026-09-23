@@ -19,10 +19,10 @@ class BoolOption:
 	#==========================================================================================#
 
 	@property
-	def is_overrrided(self) -> bool:
+	def is_overridden(self) -> bool:
 		"""Состояние: переопределено ли значение переменной среды."""
 
-		return self.__IsOverrided
+		return self.__IsOverridden
 
 	@property
 	def value(self) -> bool:
@@ -34,18 +34,18 @@ class BoolOption:
 	# >>>>> ПУБЛИЧНЫЕ МЕТОДЫ <<<<< #
 	#==========================================================================================#
 
-	def __init__(self, value: bool, is_overrided: bool = True):
+	def __init__(self, value: bool, is_overridden: bool = True):
 		"""
 		Опция, представляющая логическое значение.
 
 		:param value: Значенние опции.
 		:type value: bool
-		:param is_overrided: Указывает, переопределено ли значение переменной среды.
-		:type is_overrided: bool
+		:param is_overridden: Указывает, переопределено ли значение переменной среды.
+		:type is_overridden: bool
 		"""
 
 		self.__Value: bool = value
-		self.__IsOverrided: bool = is_overrided
+		self.__IsOverridden: bool = is_overridden
 
 	def __bool__(self) -> bool:
 		"""
@@ -75,10 +75,10 @@ class LinkOption:
 	#==========================================================================================#
 
 	@property
-	def is_overrrided(self) -> bool:
+	def is_overridden(self) -> bool:
 		"""Состояние: переопределено ли значение переменной среды."""
 
-		return self.__IsOverrided
+		return self.__IsOverridden
 
 	@property
 	def value(self) -> str:
@@ -90,18 +90,18 @@ class LinkOption:
 	# >>>>> ПУБЛИЧНЫЕ МЕТОДЫ <<<<< #
 	#==========================================================================================#
 
-	def __init__(self, link: str, is_overrided: bool = True):
+	def __init__(self, link: str, is_overridden: bool = True):
 		"""
 		Опция, представляющая URL.
 
 		:param link: Ссылка.
 		:type link: str
-		:param is_overrided: Указывает, переопределено ли значение переменной среды.
-		:type is_overrided: bool
+		:param is_overridden: Указывает, переопределено ли значение переменной среды.
+		:type is_overridden: bool
 		"""
 
 		self.__Link: str = link
-		self.__IsOverrided: bool = is_overrided
+		self.__IsOverridden: bool = is_overridden
 
 	def __str__(self) -> str:
 		"""
@@ -121,10 +121,10 @@ class PathOption:
 	#==========================================================================================#
 
 	@property
-	def is_overrrided(self) -> bool:
+	def is_overridden(self) -> bool:
 		"""Состояние: переопределено ли значение переменной среды."""
 
-		return self.__IsOverrided
+		return self.__IsOverridden
 
 	@property
 	def value(self) -> Path:
@@ -136,18 +136,18 @@ class PathOption:
 	# >>>>> ПУБЛИЧНЫЕ МЕТОДЫ <<<<< #
 	#==========================================================================================#
 
-	def __init__(self, path: str | PathLike[str], is_overrided: bool = True):
+	def __init__(self, path: str | PathLike[str], is_overridden: bool = True):
 		"""
 		Опция, представляющая путь.
 
 		:param path: Путь в файловой системе.
 		:type path: str | PathLike[str]
-		:param is_overrided: Указывает, переопределено ли значение переменной среды.
-		:type is_overrided: bool
+		:param is_overridden: Указывает, переопределено ли значение переменной среды.
+		:type is_overridden: bool
 		"""
 
 		self.__Path: Path = Path(path)
-		self.__IsOverrided: bool = is_overrided
+		self.__IsOverridden: bool = is_overridden
 
 	def __str__(self) -> str:
 		"""
@@ -210,21 +210,21 @@ class Options:
 	# >>>>> ПРИВАТНЫЕ МЕТОДЫ <<<<< #
 	#==========================================================================================#
 
-	def __LoadEnviromentBoolVariables(self):
+	def __LoadEnvironmentBoolVariables(self):
 		"""Загружает опции на основе переменных сред, представляющих логические значения."""
 
 		for Name in self.__Bools.keys():
 			Value: str | None = os.environ.get(f"MELON_{Name}")
 			if Value: self.__Bools[Name] = BoolOption(self.__StringToBool(Value))
 
-	def __LoadEnviromentLinkVariables(self):
+	def __LoadEnvironmentLinkVariables(self):
 		"""Загружает опции на основе переменных сред, представляющих URL."""
 
 		for Name in self.__Links.keys():
 			Value: str | None = os.environ.get(f"MELON_{Name}")
 			if Value: self.__Links[Name] = LinkOption(types.URL.parse(Value))
 
-	def __LoadEnviromentPathVariables(self):
+	def __LoadEnvironmentPathVariables(self):
 		"""Загружает опции на основе переменных сред, представляющих пути, и создаёт каталоги."""
 
 		for Name in self.__Paths.keys():
@@ -232,13 +232,13 @@ class Options:
 			if Value: self.__Paths[Name] = PathOption(Value)
 			else: self.__Paths[Name].value.mkdir(exist_ok = True)
 
-	def __LoadEnviromentVariables(self):
+	def __LoadEnvironmentVariables(self):
 		"""Загружает и парсит переменные среды."""
 
 		load_dotenv()
-		self.__LoadEnviromentBoolVariables()
-		self.__LoadEnviromentLinkVariables()
-		self.__LoadEnviromentPathVariables()
+		self.__LoadEnvironmentBoolVariables()
+		self.__LoadEnvironmentLinkVariables()
+		self.__LoadEnvironmentPathVariables()
 		
 	def __StringToBool(self, data: str) -> bool:
 		"""
@@ -257,7 +257,7 @@ class Options:
 		if data.isdigit():
 			return bool(int(data))
 
-		raise ValueError("Incorrect enviroment variable value.")
+		raise ValueError("Incorrect environment variable value.")
 
 	#==========================================================================================#
 	# >>>>> ПУБЛИЧНЫЕ МЕТОДЫ <<<<< #
@@ -267,16 +267,16 @@ class Options:
 		"""Менеджер переменных среды парсера."""
 
 		self.__Bools: dict[str, BoolOption] = {
-			"DEBUG": BoolOption(False, is_overrided = False),
-			"USE_CACHE": BoolOption(True, is_overrided = False)
+			"DEBUG": BoolOption(False, is_overridden = False),
+			"USE_CACHE": BoolOption(True, is_overridden = False)
 		}
 		self.__Links: dict[str, LinkOption] = {
-			"REPOS_URL": LinkOption("https://github.com/otaku-melons/melon", is_overrided = False)
+			"REPOS_URL": LinkOption("https://github.com/otaku-melons/melon", is_overridden = False)
 		}
 		self.__Paths: dict[str, PathOption] = {
-			"CONFIGS_DIR": PathOption("configs", is_overrided = False),
-			"DEFAULT_OUTPUT_DIR": PathOption("output", is_overrided = False),
-			"TEMP_DIR": PathOption("temp", is_overrided = False)
+			"CONFIGS_DIR": PathOption("configs", is_overridden = False),
+			"DEFAULT_OUTPUT_DIR": PathOption("output", is_overridden = False),
+			"TEMP_DIR": PathOption("temp", is_overridden = False)
 		}
 
-		self.__LoadEnviromentVariables()
+		self.__LoadEnvironmentVariables()

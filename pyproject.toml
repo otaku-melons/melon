@@ -1,5 +1,5 @@
 [build-system]
-requires = ["uv-build>=0.12.17,<0.13.0"]
+requires = ["uv-build>=0.12.18,<0.13.0"]
 build-backend = "uv_build"
 
 [project]
@@ -26,7 +26,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["ruff", "ty"]
+dev = ["ruff", "ty", "typos"]
 
 [project.scripts]
 melon = "melon:main"
@@ -49,3 +49,6 @@ section-order = [
 	"first-party",
 	"local-folder"
 ]
+
+[tool.typos.default.extend-words]
+sigen = "sigen" # Short for signature generator.

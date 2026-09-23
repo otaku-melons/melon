@@ -7,7 +7,7 @@ from dublib.cli.terminalyzer import ModelsGroup, Terminalyzer
 from dublib.cli.terminalyzer.helper import Helper
 
 if TYPE_CHECKING:
-	from dublib.cli.terminalyzer.parser.entitites import CommandEntity
+	from dublib.cli.terminalyzer.parser.entities import CommandEntity
 
 	from ..core.system_objects import Printer, SystemObjects
 	from .base import BaseCommandProcessor
@@ -138,8 +138,8 @@ class CommandsOrchestrator:
 		arguments = entity.arguments
 
 		if arguments:
-			identificator: tuple[str, ...] = tuple(str(value) for value in entity.arguments)
-			model = self.__terminalyzer.find_model(identificator)
+			identifier: tuple[str, ...] = tuple(str(value) for value in entity.arguments)
+			model = self.__terminalyzer.find_model(identifier)
 
 			if not model:
 				self.printer.error("Info for command not found.")

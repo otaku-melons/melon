@@ -303,14 +303,14 @@ class Classificator:
 		:rtype: ClassificationResult
 		"""
 
-		operations_cashe: dict[str, Operation] = {}
+		operations_cache: dict[str, Operation] = {}
 
 		if ignore_case:
-			operations_cashe = {CurrentProcedure.name.lower(): CurrentProcedure for CurrentProcedure in procedures}
+			operations_cache = {CurrentProcedure.name.lower(): CurrentProcedure for CurrentProcedure in procedures}
 		else:
-			operations_cashe = {CurrentProcedure.name: CurrentProcedure for CurrentProcedure in procedures}
+			operations_cache = {CurrentProcedure.name: CurrentProcedure for CurrentProcedure in procedures}
 		
-		target_operation: Operation | None = operations_cashe.get(target.lower() if ignore_case else target)
+		target_operation: Operation | None = operations_cache.get(target.lower() if ignore_case else target)
 		if not target_operation: return ClassificationResult()
 
 		name: str | None = target_operation.process(target)

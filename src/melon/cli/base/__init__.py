@@ -10,7 +10,7 @@ from .structs import PreparedData, ProcessorOptions, _InternalStorage
 
 if TYPE_CHECKING:
 	from dublib.cli.terminalyzer.commands.group import ModelsGroup
-	from dublib.cli.terminalyzer.parser.entitites import CommandEntity
+	from dublib.cli.terminalyzer.parser.entities import CommandEntity
 
 	from ...core.base.source_operator import BaseSourceOperator
 	from ...core.system_objects import SystemObjects
@@ -68,7 +68,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 		if not parsers_names:
 			return ()
 
-		all_parsers = tuple(self.system_objects.manager.parsers.installed) + self.system_objects.manager.repositories.availabel_parsers
+		all_parsers = tuple(self.system_objects.manager.parsers.installed) + self.system_objects.manager.repositories.available_parsers
 
 		for parser in parsers_names:
 			if parser not in all_parsers:

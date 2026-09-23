@@ -96,7 +96,7 @@ class _BaseParserTarget(ABC):
 
 		return self._GetSlugs()
 
-class PasingTarget_Collection(_BaseParserTarget):
+class PassingTarget_Collection(_BaseParserTarget):
 	"""Цель для парсинга: коллекция."""
 
 	def _GetSlugs(self) -> list[str]:
@@ -128,7 +128,7 @@ class PasingTarget_Collection(_BaseParserTarget):
 
 		return self._Data.check_key("--collection")
 
-class PasingTarget_ID(_BaseParserTarget):
+class PassingTarget_ID(_BaseParserTarget):
 	"""Цель для парсинга: тайтл по ID."""
 
 	def _GetSlugs(self) -> list[str]:
@@ -158,7 +158,7 @@ class PasingTarget_ID(_BaseParserTarget):
 
 		return self._Data.check_key("--id")
 
-class PasingTarget_Last(_BaseParserTarget):
+class PassingTarget_Last(_BaseParserTarget):
 	"""Цель для парсинга: последний обработанный тайтл."""
 
 	def _GetSlugs(self) -> list[str]:
@@ -187,7 +187,7 @@ class PasingTarget_Last(_BaseParserTarget):
 
 		return self._Data.check_flag("-last")
 
-class PasingTarget_Local(_BaseParserTarget):
+class PassingTarget_Local(_BaseParserTarget):
 	"""Цель для парсинга: локальные тайтлы."""
 
 	def _GetSlugs(self) -> list[str]:
@@ -215,7 +215,7 @@ class PasingTarget_Local(_BaseParserTarget):
 
 		return self._Data.check_flag("-local")
 
-class PasingTarget_Slug(_BaseParserTarget):
+class PassingTarget_Slug(_BaseParserTarget):
 	"""Цель для парсинга: тайтл по алиасу."""
 
 	def _GetSlugs(self) -> list[str]:
@@ -250,7 +250,7 @@ class PasingTarget_Slug(_BaseParserTarget):
 			self._Data.check_key("--updates")
 		))
 
-class PasingTarget_Updates(_BaseParserTarget):
+class PassingTarget_Updates(_BaseParserTarget):
 	"""Цель для парсинга: обновления."""
 
 	def _GetSlugs(self) -> list[str]:
@@ -335,12 +335,12 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		source_operator = self._launch_source_operator(prepared_data.required_parsers[0])
 		targets_types: tuple[type[_BaseParserTarget], ...] = (
-			PasingTarget_Collection,
-			PasingTarget_ID,
-			PasingTarget_Last,
-			PasingTarget_Local,
-			PasingTarget_Slug,
-			PasingTarget_Updates
+			PassingTarget_Collection,
+			PassingTarget_ID,
+			PassingTarget_Last,
+			PassingTarget_Local,
+			PassingTarget_Slug,
+			PassingTarget_Updates
 		)
 
 		for target_type in targets_types:

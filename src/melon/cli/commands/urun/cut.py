@@ -132,10 +132,10 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			self.printer.emit(f"Matches found: {matches}.")
 			return True
 		
-		cutted_templates_count: int = cutter.clean_image(parameters.image, templates, parameters.output)
+		cut_templates_count: int = cutter.clean_image(parameters.image, templates, parameters.output)
 
-		if cutted_templates_count:
-			self.printer.emit(f"Cutted {cutted_templates_count} templates from image.")
+		if cut_templates_count:
+			self.printer.emit(f"Cut {cut_templates_count} templates from image.")
 
 			if parameters.output: self.printer.emit(f"Image path: <i>{parameters.output}</i>")
 			else: self.printer.emit("Original image overwritten.")

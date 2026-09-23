@@ -9,7 +9,7 @@
 Management system for manga and ranobe parsers modules capable of retrieving titles information, saving it in JSON, requesting updates and compiling content into an easy-to-read format.
 
 <p align="center">
-	<img src="icon.svg" width=25% height=25% allign="center">
+	<img src="icon.svg" width=25% height=25% align="center">
 </p>
 
 We welcome all developers and enthusiasts!
@@ -21,13 +21,13 @@ Documentation available in [this](https://github.com/otaku-melons/docs) reposito
 
 ## Getting started
 1. Install [uv](https://docs.astral.sh/uv/) project manager on your system.
-2. Create virtual enviroment and install Melon.
+2. Create virtual environment and install Melon.
 ```
 uv venv
 uv pip install git+https://github.com/otaku-melons/melon
 uv venv .venv --prompt melon
 ```
-3. Activate virtual enviroment and run Melon.
+3. Activate virtual environment and run Melon.
 ```Bash
 source .venv/bin/activated
 melon help && pxm help && urun help
