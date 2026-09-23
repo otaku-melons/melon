@@ -23,7 +23,7 @@ class Check(BaseCheck):
 		:rtype: bool
 		"""
 
-		gitignore_path: "Path" = operator.path / ".gitignore"
+		gitignore_path: Path = operator.path / ".gitignore"
 
 		if not gitignore_path.exists():
 			return False
@@ -46,7 +46,7 @@ class Check(BaseCheck):
 		:type operator: ParserOperator
 		"""
 
-		git: "Path" = operator.path / ".git"
+		git: Path = operator.path / ".git"
 
 		if not git.exists():
 			self._emit(ChecksStatuses.Skipped, "Git repository not found.")

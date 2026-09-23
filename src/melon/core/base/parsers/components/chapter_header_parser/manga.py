@@ -1,9 +1,11 @@
 import re
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 
 from dublib.functions.data import zerotify
 
 if TYPE_CHECKING:
+	from collections.abc import Sequence
+
 	from ......core.base.parsers.base_parser import BaseParser
 	from ......core.base.parsers.components.words_dictionary import WordsDictionary
 
@@ -84,7 +86,7 @@ class MangaChapterHeaderParser:
 	def _LstripTitle(self):
 		"""Удаляет из начала строки небуквенные символы за исключением `…`."""
 
-		ChapterStart = str()
+		ChapterStart = ""
 
 		for Character in self._Header:
 			if not Character.isalpha(): ChapterStart += Character

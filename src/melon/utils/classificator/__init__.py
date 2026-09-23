@@ -1,6 +1,7 @@
 import shlex
+from collections.abc import Callable, Sequence
 from pathlib import Path
-from typing import Callable, Sequence, cast
+from typing import cast
 
 from dublib.functions.filesystem import text
 

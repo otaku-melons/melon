@@ -1,8 +1,11 @@
-from typing import Sequence, cast, override
+from typing import TYPE_CHECKING, cast, override
 
 from ..base_format.chapter import BaseChapter
 from .elements import Blockquote, Header, Image, Paragraph
 from .enums import ChaptersTypes
+
+if TYPE_CHECKING:
+	from collections.abc import Sequence
 
 class Chapter(BaseChapter):
 	"""Глава ранобэ."""

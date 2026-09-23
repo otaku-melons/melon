@@ -44,7 +44,7 @@ class Manager:
 		:type system_objects: SystemObjects
 		"""
 
-		self.__SystemObjects: "SystemObjects" = system_objects
+		self.__SystemObjects: SystemObjects = system_objects
 
 		self.__Packager = Packager(self)
 		self.__Parsers = Parsers(self)

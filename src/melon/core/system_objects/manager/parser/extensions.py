@@ -49,17 +49,17 @@ class ExtensionsOperator:
 
 	def __init__(self, parser_operator: "ParserOperator", manager: "Manager"):
 
-		self.__parser_operator: "ParserOperator" = parser_operator
-		self.__manager: "Manager" = manager
+		self.__parser_operator: ParserOperator = parser_operator
+		self.__manager: Manager = manager
 
-		self.__directory: "Path" = self.__parser_operator.path / "extensions"
+		self.__directory: Path = self.__parser_operator.path / "extensions"
 		self.__available_extensions: tuple[str, ...] = tuple(sorted(
 			entry.name
 			for entry in os.scandir(self.__directory)
 			if entry.is_dir() and not entry.name.startswith("__"))
 		) if self.__directory.exists() else ()
 
-		self.__activation_file: "Path" = self.temp_directory / "enabled.json"
+		self.__activation_file: Path = self.temp_directory / "enabled.json"
 		self.__states: dict[str, bool] = {}
 
 		self.load_states()
@@ -122,7 +122,7 @@ class ExtensionsOperator:
 
 		self.__check_extension(extension_name)
 
-		options_file: "Path" = self.__parser_operator.path / "extensions" / extension_name / "options.py"
+		options_file: Path = self.__parser_operator.path / "extensions" / extension_name / "options.py"
 
 		return options_file.exists()
 

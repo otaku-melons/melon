@@ -147,6 +147,6 @@ class BaseExtension[SO: "BaseSourceOperator", EO: BaseModel = BaseModel]:
 		
 		self._cli: BaseExtensionCLI = self._provide_cli()(self)
 		self._options: EO = self._parse_options()
-		self._temp_directory: "Path" = self._source_operator.system_objects.temper.get_extension_temp_directory(self._source_operator.parser_name, self._name)
+		self._temp_directory: Path = self._source_operator.system_objects.temper.get_extension_temp_directory(self._source_operator.parser_name, self._name)
 
 		self._post_init()

@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Sequence, cast
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, Any, cast
 
 from dublib.functions.data import zerotify
 from dublib.functions.data.dictionary import insert_dictionary_after_key

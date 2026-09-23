@@ -1,9 +1,10 @@
 import traceback
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum
 from json import JSONDecodeError
-from typing import TYPE_CHECKING, Sequence, override
+from typing import TYPE_CHECKING, override
 
 from dublib.cli.text_styler import get_styled_text_from_html
 from dublib.validators import ValidableTypes

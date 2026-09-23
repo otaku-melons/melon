@@ -164,9 +164,9 @@ class CommandsOrchestrator:
 		:type group_name: str
 		"""
 
-		self.__system_objects: "SystemObjects" = system_objects
+		self.__system_objects: SystemObjects = system_objects
 
-		self.__processors: "dict[str, BaseCommandProcessor]" = {}
+		self.__processors: dict[str, BaseCommandProcessor] = {}
 		self.__groups: dict[str | None, ModelsGroup] = {}
 		self.__terminalyzer = Terminalyzer()
 		self.__helper = Helper()

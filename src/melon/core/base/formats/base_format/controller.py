@@ -339,7 +339,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 
 	def __init__(self, parser: "BaseParser", slug: str):
 
-		self._parser: "BaseParser[BaseSourceOperator, BaseModel]" = parser
+		self._parser: BaseParser[BaseSourceOperator, BaseModel] = parser
 		self._slug: str = slug
 
 		self._data: TD = self._export_data_type()(

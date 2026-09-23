@@ -1,7 +1,10 @@
-from typing import Sequence, cast, override
+from typing import TYPE_CHECKING, cast, override
 
 from ...structs.image import ImageData
 from ..base_format.chapter import BaseChapter
+
+if TYPE_CHECKING:
+	from collections.abc import Sequence
 
 class Chapter(BaseChapter):
 	"""Глава манги."""
@@ -86,7 +89,7 @@ class Chapter(BaseChapter):
 		"""Метод, выполняющийся после инициализации объекта."""
 
 		self._data["slides"] = []
-		self.__slides: "dict[int, ImageData]" = {}
+		self.__slides: dict[int, ImageData] = {}
 
 	@override
 	def _pre_formatter(self):

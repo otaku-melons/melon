@@ -340,7 +340,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 		:type system_objects: SystemObjects
 		"""
 
-		self._system_objects: "SystemObjects" = system_objects
+		self._system_objects: SystemObjects = system_objects
 
 		self._internal_storage: _InternalStorage = _InternalStorage()
 		self._options: ProcessorOptions = self._export_options()

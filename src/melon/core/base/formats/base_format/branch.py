@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Sequence
+from collections.abc import Sequence
 
 from .....core import exceptions
 from .chapter import BaseChapter

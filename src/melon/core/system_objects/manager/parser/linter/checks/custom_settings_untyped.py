@@ -25,7 +25,7 @@ class Check(BaseCheck):
 		:type operator: ParserOperator
 		"""
 
-		settings_path: "Path" = operator.path / "settings.json"
+		settings_path: Path = operator.path / "settings.json"
 
 		if not settings_path.exists():
 			self._emit(ChecksStatuses.Skipped, "Settings defaults not provided.")

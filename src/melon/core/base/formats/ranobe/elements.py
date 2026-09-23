@@ -380,7 +380,7 @@ class Image:
 		self.__MountedPath: str | None = None
 		self.__Filename: str | None = None
 		self.__IsExists: bool | None = None
-		self.__Sizes: "ImageResolution | None" = None
+		self.__Sizes: ImageResolution | None = None
 
 		os.makedirs(self.__Directory, exist_ok = True)
 

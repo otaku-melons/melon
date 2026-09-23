@@ -1,8 +1,9 @@
 import os
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from json import JSONDecodeError
 from pathlib import Path
-from typing import TYPE_CHECKING, Callable, Sequence, cast
+from typing import TYPE_CHECKING, cast
 
 from dublib.functions.data import to_sequence
 from dublib.functions.filesystem import json, text

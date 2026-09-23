@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Sequence, cast
+from typing import TYPE_CHECKING, Any, cast
 
 from dublib.functions.decorators import run_before_method
 
@@ -234,7 +235,7 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 		self._source_operator = source_operator
 
 		self._words_dictionary: WordsDictionary = WordsDictionary(None)
-		self._title: "BaseTitleController[BaseTitleData] | None" = None
+		self._title: BaseTitleController[BaseTitleData] | None = None
 
 		self._post_init()
 
@@ -243,7 +244,7 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 		"""Amend empty chapters with content."""
 
 		title = cast("BaseTitleController[BaseTitleData]", self._title)
-		empty_chapters: list[tuple["Branch", "BaseChapter"]] = []
+		empty_chapters: list[tuple[Branch, BaseChapter]] = []
 
 		for branch in title.data.branches:
 			for chapter in branch.chapters:

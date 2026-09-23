@@ -1,6 +1,7 @@
 import os
+from collections.abc import Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 
 import cv2
 import numpy
@@ -91,7 +92,7 @@ class Cutter:
 		:type system_objects: SystemObjects
 		"""
 
-		self.__system_objects: "SystemObjects" = system_objects
+		self.__system_objects: SystemObjects = system_objects
 
 	def calculate_templates_matches(self, image_path: Path, templates: Sequence[Path], threshold: float = 0.8) -> int:
 		"""

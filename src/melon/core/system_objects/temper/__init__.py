@@ -1,7 +1,8 @@
 import os
 import shutil
+from collections.abc import Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Sequence
+from typing import TYPE_CHECKING
 
 from dublib.functions.filesystem import clear_directory
 
@@ -27,7 +28,7 @@ class Temper:
 		:type system_objects: SystemObjects
 		"""
 
-		self.__SystemObjects: "SystemObjects" = system_objects
+		self.__SystemObjects: SystemObjects = system_objects
 
 		self.__TempDirectory = self.__SystemObjects.options.TEMP_DIR.value
 		self.__TempDirectory.mkdir(exist_ok = True)

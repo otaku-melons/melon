@@ -1,8 +1,9 @@
 import importlib
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from os import PathLike
 from pathlib import Path
-from typing import TYPE_CHECKING, Sequence, overload
+from typing import TYPE_CHECKING, overload
 
 from dulwich import errors, porcelain
 
@@ -432,7 +433,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 			raise exceptions.parsers.UnsupportedContent(content_type)
 
 		Module = importlib.import_module(f"parsers.{self._Manifest.parser_name}.{content_type.value}")
-		Parser: "BaseParser" = Module.Parser(self)
+		Parser: BaseParser = Module.Parser(self)
 
 		return Parser
 

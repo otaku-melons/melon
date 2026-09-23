@@ -81,7 +81,7 @@ class ImagesDownloader:
 		self.__Requestor = self.__SourceOperator.requestor
 		self.__Unstubber = Unstubber()
 
-		self.__CustomRequestor: "WebRequestor | None" = None
+		self.__CustomRequestor: WebRequestor | None = None
 
 	def build_target_filename(self, url: str, filename: str | None = None, is_full_filename: bool = True) -> str:
 		"""

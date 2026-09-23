@@ -1,7 +1,8 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import TYPE_CHECKING, Sequence, override
+from typing import TYPE_CHECKING, override
 
 from dublib.functions.filesystem import clear_directory
 

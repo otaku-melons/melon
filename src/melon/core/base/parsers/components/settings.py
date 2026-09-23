@@ -240,7 +240,7 @@ class Directories:
 		:type settings: dict[str, Any]
 		"""
 
-		self.__SystemObjects: "SystemObjects" = system_objects
+		self.__SystemObjects: SystemObjects = system_objects
 		self.__ParserName: str = parser_name
 		self.__DirectoriesDict: dict[str, str | None] = settings or {}
 
@@ -530,7 +530,7 @@ class ParserSettings[T: BaseModel]:
 		:type parser_name: str
 		"""
 		
-		self.__system_objects: "SystemObjects" = system_objects
+		self.__system_objects: SystemObjects = system_objects
 		self.__parser_name: str = parser_name
 		self.__settings: dict = self.__read()
 

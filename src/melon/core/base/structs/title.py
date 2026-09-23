@@ -76,13 +76,13 @@ class TitleDescriptor:
 		:type source_operator: BaseSourceOperator
 		"""
 
-		self._source_operator: "BaseSourceOperator" = source_operator
+		self._source_operator: BaseSourceOperator = source_operator
 
 		self._is_filename_id: bool = self._source_operator.settings.common.use_id_as_filename
 		
 		self._id: int | None = None
 		self._slug: str | None = None
-		self._content_type: "ContentTypes | None" = None
+		self._content_type: ContentTypes | None = None
 		self._filename: str | None = None
 		self._extra: dict[str, Any] = {}
 

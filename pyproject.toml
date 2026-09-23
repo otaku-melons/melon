@@ -13,7 +13,7 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
 	"beautifulsoup4",
-	"dublib>=0.31.0",
+	"dublib>=0.31.1",
 	"dulwich>=1.2.6",
 	"EbookLib",
 	"imagehash",
@@ -34,7 +34,7 @@ pxm = "melon:main"
 urun = "melon:main"
 
 [tool.ruff.lint]
-select = ["A", "ARG", "C", "E", "F", "I", "TC"]
+select = ["A", "ARG", "C", "E", "F", "I", "TC", "UP"]
 ignore = ["C901", "E701", "E501"]
 
 [tool.ruff.lint.isort]

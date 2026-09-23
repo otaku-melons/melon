@@ -1,7 +1,7 @@
 import hashlib
 import io
+from collections.abc import Sequence
 from os import PathLike
-from typing import Sequence
 
 import imagehash
 from PIL.Image import open as open_image

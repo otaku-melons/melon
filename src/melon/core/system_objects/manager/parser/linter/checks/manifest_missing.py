@@ -22,7 +22,7 @@ class Check(BaseCheck):
 		:type operator: ParserOperator
 		"""
 
-		manifest_path: "Path" = operator.path / "manifest.json"
+		manifest_path: Path = operator.path / "manifest.json"
 
 		if not manifest_path.exists():
 			self._emit(ChecksStatuses.Error, "Parser must provides manifest.")

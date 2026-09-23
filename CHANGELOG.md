@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 For visual categorization of changes emojis are used in accordance with [gitmoji](https://gitmoji.dev).
 
-## [Unreleased] - YYYY-MM-DD
+## [1.0.0-rc.6] - YYYY-MM-DD
 
 ### ✨ Added
 - Now extensions can create CLI handlers.
@@ -24,6 +24,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Extensions operator moved into parser operator property.
 - Extensions now must use [pydantic](https://github.com/pydantic/PYDANTIC) models for options typing.
 - Unified `amend()` methods of parsers.
+- Updated syntax to newer Python versions.
 
 ### 🗑️ Deprecated
 - Source operator extension property replaced by extension operator. 
@@ -32,5 +33,6 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Property `parser_settings` for extensions (reason is invariant typing issue).
 
 ### 🐛 Fixed
+- Many spelling issues with [typos](https://pypi.org/project/typos).
 
 ### 🔒️ Security
