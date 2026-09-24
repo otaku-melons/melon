@@ -18,6 +18,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Extensions activation states manager.
 - Chapters amending progress.
 - Message if chapter is empty after amending.
+- Melon environment option `MELON_TEMPLATE_URL` to parser template Git repository.
 
 ### 🎨 Changed
 - Extensions options settings no more appears in parser config if extension doesn't provide options.
@@ -25,6 +26,9 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Extensions now must use [pydantic](https://github.com/pydantic/PYDANTIC) models for options typing.
 - Unified `amend()` methods of parsers.
 - Updated syntax to newer Python versions.
+- Melon environment option `MELON_REPOS_URL` renamed to `MELON_REPOS`.
+- Manifests now validated with [pydantic](https://github.com/pydantic/PYDANTIC).
+- Property `parser_version` replaced to manifest `version`.
 
 ### 🗑️ Deprecated
 - Source operator extension property replaced by extension operator. 

@@ -5,8 +5,6 @@ from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, overload
 
-from dulwich import errors, porcelain
-
 from dublib.exceptions.web_requestor import TokenExpiredError
 from dublib.functions.filesystem import json
 from dublib.validators import types
@@ -70,20 +68,6 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		"""Имя парсера."""
 
 		return self._Manifest.parser_name
-
-	@property
-	def parser_version(self) -> str | None:
-		"""Версия парсера."""
-
-		try:
-			ParserTags = porcelain.tag_list(f"parsers/{self._Manifest.parser_name}")
-		except errors.NotGitRepository:
-			return None
-		
-		if ParserTags:
-			return ParserTags[-1].decode().lstrip("v")
-		
-		return None
 
 	@property
 	def portals(self) -> "Portals":

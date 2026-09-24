@@ -83,17 +83,18 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 			"VERSION": [],
 			"TYPES": [],
 			"DOMAIN": [],
-			"collect": []
+			"collect": [],
 		}
 	
 		for ParserName in self.system_objects.manager.parsers.installed:
-			SourceOperator = self.system_objects.manager.parsers.get_operator(ParserName).launch()
+			parser_operator = self.system_objects.manager.parsers.get_operator(ParserName)
+			SourceOperator = parser_operator.launch()
 			TypesEmoji = {
 				ContentTypes.Manga: "m",
-				ContentTypes.Ranobe: "r"
+				ContentTypes.Ranobe: "r",
 			}
 	
-			ParserVersion = SourceOperator.parser_version or ""
+			ParserVersion = SourceOperator.manifest.version or ""
 			ParserContentTypes: list[str] = [TypesEmoji[CurrentType] for CurrentType in SourceOperator.manifest.content_types]
 			ParserSite: str = "https://" + SourceOperator.manifest.domain
 	

@@ -189,7 +189,7 @@ class Options:
 		return self.__Paths[sys._getframe(0).f_code.co_name]
 
 	@property
-	def REPOS_URL(self) -> LinkOption:
+	def REPOS(self) -> LinkOption:
 		"""URL репозитория Melon."""
 
 		return self.__Links[sys._getframe(0).f_code.co_name]
@@ -199,6 +199,12 @@ class Options:
 		"""Путь ко временному каталогу парсеров."""
 
 		return self.__Paths[sys._getframe(0).f_code.co_name]
+
+	@property
+	def TEMPLATE_REPOS(self) -> LinkOption:
+		"""Parser template Git repository URL."""
+
+		return self.__Links[sys._getframe(0).f_code.co_name]
 
 	@property
 	def USE_CACHE(self) -> BoolOption:
@@ -271,7 +277,8 @@ class Options:
 			"USE_CACHE": BoolOption(True, is_overridden = False)
 		}
 		self.__Links: dict[str, LinkOption] = {
-			"REPOS_URL": LinkOption("https://github.com/otaku-melons/melon", is_overridden = False)
+			"REPOS": LinkOption("https://github.com/otaku-melons/melon", is_overridden = False),
+			"TEMPLATE_REPOS": LinkOption("https://github.com/otaku-melons/.parser-template", is_overridden = False)
 		}
 		self.__Paths: dict[str, PathOption] = {
 			"CONFIGS_DIR": PathOption("configs", is_overridden = False),

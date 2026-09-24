@@ -56,7 +56,7 @@ class Manager:
 		temp_melon_directory = self.system_objects.options.TEMP_DIR.value / ".melon"
 		temp_melon_directory.mkdir(exist_ok = True)
 
-		self.packager.clone(temp_melon_directory, self.system_objects.options.REPOS_URL.value)
+		self.packager.clone(temp_melon_directory, self.system_objects.options.REPOS.value)
 
 		try:
 			subprocess.run(("uv", "pip", "install", "melon"), check = True)
