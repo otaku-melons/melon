@@ -9,5 +9,5 @@ __all__ = [
 	"Classificator",
 	"Collector",
 	"Timer",
-	"Unstubber"
+	"Unstubber",
 ]

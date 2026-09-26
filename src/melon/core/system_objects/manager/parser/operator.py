@@ -156,7 +156,7 @@ class ParserOperator:
 
 		self.__Parsers.manager.packager.clone(
 			directory = self.path,
-			remote = self.__Parsers.manager.repositories.get(self.__Name, exception = True)
+			remote = self.__Parsers.manager.repositories.get(self.__Name, exception = True),
 		)
 
 		self.install_requirements()
@@ -230,7 +230,7 @@ class ParserOperator:
 		if clear:
 			ElementToRemove += [
 				self.__Parsers.manager.system_objects.options.CONFIGS_DIR.value / f"{self.__Name}.json",
-				self.__Parsers.manager.system_objects.options.TEMP_DIR.value / self.__Name
+				self.__Parsers.manager.system_objects.options.TEMP_DIR.value / self.__Name,
 			]
 
 		for Element in ElementToRemove:
@@ -257,7 +257,7 @@ class ParserOperator:
 		IsStateChanged: bool = self.__Parsers.manager.packager.pull(
 			repository = self.path,
 			remote = self.__Parsers.manager.repositories.get(self.__Name, exception = True),
-			force_mode = force_mode
+			force_mode = force_mode,
 		)
 
 		if IsStateChanged and requirements: self.install_requirements()

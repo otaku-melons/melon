@@ -89,7 +89,7 @@ class Unstubber:
 			"sha256": None,
 
 			"phash": None,
-			"similarity": 100
+			"similarity": 100,
 		}
 
 		match signature_version:

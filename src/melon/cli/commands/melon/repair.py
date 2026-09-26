@@ -84,7 +84,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			required_parser = prepared_data.required_parsers[0],
 			filename = filename,
 			target_id = entity.get_position_value("TARGET", expected_type = int, important = True),
-			is_target_chapter = entity.check_key("--chapter")
+			is_target_chapter = entity.check_key("--chapter"),
 		)
 
 	@override

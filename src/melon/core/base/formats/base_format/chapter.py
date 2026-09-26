@@ -255,7 +255,7 @@ class BaseChapter(ABC):
 			"number": None,
 			"name": None,
 			"is_paid": None,
-			"workers": []
+			"workers": [],
 		}
 
 		self._post_init()

@@ -118,7 +118,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		position = model.create_position(
 			name = "FILE",
-			description = get_styled_text_from_html("Collection filename without filetype. By default <i>collection</i>.")
+			description = get_styled_text_from_html("Collection filename without filetype. By default <i>collection</i>."),
 		)
 		position.add_key("--file")
 
@@ -162,7 +162,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			collecting_target = CollectingTargets(entity.get_position_value("TARGETS", expected_type = str)),
 			period = entity.get_key_value("--period", expected_type = int),
 			filters = entity.get_key_value("--filters", expected_type = str),
-			pages = entity.get_key_value("--pages", expected_type = int)
+			pages = entity.get_key_value("--pages", expected_type = int),
 		)
 
 	@override

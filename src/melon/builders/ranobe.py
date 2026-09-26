@@ -60,7 +60,7 @@ class RanobeBuilder(BaseBuilder):
 			Buffer = epub.EpubImage(
 				file_name = EpubPath,
 				media_type = "image/" + PathObject.suffix.lstrip("."),
-				content = open(self._ParserSettings.directories.images / PathObject, "rb").read()
+				content = open(self._ParserSettings.directories.images / PathObject, "rb").read(),
 			)
 
 			ChapterImages.append(Buffer)
@@ -70,7 +70,7 @@ class RanobeBuilder(BaseBuilder):
 			title = ChapterTitle,
 			file_name = f"{chapter.id}.xhtml",
 			content = f"<h2>{ChapterNumeration}{chapter.name}</h2>" + str(Soup),
-			lang = self._Title.data.content_language
+			lang = self._Title.data.content_language,
 		)
 		
 		return ChapterItems(ChapterContent, tuple(ChapterImages))

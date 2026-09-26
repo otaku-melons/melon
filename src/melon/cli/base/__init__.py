@@ -167,7 +167,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 		return PreparedData(
 			required_parsers = self._load_required_parsers(entity),
 			force_mode = entity.check_flag("-f", missing_error = False),
-			is_json_output = entity.check_flag("-j", missing_error = False)
+			is_json_output = entity.check_flag("-j", missing_error = False),
 		)
 
 	def _process_safely(self, parameters: PARAMS) -> bool:
@@ -223,7 +223,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 		self._model.base.add_flag(
 			name = "-j",
 			aliases = ("--json",),
-			description = "Prints output as JSON-string."
+			description = "Prints output as JSON-string.",
 		)
 
 		self._internal_storage.is_json_output = True
@@ -248,14 +248,14 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 			position = self.model.create_position(
 				name = "PARSERS",
 				description = description or "One or more parsers names separated by comma. By default all.",
-				important = important
+				important = important,
 			)
 
 		else:
 			position = self.model.create_position(
 				name = "PARSER",
 				description = description or "Parser name.",
-				important = important
+				important = important,
 			)
 
 		position.add_key(key) if key else position.set_argument()

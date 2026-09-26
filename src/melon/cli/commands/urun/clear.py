@@ -248,7 +248,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		return Parameters(
 			required_parser = prepared_data.required_parsers[0],
 			rule = Rule,
-			collection_file = CollectionFile
+			collection_file = CollectionFile,
 		)
 
 	@override

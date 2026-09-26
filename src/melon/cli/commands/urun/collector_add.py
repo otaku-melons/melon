@@ -71,7 +71,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		return Parameters(
 			required_parser = prepared_data.required_parsers[0],
 			slug = entity.get_position_value("SLUG", expected_type = str, important = True),
-			collection = entity.get_key_value("--collection", expected_type = str, not_found_error = False)
+			collection = entity.get_key_value("--collection", expected_type = str, not_found_error = False),
 		)
 
 	@override

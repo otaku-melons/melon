@@ -149,8 +149,8 @@ class Branch(ABC):
 			self._Chapters.values(),
 			key = lambda Value: (
 				list(map(int, Value.volume.split(".") if Value.volume else "")),
-				list(map(int, Value.number.split(".") if Value.number else ""))
-			)
+				list(map(int, Value.number.split(".") if Value.number else "")),
+			),
 		))
 
 	def to_list(self) -> list[dict]:

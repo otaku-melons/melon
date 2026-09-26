@@ -76,7 +76,7 @@ class SharedData:
 		self.__shared_data_file = Path(f"{self.__shared_data_directory}/shared.json")
 
 		self.__data: dict = {
-			"last_parsed_slug": None
+			"last_parsed_slug": None,
 		}
 
 		self.__filtered_images = FilteredImages(self)

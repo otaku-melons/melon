@@ -137,7 +137,7 @@ class Collector:
 		return CollectingResult(
 			slugs = Slugs,
 			added = self.add(Slugs),
-			descriptors = tuple(descriptors)
+			descriptors = tuple(descriptors),
 		)
 
 	def __CollectDescriptors(self) -> tuple[TitleDescriptor, ...]:
@@ -369,5 +369,5 @@ class Collector:
 		return CollectingResult(
 			slugs = Slugs,
 			added = Added if autosave else self.add(Slugs),
-			descriptors = tuple(NotFoundDescriptors)
+			descriptors = tuple(NotFoundDescriptors),
 		)

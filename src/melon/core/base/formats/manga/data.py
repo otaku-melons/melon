@@ -54,7 +54,7 @@ class TitleData(BaseTitleData[Chapter]):
 		manga_type = ExtraField(
 			after_key = "slug",
 			name = "type",
-			value = None
+			value = None,
 		)
 
 		return (manga_type,)

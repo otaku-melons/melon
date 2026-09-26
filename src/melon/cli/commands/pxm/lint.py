@@ -168,7 +168,7 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 		"""
 
 		return Parameters(
-			required_parser =  prepared_data.required_parsers[0]
+			required_parser =  prepared_data.required_parsers[0],
 		)
 
 	@override

@@ -84,7 +84,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			link = entity.get_position_value("URL", expected_type = str, important = True),
 			directory = entity.get_key_value("--dir", expected_type = Path),
 			full_name = entity.get_key_value("--fullname", expected_type = str),
-			name = entity.get_key_value("--name", expected_type = str)
+			name = entity.get_key_value("--name", expected_type = str),
 		)
 
 	@override
@@ -112,7 +112,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			directory = parameters.directory,
 			filename = parameters.full_name or parameters.name,
 			is_full_filename = bool(parameters.full_name),
-			force_mode = parameters.force_mode
+			force_mode = parameters.force_mode,
 		)
 	
 		Future.result(result, show_path = True)

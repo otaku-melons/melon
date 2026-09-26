@@ -65,7 +65,7 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 
 		return Parameters(
 			required_parser =  prepared_data.required_parsers[0],
-			is_clear = entity.check_flag("-c")
+			is_clear = entity.check_flag("-c"),
 		)
 
 	@override

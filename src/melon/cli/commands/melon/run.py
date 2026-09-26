@@ -89,7 +89,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			extension_name = entity.get_position_value("EXTENSION", expected_type = str, important = True),
 			command = entity.get_key_value("--command", expected_type = str, not_found_error = False),
 			help = entity.get_key_value("--help", expected_type = str, not_found_error = False),
-			list = entity.check_flag("-l")
+			list = entity.check_flag("-l"),
 		)
 
 	@override

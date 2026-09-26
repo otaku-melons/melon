@@ -84,7 +84,7 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 
 		TableData: dict[str, list[str]] = {
 			"PARSER": [],
-			"REPOSITORY": []
+			"REPOSITORY": [],
 		}
 	
 		for ParserName in self.system_objects.manager.repositories.available_parsers:

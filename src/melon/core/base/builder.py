@@ -38,7 +38,7 @@ class BaseBuilder:
 			"name": chapter.name or "",
 			"ch_number": chapter.number or "",
 			"vol_number": chapter.volume or "",
-			"separator": ". " if chapter.name else ""
+			"separator": ". " if chapter.name else "",
 		}
 
 		for Replacement in Replacements:

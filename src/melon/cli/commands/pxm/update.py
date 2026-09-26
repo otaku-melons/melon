@@ -64,7 +64,7 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 
 		return Parameters(
 			required_parser =  prepared_data.required_parsers[0],
-			force_mode = prepared_data.force_mode
+			force_mode = prepared_data.force_mode,
 		)
 
 	@override

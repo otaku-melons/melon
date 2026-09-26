@@ -77,7 +77,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			target = entity.get_position_value("VALUE", expected_type = str, important = True),
 			is_output_json = entity.check_flag("-j"),
 			file_to_write =  entity.get_key_value("--file", expected_type = Path),
-			is_ignore_case = entity.check_flag("-i")
+			is_ignore_case = entity.check_flag("-i"),
 		)
 
 	@override

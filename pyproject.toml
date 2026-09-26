@@ -34,7 +34,7 @@ pxm = "melon:main"
 urun = "melon:main"
 
 [tool.ruff.lint]
-select = ["A", "ARG", "C", "E", "F", "I", "TC", "UP"]
+select = ["A", "ARG", "C", "COM", "E", "F", "I", "TC", "UP"]
 ignore = ["C901", "E701", "E501"]
 
 [tool.ruff.lint.isort]

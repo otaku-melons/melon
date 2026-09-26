@@ -323,7 +323,7 @@ class Classificator:
 			name = name,
 			type = target_operation.type,
 			delete = target_operation.delete,
-			is_renamed = is_renamed
+			is_renamed = is_renamed,
 		)
 
 	def parse_operations(self, script_lines: Sequence[ExecutableLine]) -> tuple[Operation, ...]:
@@ -343,7 +343,7 @@ class Classificator:
 			Directives.DROP: self.__process_directive_drop,
 			Directives.CASE: self.__process_directive_case,
 			Directives.DELETE: self.__process_directive_delete,
-			Directives.TYPE: self.__process_directive_type
+			Directives.TYPE: self.__process_directive_type,
 		}
 
 		for line in script_lines:
@@ -361,7 +361,7 @@ class Classificator:
 					type = work_data.current_type,
 					delete = work_data.is_delete,
 					rename = rename,
-					case = work_data.current_case
+					case = work_data.current_case,
 				))
 
 				continue

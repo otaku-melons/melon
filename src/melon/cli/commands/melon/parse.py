@@ -248,7 +248,7 @@ class PassingTarget_Slug(_BaseParserTarget):
 
 			self._Data.check_key("--collection"),
 			self._Data.check_key("--id"),
-			self._Data.check_key("--updates")
+			self._Data.check_key("--updates"),
 		))
 
 class PassingTarget_Updates(_BaseParserTarget):
@@ -341,7 +341,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			PassingTarget_Last,
 			PassingTarget_Local,
 			PassingTarget_Slug,
-			PassingTarget_Updates
+			PassingTarget_Updates,
 		)
 
 		for target_type in targets_types:
@@ -549,7 +549,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			is_sorting_enabled = entity.check_flag("-sort"),
 			is_amending_enabled = not entity.check_flag("-no-amend"),
 			is_download_images = not entity.check_flag("-no-images"),
-			is_cold_saving = not entity.check_flag("-no-cold-save")
+			is_cold_saving = not entity.check_flag("-no-cold-save"),
 		)
 
 	@override

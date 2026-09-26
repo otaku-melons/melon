@@ -274,16 +274,16 @@ class Options:
 
 		self.__Bools: dict[str, BoolOption] = {
 			"DEBUG": BoolOption(False, is_overridden = False),
-			"USE_CACHE": BoolOption(True, is_overridden = False)
+			"USE_CACHE": BoolOption(True, is_overridden = False),
 		}
 		self.__Links: dict[str, LinkOption] = {
 			"REPOS": LinkOption("https://github.com/otaku-melons/melon", is_overridden = False),
-			"TEMPLATE_REPOS": LinkOption("https://github.com/otaku-melons/.parser-template", is_overridden = False)
+			"TEMPLATE_REPOS": LinkOption("https://github.com/otaku-melons/.parser-template", is_overridden = False),
 		}
 		self.__Paths: dict[str, PathOption] = {
 			"CONFIGS_DIR": PathOption("configs", is_overridden = False),
 			"DEFAULT_OUTPUT_DIR": PathOption("output", is_overridden = False),
-			"TEMP_DIR": PathOption("temp", is_overridden = False)
+			"TEMP_DIR": PathOption("temp", is_overridden = False),
 		}
 
 		self.__LoadEnvironmentVariables()

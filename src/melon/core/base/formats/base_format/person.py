@@ -47,7 +47,7 @@ class Person:
 			"name": name,
 			"another_names": [],
 			"images": [],
-			"description": None
+			"description": None,
 		}
 
 		self.__Images: list[ImageData] = []

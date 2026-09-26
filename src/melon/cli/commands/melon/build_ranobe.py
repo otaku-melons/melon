@@ -75,7 +75,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		return Parameters(
 			filename = entity.get_position_value("FILE", expected_type = str, important = True),
 			required_parser = prepared_data.required_parsers[0],
-			branch_id = entity.get_key_value("--branch", expected_type = int)
+			branch_id = entity.get_key_value("--branch", expected_type = int),
 		)
 
 	@override

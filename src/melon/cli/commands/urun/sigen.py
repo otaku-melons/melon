@@ -122,7 +122,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		return Parameters(
 			required_parser = prepared_data.required_parsers[0] if prepared_data.required_parsers else None,
 			image = entity.get_position_value("IMAGE", expected_type = Path, important = True),
-			signature_version = version
+			signature_version = version,
 		)
 
 	@override

@@ -608,7 +608,7 @@ class Paragraph(Header):
 			"s": (),
 			"u": (),
 			"sup": (),
-			"sub": ()
+			"sub": (),
 		}
 
 	def set_text(self, text: str):

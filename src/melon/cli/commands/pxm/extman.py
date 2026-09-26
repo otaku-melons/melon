@@ -80,7 +80,7 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 			title = "Switch state by [Space], save by [Enter], to cancel [Ctrl + C].",
 			indicator = "►",
 			multiselect = True,
-			min_selection_count = 0
+			min_selection_count = 0,
 		)
 		picker.selected_indexes = activated_indexes
 		
@@ -166,7 +166,7 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 
 		return Parameters(
 			required_parser =  prepared_data.required_parsers[0],
-			operation = operation
+			operation = operation,
 		)
 
 	@override

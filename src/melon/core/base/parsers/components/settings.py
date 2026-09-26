@@ -21,23 +21,23 @@ _BASE_SETTINGS = MappingProxyType({
 	"directories": {
 		"content": None,
 		"images": None,
-		"titles": None
+		"titles": None,
 	},
 	"common": {
 		"pretty": True,
 		"use_id_as_filename": False,
-		"sizing_images": True
+		"sizing_images": True,
 	},
 	"network": {
 		"delay": 1.0,
 		"retries": 1,
 		"proxies": [],
-		"images_mirrors": {}
+		"images_mirrors": {},
 	},
 	"filters": {
 		"text": {
 			"regexs": [],
-			"strings": []
+			"strings": [],
 		},
 		"images": {
 			"min_height": None,
@@ -45,11 +45,11 @@ _BASE_SETTINGS = MappingProxyType({
 			"max_height": None,
 			"max_width": None,
 			"min_size": 100,
-			"signatures": []
-		}
+			"signatures": [],
+		},
 	},
 	"custom": {},
-	"extensions": {}
+	"extensions": {},
 })
 
 #==========================================================================================#
@@ -506,7 +506,7 @@ class ParserSettings[T: BaseModel]:
 		Settings: dict = self.get_base_settings(self.__system_objects, self.__parser_name)
 		ConfigsPaths: tuple[Path, Path] = (
 			self.__system_objects.manager.parsers.root / f"{self.__parser_name}/settings.json",
-			self.__system_objects.options.CONFIGS_DIR.value / f"{self.__parser_name}.json"
+			self.__system_objects.options.CONFIGS_DIR.value / f"{self.__parser_name}.json",
 		)
 
 		for ConfigPath in ConfigsPaths:

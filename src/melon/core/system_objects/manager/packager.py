@@ -48,7 +48,7 @@ class Packager:
 			source = remote,
 			target = directory,
 			errstream = io.BytesIO() if hide_output else sys.stdout.buffer,
-			recurse_submodules = True
+			recurse_submodules = True,
 		)
 
 	def install_requirements(self, file: Path):
@@ -86,7 +86,7 @@ class Packager:
 			Status.staged["add"],
 			Status.staged["modify"],
 			Status.staged["delete"],
-			Status.unstaged
+			Status.unstaged,
 		))
 
 	def pull(self, repository: Path, remote: str, force_mode: bool = False, hide_output: bool = True) -> bool:
@@ -112,7 +112,7 @@ class Packager:
 			repo = LocalRepo.path,
 			remote_location = remote,
 			outstream = io.BytesIO() if hide_output else sys.stdout.buffer,
-			force = force_mode
+			force = force_mode,
 		)
 
 		return LocalRepo.head() != HeadCommitHash

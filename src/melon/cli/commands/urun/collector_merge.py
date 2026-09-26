@@ -76,7 +76,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			required_parser = prepared_data.required_parsers[0],
 			origin = entity.get_position_value("ORIGIN", expected_type = str, important = True),
 			target = entity.get_position_value("TARGET", expected_type = str, important = True),
-			clear_origin = entity.check_flag("-c")
+			clear_origin = entity.check_flag("-c"),
 		)
 
 	@override

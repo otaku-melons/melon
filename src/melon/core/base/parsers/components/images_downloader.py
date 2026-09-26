@@ -166,7 +166,7 @@ class ImagesDownloader:
 				is_already_exists = False,
 				is_downloaded = False,
 				filtered_by = IsFiltered,
-				path = None
+				path = None,
 			)
 
 		#---> Подстановка доменов зеркал.
@@ -200,7 +200,7 @@ class ImagesDownloader:
 			filtered_by = IsFiltered,
 			resolution = Resolution,
 			path = ImagePath,
-			error_message = ErrorMessage
+			error_message = ErrorMessage,
 		)
 
 	def filter_image(self, image: bytes, resolution: ImageResolution | None) -> FilteredBy | None:

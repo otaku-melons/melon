@@ -48,7 +48,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 				"parser": parameters.required_parser.name,
 				"slug": descriptor.slug,
 				"id": descriptor.id,
-				"path": file_path
+				"path": file_path,
 			}
 			self.printer.json(OutputDictionary)
 
@@ -57,7 +57,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 				"Parser": parameters.required_parser.name,
 				"Slug": descriptor.slug,
 				"ID": descriptor.id,
-				"Path": file_path
+				"Path": file_path,
 			}
 
 			if not file_path:
@@ -125,7 +125,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			required_parser = prepared_data.required_parsers[0],
 			is_json_output = prepared_data.is_json_output,
 			slug = slug,
-			title_id = title_id
+			title_id = title_id,
 		)
 
 	@override

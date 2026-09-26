@@ -101,7 +101,7 @@ class ImageData:
 			"link": self._Link,
 			"filename": self.filename,
 			"width": self._Resolution.width if self._Resolution else None,
-			"height": self._Resolution.height if self._Resolution else None
+			"height": self._Resolution.height if self._Resolution else None,
 		}
 
 		if not sizing:

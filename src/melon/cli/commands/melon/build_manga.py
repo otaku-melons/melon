@@ -104,7 +104,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			output_format = output_format,
 			chapter_template = entity.get_key_value("--ct", expected_type = str),
 			volume_template = entity.get_key_value("--vt", expected_type = str),
-			is_sort_by_volumes = entity.check_flag("-s")
+			is_sort_by_volumes = entity.check_flag("-s"),
 		)
 
 	@override

@@ -34,7 +34,7 @@ class ClassificationResult:
 			"name": self.name,
 			"type": self.type.name.lower() if self.type else None,
 			"delete": self.delete,
-			"is_renamed": self.is_renamed
+			"is_renamed": self.is_renamed,
 		}
 
 @dataclass(frozen = True)

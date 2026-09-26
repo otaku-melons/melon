@@ -344,7 +344,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 
 		self._data: TD = self._export_data_type()(
 			title_controller = self,
-			title_format = "melon-" + type(self).__name__.lower()
+			title_format = "melon-" + type(self).__name__.lower(),
 		)
 		self._data.set_domain(self._parser.manifest.domain)
 		self._data.set_slug(self._slug)
@@ -492,5 +492,5 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 			is_saved = not is_local_file_equal,
 			is_slug_changed = is_slug_changed,
 			is_local_file_renamed = is_local_file_renamed,
-			unused_images_removed = self._clear_unused_images()
+			unused_images_removed = self._clear_unused_images(),
 		)

@@ -55,7 +55,7 @@ class ImagesTemplates(_BaseTemplatesSection):
 	def start_downloading(
 		self,
 		filename: str,
-		image_type: ImagesTypes | None = None
+		image_type: ImagesTypes | None = None,
 	) -> ImageDownloadingFuture:
 		"""
 		Шаблон вывода: скачивание изображения начато.

@@ -65,7 +65,7 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 		"""
 
 		return Parameters(
-			url = entity.get_position_value("REPOSITORY", expected_type = str, important = True)
+			url = entity.get_position_value("REPOSITORY", expected_type = str, important = True),
 		)
 
 	@override

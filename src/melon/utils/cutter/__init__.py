@@ -61,7 +61,7 @@ class Cutter:
 			return TemplateMatch(
 				threshold = max_threshold,
 				start = template_start,
-				end = template_end
+				end = template_end,
 			)
 
 		return None

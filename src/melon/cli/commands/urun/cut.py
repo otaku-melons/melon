@@ -107,7 +107,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			image = entity.get_position_value("IMAGE", expected_type = Path, important = True),
 			templates = entity.get_position_value("TEMPLATES", expected_type = Path, important = True),
 			output = entity.get_position_value("OUTPUT", expected_type = Path, important = False),
-			is_dry = entity.check_flag("-d")
+			is_dry = entity.check_flag("-d"),
 		)
 
 	@override

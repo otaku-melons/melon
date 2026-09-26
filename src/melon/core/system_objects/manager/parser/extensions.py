@@ -56,7 +56,7 @@ class ExtensionsOperator:
 		self.__available_extensions: tuple[str, ...] = tuple(sorted(
 			entry.name
 			for entry in os.scandir(self.__directory)
-			if entry.is_dir() and not entry.name.startswith("__"))
+			if entry.is_dir() and not entry.name.startswith("__")),
 		) if self.__directory.exists() else ()
 
 		self.__activation_file: Path = self.temp_directory / "enabled.json"

@@ -160,7 +160,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		"""
 
 		return SourceProperties(
-			one_cover = True
+			one_cover = True,
 		)
 
 	def _extract_slug_from_string(self, string: str) -> str | None:
@@ -325,7 +325,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 				is_downloaded = False,
 				resolution = None,
 				path = ImageTargetPath,
-				error_message = None
+				error_message = None,
 			)
 
 		#---> Скачивание изображения во временный каталог парсера.
@@ -348,7 +348,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 			filtered_by = Result.filtered_by,
 			resolution = Result.resolution,
 			path = ImageTargetPath,
-			error_message = None
+			error_message = None,
 		)
 
 	def get_content_type_by_file(self, filename: str) -> TitleDescriptor:

@@ -283,7 +283,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 			"persons": [],
 			
 			"branches": [],
-			"content": {} 
+			"content": {}, 
 		}
 
 		for extra_field in self._export_extra_fields():
