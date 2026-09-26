@@ -313,6 +313,11 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 
 		pass
 
+	def _post_init(self):
+		"""Execute after instance initialization."""
+
+		pass
+
 	@abstractmethod
 	def _process(self, parameters: PARAMS) -> bool:
 		"""
@@ -348,11 +353,13 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 
 		self._model: CommandModel = group.create_model(
 			name = self.__class__.__module__.split(".")[-1].split("_")[-1],
-			description = self._export_description()
+			description = self._export_description(),
 		)
 		self._model = self._build_model(self._model)
 
 		self._mirror: str | None = None
+
+		self._post_init()
 
 	def process(self, entity: "CommandEntity"):
 		"""

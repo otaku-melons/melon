@@ -1,23 +1,61 @@
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, override
 
-from ....core.system_objects.manager.parser.enums import ExportStrategies
-from ...base.templates import T_SingleParserRequired
+import questionary
+
+from dublib.cli.text_styler import FastStyler
+from dublib.validators import types
+
+from ....core.base.parsers.components.manifest.enums import ContentTypes
+from ....utils.assistant import Assistant
+from ....utils.assistant.structs import ParserData
+from ...base.structs import PreparedData, ProcessorOptions
+from ...base.templates import BaseParameters
 from ._base import CommandProcessorTemplate
 
 if TYPE_CHECKING:
 	from dublib.cli.terminalyzer import CommandEntity, CommandModel
 
-	from ...base.structs import PreparedData
-
-@dataclass(frozen = True)
-class Parameters(T_SingleParserRequired):
-	"""Параметры, требуемые обработчиком."""
-
-	config_strategy: ExportStrategies
-
-class CommandProcessor(CommandProcessorTemplate[Parameters]):
+class CommandProcessor(CommandProcessorTemplate[BaseParameters]):
 	"""Обработчик команды."""
+
+	#==========================================================================================#
+	# >>>>> PRIVATE METHODS <<<<< #
+	#==========================================================================================#
+
+	def __ask_content_types(self) -> tuple[ContentTypes, ...] | None:
+		"""
+		Ask content types and parse it.
+
+		:return: Content types.
+		:rtype: tuple[ContentTypes, ...] | None
+		"""
+
+		choice: str | None = questionary.select("Content types:", choices = ("manga", "ranobe", "all")).ask(kbi_msg = self.__kbi_msg)
+
+		if choice is None:
+			return
+		elif choice == "all":
+			return (ContentTypes.Manga, ContentTypes.Ranobe)
+
+		return (ContentTypes(choice),)
+
+	def __ask_domain(self) -> str | None:
+		"""
+		Ask source domain while not valid.
+
+		:return: Source domain.
+		:rtype: str | None
+		"""
+
+		while True:
+			domain: str | None = questionary.text("Source domain:").ask(kbi_msg = self.__kbi_msg)
+
+			if not domain:
+				return
+			elif types.Domain.validate(domain):
+				return domain
+			else:
+				self.printer.error("Incorrect domain format.")
 
 	#==========================================================================================#
 	# >>>>> OVERRIDABLE METHODS <<<<< #
@@ -34,9 +72,6 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:rtype: CommandModel
 		"""
 
-		self._add_parser_position()
-		self._add_settings_export_strategy_position()
-
 		return model
 
 	@override
@@ -48,10 +83,21 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:rtype: str
 		"""
 
-		return "Install parser."
+		return "Initialize new parser."
 
 	@override
-	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> Parameters:
+	def _export_options(self) -> ProcessorOptions:
+		"""
+		Возвращает настройки обработчика.
+
+		:return: Настройки обработчика.
+		:rtype: ProcessorOptions
+		"""
+
+		return ProcessorOptions(use_timer = False)
+		
+	@override
+	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> BaseParameters:
 		"""
 		Парсит данные обработанной команды в структуру **dataclass**.
 
@@ -60,22 +106,19 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:param prepared_data: Подготовленные шаблонные параметры команды.
 		:type prepared_data: PreparedData
 		:return: Структура **dataclass**.
-		:rtype: Parameters
+		:rtype: BaseParameters
 		"""
 
-		parameter = entity.get_position_parameter("STRATEGY", not_found_error = False)
-		strategy: str = "-s"
-
-		if hasattr(parameter, "name"):
-			strategy = getattr(parameter, "name")
-
-		return Parameters(
-			required_parser = prepared_data.required_parsers[0],
-			config_strategy = ExportStrategies(strategy)
-		)
+		return BaseParameters()
 
 	@override
-	def _process(self, parameters: Parameters) -> bool:
+	def _post_init(self):
+		"""Execute after instance initialization."""
+
+		self.__kbi_msg: str = FastStyler("Cancelled.").colorize.red
+
+	@override
+	def _process(self, parameters: BaseParameters) -> bool:
 		"""
 		Выполняет команду.
 
@@ -85,13 +128,17 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:rtype: bool
 		"""
 
-		repository_url: str = self.system_objects.manager.repositories.get(parameters.required_parser.name, exception = True)
+		self.printer.emit("<i>Press [Ctrl + C] to cancel initialization.</i>")
+		name: str | None = questionary.text("Parser name:").ask(kbi_msg = self.__kbi_msg)
+		if name is None: return False
+		domain: str | None = self.__ask_domain()
+		if domain is None: return False
+		content_types: tuple[ContentTypes, ...] | None = self.__ask_content_types()
+		if content_types is None: return False
 
-		self.printer.emit(f"Repository: <i>{repository_url}</i>.")
-		parameters.required_parser.install()
-		self.printer.emit("Parser installed.")
+		data = ParserData(name, domain, content_types)
+		assistant = Assistant(self._system_objects)
 
-		result = parameters.required_parser.export_settings(parameters.config_strategy)
-		self.printer.templates.manager.exported(result)
+		assistant.initialize_parser(data)
 
 		return True
