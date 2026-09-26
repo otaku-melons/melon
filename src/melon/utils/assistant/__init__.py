@@ -7,7 +7,7 @@ from dublib.engine.patcher import Patch
 from dublib.functions.filesystem import json
 
 from ...core import exceptions
-from ...core.base.parsers.components.manifest import StoragedManifestStruct
+from ...core.base.parsers.components.manifest import StoredManifestStruct
 from ...core.base.parsers.components.manifest.enums import ContentTypes, Directives
 from .structs import ExtensionData, ParserData
 
@@ -34,7 +34,7 @@ class Assistant:
 		:type parser_data: ParserData
 		"""
 
-		manifest = StoragedManifestStruct(
+		manifest = StoredManifestStruct(
 			domain = parser_data.domain,
 			content_types = tuple(parser_data.content_types),
 			parent = None,
@@ -42,13 +42,13 @@ class Assistant:
 			melon_required_version = self.__system_objects.MELON_VERSION,
 		)
 
-		manifest_data: dict = TypeAdapter(StoragedManifestStruct).dump_python(manifest)
+		manifest_data: dict = TypeAdapter(StoredManifestStruct).dump_python(manifest)
 		manifest_data["content_types"] = tuple(element.value for element in manifest.content_types)
 
 		json.write(self.__template_path / "manifest.json", manifest_data)
 
 	def __clone_template(self):
-		"""Clone parser template from Gir repository (provided by environment variable `MELON_TEMPLATE_REPOS`)."""
+		"""Clone parser template from Git repository (provided by environment variable `MELON_TEMPLATE_REPOS`)."""
 
 		if self.is_template_installed:
 			shutil.rmtree(self.__template_path)

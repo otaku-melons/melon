@@ -15,8 +15,8 @@ class ManifestStruct:
 	melon_required_version: str | Literal[Directives.from_parent] | None = None
 
 @dataclass(frozen = True)
-class StoragedManifestStruct:
-	"""Storaged manifest struct."""
+class StoredManifestStruct:
+	"""Stored manifest struct."""
 
 	domain: str
 	content_types: tuple[ContentTypes, ...]

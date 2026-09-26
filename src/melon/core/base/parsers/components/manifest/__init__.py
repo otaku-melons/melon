@@ -8,7 +8,7 @@ from dublib.functions.filesystem import json
 
 from ......core import exceptions
 from .enums import ContentTypes, Directives
-from .structs import ManifestStruct, StoragedManifestStruct
+from .structs import ManifestStruct, StoredManifestStruct
 
 if TYPE_CHECKING:
 	from ......core.system_objects import SystemObjects
@@ -120,12 +120,12 @@ class ParserManifest:
 
 		return None
 				
-	def __load(self) -> StoragedManifestStruct:
+	def __load(self) -> StoredManifestStruct:
 		"""
 		Load manifest.
 
-		:return: Storaged manifest struct.
-		:rtype: StoragedManifestStruct
+		:return: Stored manifest struct.
+		:rtype: StoredManifestStruct
 		:raises BadManifest: Manifest parsing error.
 		"""
 
@@ -143,7 +143,7 @@ class ParserManifest:
 		buffer.melon_required_version = self.__parse_melon_required_version(buffer, parent_manifest)
 		buffer.version = self.__parse_version(buffer, parent_manifest)
 
-		return StoragedManifestStruct(
+		return StoredManifestStruct(
 			domain = buffer.domain,
 			content_types = to_sequence(buffer.content_types),
 			parent = buffer.parent,
@@ -168,7 +168,7 @@ class ParserManifest:
 		self.__system_objects: SystemObjects = system_objects
 		self.__parser_name: str = parser_name
 
-		self.__manifest: StoragedManifestStruct = self.__load()
+		self.__manifest: StoredManifestStruct = self.__load()
 		self.__mirror: str | None = None
 
 	def set_mirror(self, mirror: str | None):
