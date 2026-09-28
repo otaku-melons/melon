@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, override
 
 from .... import utils
@@ -10,13 +9,7 @@ if TYPE_CHECKING:
 
 	from ...base.structs import PreparedData
 
-@dataclass(frozen = True)
-class Parameters(T_MultipleParsersRequired):
-	"""Required by command processor parameters."""
-
-	pass
-
-class CommandProcessor(CommandProcessorTemplate[Parameters]):
+class CommandProcessor(CommandProcessorTemplate[T_MultipleParsersRequired]):
 	"""Обработчик команды."""
 
 	#==========================================================================================#
@@ -50,7 +43,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		return "Run ID-slug caching."
 
 	@override
-	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> Parameters:
+	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> T_MultipleParsersRequired:
 		"""
 		Парсит данные обработанной команды в структуру **dataclass**.
 
@@ -59,18 +52,18 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:param prepared_data: Подготовленные шаблонные параметры команды.
 		:type prepared_data: PreparedData
 		:return: Структура **dataclass**.
-		:rtype: Parameters
+		:rtype: T_MultipleParsersRequired
 		"""
 
-		return Parameters(prepared_data.required_parsers)
+		return T_MultipleParsersRequired(prepared_data.required_parsers)
 
 	@override
-	def _process(self, parameters: Parameters) -> bool:
+	def _process(self, parameters: T_MultipleParsersRequired) -> bool:
 		"""
 		Выполняет команду.
 
 		:param parameters: Required by command processor parameters.
-		:type parameters: Parameters
+		:type parameters: T_MultipleParsersRequired
 		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
 		:rtype: bool
 		"""

@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, override
 
 from ...base import BaseCommandProcessor
@@ -9,13 +8,7 @@ if TYPE_CHECKING:
 
 	from ...base.structs import PreparedData
 
-@dataclass(frozen = True)
-class Parameters(T_SingleParserRequired):
-	"""Required by command processor parameters."""
-
-	pass
-
-class CommandProcessor(BaseCommandProcessor[Parameters]):
+class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 	"""Обработчик команды."""
 
 	#==========================================================================================#
@@ -49,7 +42,7 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 		return "Remove parser repository."
 
 	@override
-	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> Parameters:
+	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> T_SingleParserRequired:
 		"""
 		Парсит данные обработанной команды в структуру **dataclass**.
 
@@ -58,20 +51,20 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 		:param prepared_data: Подготовленные шаблонные параметры команды.
 		:type prepared_data: PreparedData
 		:return: Структура **dataclass**.
-		:rtype: Parameters
+		:rtype: T_SingleParserRequired
 		"""
 
-		return Parameters(
+		return T_SingleParserRequired(
 			required_parser =  prepared_data.required_parsers[0],
 		)
 
 	@override
-	def _process(self, parameters: Parameters) -> bool:
+	def _process(self, parameters: T_SingleParserRequired) -> bool:
 		"""
 		Выполняет команду.
 
 		:param parameters: Required by command processor parameters.
-		:type parameters: Parameters
+		:type parameters: T_SingleParserRequired
 		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
 		:rtype: bool
 		"""
