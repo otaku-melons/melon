@@ -27,7 +27,7 @@ class CollectingTargets(Enum):
 
 @dataclass(frozen = True)
 class Parameters(T_ForceModeRequired, T_SingleParserRequired):
-	"""Параметры, требуемые обработчиком."""
+	"""Required by command processor parameters."""
 
 	file: str | None
 	collecting_target: CollectingTargets
@@ -53,7 +53,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		:param collector: Сборщик алиасов.
 		:type collector: utils.Collector
-		:param parameters: Параметры, требуемые обработчиком.
+		:param parameters: Required by command processor parameters.
 		:type parameters: Parameters
 		:return: Количество уникальных добавленных в коллекцию тайтлов.
 		:rtype: int
@@ -170,7 +170,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 		Выполняет команду.
 
-		:param parameters: Параметры, требуемые обработчиком.
+		:param parameters: Required by command processor parameters.
 		:type parameters: Parameters
 		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
 		:rtype: bool

@@ -293,7 +293,7 @@ class ParsingStatistics:
 
 @dataclass(frozen = True)
 class Parameters(T_ForceModeRequired, T_SingleParserRequired):
-	"""Параметры, требуемые обработчиком."""
+	"""Required by command processor parameters."""
 
 	target: _BaseParserTarget
 	parse_from: str | None
@@ -354,7 +354,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 		Парсит набор алиасов тайтлов.
 
-		:param parameters: Параметры, требуемые обработчиком.
+		:param parameters: Required by command processor parameters.
 		:type parameters: Parameters
 		:param source_operator: Оператор источника.
 		:type source_operator: BaseSourceOperator
@@ -416,7 +416,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 		Выполняет парсинг тайта, отлавливая общие исключения.
 
-		:param parameters: Параметры, требуемые обработчиком.
+		:param parameters: Required by command processor parameters.
 		:type parameters: Parameters
 		:param parser: Парсер.
 		:type parser: BaseParser
@@ -439,16 +439,16 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			else:
 				self.printer.emit("Amending skipped by flag.")
 
-		except exceptions.parsing.AuthorizationRequired:
+		except exceptions.parsing.AuthorizationRequiredError:
 			return ParsingSignals.Break
 
 		except exceptions.parsing.ParsingError:
 			return ParsingSignals.Error
 
-		except exceptions.parsing.TitleNotFound:
+		except exceptions.parsing.TitleNotFoundError:
 			return ParsingSignals.NotFound
 
-		except (JSONDecodeError, exceptions.parsers.UnsupportedFormat):
+		except (JSONDecodeError, exceptions.parsers.UnsupportedFormatError):
 			self.printer.error("Unsupported JSON format or decoding error.")
 			return ParsingSignals.Error
 
@@ -557,7 +557,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 		Выполняет команду.
 
-		:param parameters: Параметры, требуемые обработчиком.
+		:param parameters: Required by command processor parameters.
 		:type parameters: Parameters
 		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
 		:rtype: bool

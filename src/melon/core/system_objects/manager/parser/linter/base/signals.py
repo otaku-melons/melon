@@ -1,6 +1,6 @@
 from ..enums import ChecksStatuses
 
-class CheckStopSignal(Exception):
+class CheckStopSignalError(Exception):
 	"""Checking stop signal."""
 
 	@property

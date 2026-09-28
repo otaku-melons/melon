@@ -41,11 +41,11 @@ class ExtensionsOperator:
 
 		:param extension_name: Extension name.
 		:type extension_name: str
-		:raises ExtensionNotFound: Extension not found.
+		:raises ExtensionNotFoundError: Extension not found.
 		"""
 
 		if extension_name not in self.__available_extensions:
-			raise exceptions.extensions.ExtensionNotFound(extension_name)
+			raise exceptions.extensions.ExtensionNotFoundError(extension_name)
 
 	def __init__(self, parser_operator: "ParserOperator", manager: "Manager"):
 
@@ -96,7 +96,7 @@ class ExtensionsOperator:
 		:type extension: type[BaseExtension | str]
 		:return: Return `True` if extension enabled.
 		:rtype: bool
-		:raises ExtensionNotFound: Extension not found.
+		:raises ExtensionNotFoundError: Extension not found.
 		"""
 
 		extension_name: str = ""
@@ -176,7 +176,7 @@ class ExtensionsOperator:
 
 		json.write(self.__activation_file, self.__states)
 
-	def set_state(self, extension_name: str, state: bool) -> bool:
+	def set_state(self, extension_name: str, state: bool, not_found_error: bool = True) -> bool:
 		"""
 		Set extension activation state.
 
@@ -184,13 +184,16 @@ class ExtensionsOperator:
 		:type extension_name: str
 		:param state: Activation state.
 		:type state: bool
+		:param not_found_error: Raise exception if extension not found.
+		:type not_found_error: bool
 		:return: Return `True` if state changed.
 		:rtype: bool
 		"""
 
-		self.__check_extension(extension_name)
+		if not_found_error:
+			self.__check_extension(extension_name)
 
-		if self.__states[extension_name] == state:
+		if self.__states.get(extension_name) == state:
 			return False
 
 		self.__states[extension_name] = state

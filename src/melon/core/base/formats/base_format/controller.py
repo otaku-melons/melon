@@ -146,7 +146,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 		:return: Словарь данных тайтла или `None` при отсутствии файла.
 		:rtype: dict | None
 		:raises JSONDecodeError: Ошибка десериализации JSON.
-		:raises UnsupportedFormat: Неподдерживаемый формат JSON.
+		:raises UnsupportedFormatError: Неподдерживаемый формат JSON.
 		"""
 
 		DataBuffer: dict | None = None
@@ -192,7 +192,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 					self._local_file_path = Path(Element.path)
 					return Data
 
-			except (JSONDecodeError, exceptions.parsers.UnsupportedFormat): pass
+			except (JSONDecodeError, exceptions.parsers.UnsupportedFormatError): pass
 
 		return None
 

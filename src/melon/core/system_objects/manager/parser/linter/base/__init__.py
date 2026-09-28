@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, NoReturn
 
 from ..enums import ChecksStatuses
-from .signals import CheckStopSignal
+from .signals import CheckStopSignalError
 from .structs import CheckResult
 
 if TYPE_CHECKING:
@@ -33,10 +33,10 @@ class BaseCheck(ABC):
 		:type status: ChecksStatuses
 		:param message: Check message.
 		:type message: str | None
-		:raises CheckStopSignal: Stop checking signal.
+		:raises CheckStopSignalError: Stop checking signal.
 		"""
 
-		raise CheckStopSignal(status, message)
+		raise CheckStopSignalError(status, message)
 
 	def _ok(self, message: str | None = None) -> NoReturn:
 		"""
@@ -91,7 +91,7 @@ class BaseCheck(ABC):
 
 		try:
 			self._check(operator)
-		except CheckStopSignal as exception:
+		except CheckStopSignalError as exception:
 			return CheckResult(self.name, exception.status, exception.message)
 
 		return CheckResult(self.name, ChecksStatuses.OK)

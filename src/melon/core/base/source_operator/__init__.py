@@ -406,7 +406,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 
 		:param content_type: Тип контента. По умолчанию берётся первый описанный.
 		:type content_type: ContentTypes | None
-		:raises UnsupportedContent: Неподдерживаемый тип контента.
+		:raises UnsupportedContentError: Неподдерживаемый тип контента.
 		:return: Парсер.
 		:rtype: BaseParser
 		"""
@@ -414,7 +414,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		if not content_type:
 			content_type = self._Manifest.content_types[0]
 		elif content_type not in self._Manifest.content_types:
-			raise exceptions.parsers.UnsupportedContent(content_type)
+			raise exceptions.parsers.UnsupportedContentError(content_type)
 
 		Module = importlib.import_module(f"parsers.{self._Manifest.parser_name}.{content_type.value}")
 		Parser: BaseParser = Module.Parser(self)

@@ -19,6 +19,8 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Chapters amending progress.
 - Message if chapter is empty after amending.
 - Melon environment option `MELON_TEMPLATE_URL` to parser template Git repository.
+- New exception `ExtensionAlreadyExistsError`.
+- New commands `pxm init parser` and `pxm init extension` with TUI development assistant.
 
 ### 🎨 Changed
 - Extensions options settings no more appears in parser config if extension doesn't provide options.

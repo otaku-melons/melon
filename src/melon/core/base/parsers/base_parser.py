@@ -142,11 +142,11 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 		"""
 		Проверяет, задан ли тайтл.
 
-		:raises exceptions.parsers.TitleNotSet: Не задан тайтл.
+		:raises exceptions.parsers.TitleNotSetError: Не задан тайтл.
 		"""
 
 		if not self._title:
-			raise exceptions.parsers.TitleNotSet()
+			raise exceptions.parsers.TitleNotSetError()
 
 	def _unstub_covers(self, title: "BaseTitleController[BaseTitleData]", results: list[ImageDownloadingResult]):
 		"""
@@ -333,7 +333,7 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 
 		:param chapter_id: Уникальный идентификатор целевой главы.
 		:type chapter_id: int
-		:raises ChapterNotFound: В локальном JSON не найдена глава с указанным ID.
+		:raises ChapterNotFoundError: В локальном JSON не найдена глава с указанным ID.
 		:return: Возвращает `True`, если глава содержит контент после восстановления.
 		:rtype: bool
 		"""

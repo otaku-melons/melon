@@ -328,7 +328,7 @@ class Header:
 		:param text: Текст заголовка.
 		:type text: str
 		:raise ValueError: Выбрасывается при передаче неверно отформатированного текста.
-		:raise UnresolvedTag: Выбрасывается при наличии неразрешённого тега в тексте.
+		:raise UnresolvedTagError: Выбрасывается при наличии неразрешённого тега в тексте.
 		"""
 
 		text = text.strip()
@@ -511,7 +511,7 @@ class Paragraph(Header):
 		:return: Возвращает `True`, если текст соответствует требованиям.
 		:rtype: bool
 		:raise ValueError: Выбрасывается при передаче неверно отформатированного текста.
-		:raise UnresolvedTag: Выбрасывается при наличии неразрешённого тега в тексте.
+		:raise UnresolvedTagError: Выбрасывается при наличии неразрешённого тега в тексте.
 		"""
 
 		if not text:
@@ -556,14 +556,14 @@ class Paragraph(Header):
 		:type raise_exceptions: bool
 		:return: Обработанный абзац.
 		:rtype: BeautifulSoup
-		:raise UnresolvedTag: Выбрасывается при наличии неразрешённого тега в тексте.
+		:raise UnresolvedTagError: Выбрасывается при наличии неразрешённого тега в тексте.
 		"""
 		
 		for CurrentTag in paragraph.find_all():
 
 			if CurrentTag.name not in self.__AllowedTags.keys():
 				self._Portals.printer.error(f"Unresolved tag \"{CurrentTag.name}\".")
-				if raise_exceptions: raise exceptions.parsing.UnresolvedTag(str(CurrentTag))
+				if raise_exceptions: raise exceptions.parsing.UnresolvedTagError(str(CurrentTag))
 
 			else:
 				Attributes = CurrentTag.attrs.copy()
@@ -620,7 +620,7 @@ class Paragraph(Header):
 		:param footnotes: Одна или несколько заметок.
 		:type footnotes: Footnote | Sequence[Footnote] | None
 		:raise ValueError: Выбрасывается при передаче неверно отформатированного текста.
-		:raise UnresolvedTag: Выбрасывается при наличии неразрешённого тега в тексте.
+		:raise UnresolvedTagError: Выбрасывается при наличии неразрешённого тега в тексте.
 		"""
 
 		text = text.strip()

@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 # >>>>> ИСКЛЮЧЕНИЯ ПРОЦЕССА ПАРСИНГА <<<<< #
 #==========================================================================================#
 	
-class AuthorizationRequired(Exception):
+class AuthorizationRequiredError(Exception):
 	"""Исключение: требуется авторизация."""
 
 	def __init__(self, message: str):
@@ -20,7 +20,7 @@ class AuthorizationRequired(Exception):
 
 		super().__init__(message) 
 
-class ChapterNotFound(Exception):
+class ChapterNotFoundError(Exception):
 	"""Исключение: глава не найдена."""
 
 	def __init__(self, chapter_id: int | None = None, slug: str | None = None):
@@ -55,7 +55,7 @@ class ParsingError(Exception):
 
 		super().__init__(description or "Error occurs during parsing.") 
 
-class TitleNotFound(Exception):
+class TitleNotFoundError(Exception):
 	"""Исключение: тайтл не найден."""
 
 	def __init__(self, title_data: "BaseTitleData"):
@@ -85,7 +85,7 @@ class FootnoteCompositionError(Exception):
 
 		super().__init__(description) 
 
-class UnresolvedTag(Exception):
+class UnresolvedTagError(Exception):
 	"""Исключение: неразрешённый тег."""
 
 	def __init__(self, tag: str):

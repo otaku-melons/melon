@@ -1,19 +1,19 @@
 from typing import TYPE_CHECKING, override
 
-from prettytable import PLAIN_COLUMNS, PrettyTable
+import questionary
 
 from dublib.cli.text_styler import FastStyler
 
-from ...base import BaseCommandProcessor
-from ...base.structs import ProcessorOptions
-from ...base.templates import BaseParameters
+from ....utils.assistant import Assistant
+from ....utils.assistant.structs import ExtensionData
+from ...base.structs import PreparedData, ProcessorOptions
+from ...base.templates import T_SingleParserRequired
+from ._base import CommandProcessorTemplate
 
 if TYPE_CHECKING:
 	from dublib.cli.terminalyzer import CommandEntity, CommandModel
 
-	from ...base.structs import PreparedData
-
-class CommandProcessor(BaseCommandProcessor[BaseParameters]):
+class CommandProcessor(CommandProcessorTemplate[T_SingleParserRequired]):
 	"""Обработчик команды."""
 
 	#==========================================================================================#
@@ -31,6 +31,8 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 		:rtype: CommandModel
 		"""
 
+		self._add_parser_position()
+
 		return model
 
 	@override
@@ -42,8 +44,9 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 		:rtype: str
 		"""
 
-		return "Show list of repositories."
+		return "Initialize new parser extension."
 
+	@override
 	def _export_options(self) -> ProcessorOptions:
 		"""
 		Возвращает настройки обработчика.
@@ -53,9 +56,9 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 		"""
 
 		return ProcessorOptions(use_timer = False)
-
+		
 	@override
-	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> BaseParameters:
+	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> T_SingleParserRequired:
 		"""
 		Парсит данные обработанной команды в структуру **dataclass**.
 
@@ -64,45 +67,46 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 		:param prepared_data: Подготовленные шаблонные параметры команды.
 		:type prepared_data: PreparedData
 		:return: Структура **dataclass**.
-		:rtype: BaseParameters
+		:rtype: T_SingleParserRequired
 		"""
 
-		return BaseParameters()
+		return T_SingleParserRequired(
+			required_parser = prepared_data.required_parsers[0],
+		)
 
 	@override
-	def _process(self, parameters: BaseParameters) -> bool:
+	def _post_init(self):
+		"""Execute after instance initialization."""
+
+		self.__kbi_msg: str = FastStyler("Cancelled.").colorize.red
+
+	@override
+	def _process(self, parameters: T_SingleParserRequired) -> bool:
 		"""
 		Выполняет команду.
 
 		:param parameters: Required by command processor parameters.
-		:type parameters: BaseParameters
+		:type parameters: T_SingleParserRequired
 		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
 		:rtype: bool
 		"""
 
-		InstalledParsers: list[str] = self.system_objects.manager.parsers.installed
+		self.printer.emit("<i>Press [Ctrl + C] to cancel initialization.</i>")
+		name: str | None = questionary.text("Extension name:").ask(kbi_msg = self.__kbi_msg)
+		if name is None: return False
+		class_name: str | None = questionary.text("Class name (if empty will be used default):").ask(kbi_msg = self.__kbi_msg)
+		
+		if class_name is None:
+			return False
+		elif class_name == "":
+			class_name = None
+			self.printer.emit("Used default class name <i>Extension.</i>")
 
-		TableData: dict[str, list[str]] = {
-			"PARSER": [],
-			"REPOSITORY": [],
-		}
-	
-		for ParserName in self.system_objects.manager.repositories.available_parsers:
-			RepositoryURL: str = self.system_objects.manager.repositories.get(ParserName, exception = True)
-			Status = "✅" if ParserName in InstalledParsers else "❌"
-			TableData["PARSER"].append(f"{Status} {ParserName}")
-			TableData["REPOSITORY"].append(FastStyler(RepositoryURL).decorate.italic)
+		is_enable: bool | None = questionary.confirm("Enable extension?").ask(kbi_msg = self.__kbi_msg)
+		if is_enable is None: return False
 
-		TableObject = PrettyTable()
-		TableObject.set_style(PLAIN_COLUMNS)
-
-		for ColumnName in TableData.keys():
-			Buffer = FastStyler(ColumnName).decorate.bold
-			TableObject.add_column(Buffer, TableData[ColumnName])
-
-		TableObject.align = "l"
-		TableObject.sortby = FastStyler("PARSER").decorate.bold
-		TableString = str(TableObject).strip()
-		self.printer.emit(TableString)
+		data = ExtensionData(parameters.required_parser.name, name, class_name, is_enable)
+		assistant = Assistant(self._system_objects)
+		assistant.initialize_extension(data)
 
 		return True

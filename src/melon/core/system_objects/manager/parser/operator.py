@@ -75,7 +75,7 @@ class ParserOperator:
 		"""
 		Проверяет, установлен ли парсер. Служит для использования в декораторе `run_before_method()`.
 
-		:raises ParserNotFound: Парсер не установлен.
+		:raises ParserNotFoundError: Парсер не установлен.
 		"""
 
 		self.__Parsers.is_installed(self.__Name)
@@ -145,12 +145,12 @@ class ParserOperator:
 		"""
 		Устанавливает парсер.
 
-		:raises ParserAlreadyExists: Парсер уже установлен.
+		:raises ParserAlreadyExistsError: Парсер уже установлен.
 		:raises RepositoryError: Репозиторий не найден.
 		"""
 
 		if self.is_installed:
-			raise exceptions.parsers.ParserAlreadyExists(self.__Name)
+			raise exceptions.parsers.ParserAlreadyExistsError(self.__Name)
 
 		self.path.mkdir(exist_ok = True)
 

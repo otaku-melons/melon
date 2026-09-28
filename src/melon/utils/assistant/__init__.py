@@ -66,14 +66,31 @@ class Assistant:
 
 		:param parser_name: Parser name.
 		:type parser_name: str
-		:raises exceptions.parsers.ParserAlreadyExists: Parser installed or found in repositories.
+		:raises exceptions.parsers.ParserAlreadyExistsError: Parser installed or found in repositories.
 		"""
 
 		if any((
 			self.__system_objects.manager.parsers.is_installed(parser_name, exception = False),
 			parser_name in self.__system_objects.manager.repositories.available_parsers,
 		)):
-			raise exceptions.parsers.ParserAlreadyExists(parser_name)
+			raise exceptions.parsers.ParserAlreadyExistsError(parser_name)
+
+	def __rename_extension_class(self, file: "Path", class_name: str | None):
+		"""
+		Rename extension class `Extension` in file.
+
+		:param file: Path to file.
+		:type file: Path
+		:param class_name: Class name. If `None` skip operation.
+		:type class_name: str | None
+		"""
+
+		if not class_name:
+			return
+
+		patch = Patch(file)
+		patch.replace_by_regex(r"\nclass\s+Extension\(BaseExtension", f"\nclass {class_name}(BaseExtension")
+		patch.save()
 
 	def __replace_placeholders(self, file: "Path", data: ExtensionData | ParserData):
 		"""
@@ -122,6 +139,37 @@ class Assistant:
 
 		self.__template_path: Path = system_objects.options.TEMP_DIR.value / ".template"
 		self.__packager: Packager = system_objects.manager.packager
+
+	def initialize_extension(self, extension_data: ExtensionData):
+		"""
+		Initialize new parser  extensionfrom development template.
+
+		:param extension_data: Extension initialization data.
+		:type extension_data: ExtensionData
+		:raise ExtensionAlreadyExistsError: Extension already exists.
+		"""
+
+		parser_operator = self.__system_objects.manager.parsers.get_operator(extension_data.parser_name)
+
+		if extension_data.name in parser_operator.extensions.names:
+			raise exceptions.extensions.ExtensionAlreadyExistsError(extension_data.name)
+
+		self.__clone_template()
+		self.__replace_placeholders(self.__template_path / "extensions/extension/README.md", extension_data)
+
+		extensions_path = parser_operator.path / "extensions"
+		extensions_path.mkdir(exist_ok = True)
+
+		extension_template_path = self.__template_path / "extensions/extension"
+		extension_template_main_path = extension_template_path / "__init__.py"
+
+		self.__rename_extension_class(extension_template_main_path, extension_data.class_name)
+		shutil.move(extension_template_path, extensions_path / extension_data.name)
+
+		if parser_operator.extensions.set_state(extension_data.name, extension_data.is_enable, not_found_error = False):
+			parser_operator.extensions.save_states()
+
+		shutil.rmtree(self.__template_path)
 
 	def initialize_parser(self, parser_data: ParserData):
 		"""

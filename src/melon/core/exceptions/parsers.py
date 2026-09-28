@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from ..base.parsers.components.manifest import ContentTypes
 
-class BadManifest(Exception):
+class ManifestError(Exception):
 	"""Исключение: неверное определение манифеста."""
 
 	def __init__(self, message: str):
@@ -16,7 +16,7 @@ class BadManifest(Exception):
 
 		super().__init__(message)
 
-class ParserAlreadyExists(Exception):
+class ParserAlreadyExistsError(Exception):
 	"""Исключение: парсер уже существует."""
 
 	def __init__(self, parser_name: str):
@@ -29,7 +29,7 @@ class ParserAlreadyExists(Exception):
 
 		super().__init__(parser_name) 
 
-class ParserNotFound(Exception):
+class ParserNotFoundError(Exception):
 	"""Исключение: парсер не найден."""
 
 	def __init__(self, parser_name: str):
@@ -42,7 +42,7 @@ class ParserNotFound(Exception):
 
 		super().__init__(parser_name) 
 
-class TitleNotSet(Exception):
+class TitleNotSetError(Exception):
 	"""Исключение: не задан тайтл."""
 
 	def __init__(self):
@@ -63,7 +63,7 @@ class RepositoryError(Exception):
 
 		super().__init__(message) 
 
-class UnsupportedContent(Exception):
+class UnsupportedContentError(Exception):
 	"""Исключение: неподдерживаемый тип контента."""
 
 	def __init__(self, content_type: "ContentTypes"):
@@ -76,7 +76,7 @@ class UnsupportedContent(Exception):
 
 		super().__init__(content_type.value) 
 
-class UnsupportedFormat(Exception):
+class UnsupportedFormatError(Exception):
 	"""Исключение: неподдерживаемый формат JSON."""
 
 	def __init__(self, title_format: str | None = None):

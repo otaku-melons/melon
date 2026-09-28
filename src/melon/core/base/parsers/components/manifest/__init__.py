@@ -82,13 +82,13 @@ class ParserManifest:
 		:type parent_manifest: ParserManifest | None
 		:return: Melon required version.
 		:rtype: str | None
-		:raises BadManifest: Parent not specified.
+		:raises ManifestError: Parent not specified.
 		"""
 
 		if buffer.melon_required_version is Directives.from_parent:
 
 			if not parent_manifest:
-				raise exceptions.parsers.BadManifest("Parent must be specified if using \"$from_parent\".")
+				raise exceptions.parsers.ManifestError("Parent must be specified if using \"$from_parent\".")
 
 			return parent_manifest.melon_required_version
 
@@ -102,12 +102,12 @@ class ParserManifest:
 		:type parent_manifest: ParserManifest | None
 		:return: Parser version.
 		:rtype: str | None
-		:raises BadManifest: Parent not specified.
+		:raises ManifestError: Parent not specified.
 		"""
 
 		if buffer.version is Directives.from_parent:
 			if not parent_manifest:
-				raise exceptions.parsers.BadManifest("Parent must be specified if using \"$from_parent\".")
+				raise exceptions.parsers.ManifestError("Parent must be specified if using \"$from_parent\".")
 
 			return parent_manifest.version
 
@@ -126,7 +126,7 @@ class ParserManifest:
 
 		:return: Stored manifest struct.
 		:rtype: StoredManifestStruct
-		:raises BadManifest: Manifest parsing error.
+		:raises ManifestError: Manifest parsing error.
 		"""
 
 		data: dict = json.read(f"parsers/{self.__parser_name}/manifest.json")
@@ -136,7 +136,7 @@ class ParserManifest:
 		if buffer.parent:
 
 			if buffer.parent not in self.__system_objects.manager.parsers.installed:
-				raise exceptions.parsers.BadManifest(f"Parent \"{buffer.parent}\" not installed.")
+				raise exceptions.parsers.ManifestError(f"Parent \"{buffer.parent}\" not installed.")
 
 			parent_manifest = self.__system_objects.manager.parsers.get_operator(buffer.parent).load_manifest()
 

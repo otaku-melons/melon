@@ -67,7 +67,7 @@ class Portals:
 		self.__Printer.critical(text)
 
 		if exception:
-			raise exceptions.parsing.AuthorizationRequired(text)
+			raise exceptions.parsing.AuthorizationRequiredError(text)
 
 	@overload
 	def request_error(self, response: WebResponse, text: str | None = None, exception: Literal[True] = True) -> NoReturn: ...
@@ -106,7 +106,7 @@ class Portals:
 		:type format: str | Non
 		:param exception: Указывает, следует ли выбросить исключение.
 		:type exception: bool
-		:raises UnsupportedFormat: Выбрасывается при активации соответствующего аргумента.
+		:raises UnsupportedFormatError: Выбрасывается при активации соответствующего аргумента.
 		"""
 
 		Format = f": \"{title_format}\"" if title_format else ""
@@ -115,7 +115,7 @@ class Portals:
 		self.__Printer.error(Text)
 
 		if exception:
-			raise exceptions.parsers.UnsupportedFormat(Text)
+			raise exceptions.parsers.UnsupportedFormatError(Text)
 
 	#==========================================================================================#
 	# >>>>> ШАБЛОНЫ ПРЕДУПРЕЖДЕНИЙ <<<<< #
@@ -129,14 +129,14 @@ class Portals:
 		:type chapter: BaseChapter
 		:param exception: Указывает, выбрасывать ли исключение.
 		:type exception: bool
-		:raise ChapterNotFound: Выбрасывается в качестве исключения портала.
+		:raise ChapterNotFoundError: Выбрасывается в качестве исключения портала.
 		"""
 
 		Text = f"Chapter {chapter.id} not found."
 		self.__Printer.error(Text)
 
 		if exception:
-			raise exceptions.parsing.ChapterNotFound(chapter.id, chapter.slug)
+			raise exceptions.parsing.ChapterNotFoundError(chapter.id, chapter.slug)
 
 	def title_not_found(self, title_data: "BaseTitleData", exception: bool = True):
 		"""
@@ -146,7 +146,7 @@ class Portals:
 		:type title_data: BaseTitleData
 		:param exception: Указывает, следует ли выбросить исключение.
 		:type exception: bool
-		:raises TitleNotFound: Выбрасывается в качестве исключения портала.
+		:raises TitleNotFoundError: Выбрасывается в качестве исключения портала.
 		"""
 
 		NoteID = f" (ID: {title_data.id})" if title_data.id else ""
@@ -155,7 +155,7 @@ class Portals:
 		self.__Printer.warning(Text)
 
 		if exception:
-			raise exceptions.parsing.TitleNotFound(title_data)
+			raise exceptions.parsing.TitleNotFoundError(title_data)
 
 	#==========================================================================================#
 	# >>>>> ШАБЛОНЫ СООБЩЕНИЙ <<<<< #

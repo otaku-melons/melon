@@ -77,12 +77,12 @@ class Parsers:
 		:type exception: bool
 		:return: Возвращает `True`, если парсер установлен.
 		:rtype: bool
-		:raises ParserNotFound: Парсер не найден.
+		:raises ParserNotFoundError: Парсер не найден.
 		"""
 
 		IsInstalled: bool = parser_name in self.installed
 
 		if not IsInstalled and exception:
-			raise exceptions.parsers.ParserNotFound(parser_name)
+			raise exceptions.parsers.ParserNotFoundError(parser_name)
 
 		return IsInstalled

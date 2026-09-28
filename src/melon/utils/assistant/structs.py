@@ -12,6 +12,8 @@ class ExtensionData:
 
 	parser_name: str
 	name: str
+	class_name: str | None
+	is_enable: bool
 
 @dataclass(frozen = True)
 class ParserData:

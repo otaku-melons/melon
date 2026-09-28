@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 @dataclass(frozen = True)
 class Parameters(BaseParameters):
-	"""Параметры, требуемые обработчиком."""
+	"""Required by command processor parameters."""
 
 	image: Path
 	templates: Path
@@ -33,7 +33,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 		Получает шаблоны.
 
-		:param parameters: Параметры, требуемые обработчиком.
+		:param parameters: Required by command processor parameters.
 		:type parameters: Parameters
 		:param cutter: Инструмент для вырезания рекламы из слайдов манги.
 		:type cutter: Cutter
@@ -115,7 +115,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 		Выполняет команду.
 
-		:param parameters: Параметры, требуемые обработчиком.
+		:param parameters: Required by command processor parameters.
 		:type parameters: Parameters
 		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
 		:rtype: bool

@@ -38,7 +38,7 @@ class BaseRanobeParser[SO: "BaseSourceOperator", CSM: "BaseModel"](BaseParser[SO
 
 		:param chapter_id: Уникальный идентификатор целевой главы.
 		:type chapter_id: int
-		:raises ChapterNotFound: В локальном JSON не найдена глава с указанным ID.
+		:raises ChapterNotFoundError: В локальном JSON не найдена глава с указанным ID.
 		:return: Возвращает `True`, если глава содержит контент после восстановления.
 		:rtype: bool
 		"""
@@ -48,7 +48,7 @@ class BaseRanobeParser[SO: "BaseSourceOperator", CSM: "BaseModel"](BaseParser[SO
 		SearchResult = Title.data.find_chapter(chapter_id)
 
 		if not SearchResult:
-			raise exceptions.parsing.ChapterNotFound(chapter_id)
+			raise exceptions.parsing.ChapterNotFoundError(chapter_id)
 
 		AmendedChapter = cast("Chapter", SearchResult.chapter)
 		AmendedChapter.clear()

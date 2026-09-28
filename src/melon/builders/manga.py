@@ -266,13 +266,13 @@ class MangaBuilder(BaseBuilder):
 
 		:param chapter_id: ID главы.
 		:type chapter_id: int
-		:raises ChapterNotFound: Глава не найдена.
+		:raises ChapterNotFoundError: Глава не найдена.
 		"""
 
 		ChapterSearchResult = self._Title.data.find_chapter(chapter_id)
 
 		if not ChapterSearchResult:
-			raise exceptions.parsing.ChapterNotFound(chapter_id)
+			raise exceptions.parsing.ChapterNotFoundError(chapter_id)
 
 		self.__BuildChapter(cast("Chapter", ChapterSearchResult.chapter))
 

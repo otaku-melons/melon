@@ -61,8 +61,8 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 
 		:param parsers_names: Последовательность имён парсеров.
 		:type parsers_names: tuple[str, ...]
-		:raises ParserNotFound: Парсер не найден.
-		:raises MultipleParsersDeniedForCommand: Команде запрещено использование нескольких парсеров.
+		:raises ParserNotFoundError: Парсер не найден.
+		:raises MultipleParsersDeniedForCommandError: Команде запрещено использование нескольких парсеров.
 		"""
 
 		if not parsers_names:
@@ -72,7 +72,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 
 		for parser in parsers_names:
 			if parser not in all_parsers:
-				raise exceptions.parsers.ParserNotFound(parser)
+				raise exceptions.parsers.ParserNotFoundError(parser)
 
 	def _get_parsers_query(self, entity: "CommandEntity") -> str | None:
 		"""
@@ -126,7 +126,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 		:type data: CommandEntity
 		:return: Последовательность управляющих структур затребованных парсеров.
 		:rtype: tuple[ParserOperator, ...]
-		:raises exceptions.cli.MultipleParsersDeniedForCommand: Запрашивание нескольких парсеров запрещено.
+		:raises exceptions.cli.MultipleParsersDeniedForCommandError: Запрашивание нескольких парсеров запрещено.
 		"""
 
 		parsers_query: str | None = self._get_parsers_query(data)
@@ -143,7 +143,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 			parsers_names = tuple(self.system_objects.manager.parsers.installed)
 
 		if not self._internal_storage.is_multiple_parsers_allowed and len(parsers_names) > 1:
-			raise exceptions.cli.MultipleParsersDeniedForCommand(data.model.name)
+			raise exceptions.cli.MultipleParsersDeniedForCommandError(data.model.name)
 
 		self._check_required_parsers(parsers_names)
 
@@ -174,7 +174,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 		"""
 		Оборачивает метод `_process()` для отлова исключений.
 		
-		:param parameters: Параметры, требуемые обработчиком.
+		:param parameters: Required by command processor parameters.
 		:type parameters: BaseParameters
 		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
 		:rtype: bool
@@ -183,13 +183,13 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 		try:
 			return self._process(parameters)
 
-		except exceptions.extensions.ExtensionNotFound as exception:
+		except exceptions.extensions.ExtensionNotFoundError as exception:
 			self.printer.error(f"Extension <b>{exception}</b> not found.")
 
-		except exceptions.parsers.ParserAlreadyExists as exception:
+		except exceptions.parsers.ParserAlreadyExistsError as exception:
 			self.printer.error(f"Parser <b>{exception}</b> already exists.")
 			
-		except exceptions.parsers.ParserNotFound as exception:
+		except exceptions.parsers.ParserNotFoundError as exception:
 			self.printer.error(f"Parser <b>{exception}</b> not found.")
 
 		except exceptions.parsers.RepositoryError as exception:
@@ -323,7 +323,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 		"""
 		Выполняет команду.
 
-		:param parameters: Параметры, требуемые обработчиком.
+		:param parameters: Required by command processor parameters.
 		:type parameters: BaseParameters
 		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
 		:rtype: bool
