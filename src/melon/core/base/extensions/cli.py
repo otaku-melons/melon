@@ -109,7 +109,7 @@ class BaseExtensionCLI[E: "BaseExtension[BaseSourceOperator]"]:
 		:type parameters: str
 		"""
 
-		entity = self._terminalyzer.parse_parameters(parameters)
+		entity = self._terminalyzer.parse_command(parameters)
 		
 		if entity is None:
 			self._command_not_found()

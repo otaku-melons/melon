@@ -13,7 +13,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Now extensions can create CLI handlers.
 - Command `melon run` for running extensions CLI.
 - Method `set_extra_data()` for title data.
-- Universal method `run_extension()` for source operrator (can run extensions by name as `BaseExtension`).
+- Universal method `run_extension()` for source operator (can run extensions by name as `BaseExtension`).
 - Parser linter.
 - Extensions activation states manager.
 - Chapters amending progress.
@@ -31,6 +31,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Melon environment option `MELON_REPOS_URL` renamed to `MELON_REPOS`.
 - Manifests now validated with [pydantic](https://github.com/pydantic/PYDANTIC).
 - Property `parser_version` replaced to manifest `version`.
+- All exceptions renamed with **N818** [Ruff](https://github.com/astral-sh/ruff) rule.
 
 ### 🗑️ Deprecated
 - Source operator extension property replaced by extension operator. 
@@ -40,5 +41,3 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 
 ### 🐛 Fixed
 - Many spelling issues with [typos](https://pypi.org/project/typos).
-
-### 🔒️ Security

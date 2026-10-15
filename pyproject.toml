@@ -8,12 +8,12 @@ version = "1.0.0-rc.6"
 description = "Modular parsers management system."
 readme = "README.md"
 authors = [
-    { name = "DUB1401", email = "vlad.milosta@outlook.com" }
+	{ name = "DUB1401", email = "vlad.milosta@outlook.com" }
 ]
 requires-python = ">=3.13"
 dependencies = [
 	"beautifulsoup4",
-	"dublib>=0.31.1",
+	"dublib>=0.32.0",
 	"dulwich>=1.2.6",
 	"EbookLib",
 	"imagehash",

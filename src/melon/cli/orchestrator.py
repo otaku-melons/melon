@@ -182,7 +182,7 @@ class CommandsOrchestrator:
 		self.__load_processors(module_name)
 		self.__terminalyzer.set_models_groups(tuple(self.__groups.values()))
 
-		entity = self.__terminalyzer.parse_parameters()
+		entity = self.__terminalyzer.parse_command()
 
 		if entity is None:
 			self.printer.critical("Command not found.")

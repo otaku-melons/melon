@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING, Literal, NoReturn, overload
 
 import orjson
 
+from dublib.cli.messages.generator import MessagesTypes, generate_message
 from dublib.cli.progress_indicator import ProgressIndicator
-from dublib.cli.templates.bus import GenerateMessage, MessagesTypes
 from dublib.cli.text_styler import get_styled_text_from_html
 
 from .portals import Portals
@@ -78,7 +78,7 @@ class Printer:
 		"""
 
 		if parse_html: text = get_styled_text_from_html(text)
-		MessageText = GenerateMessage(text, message_type, origin)
+		MessageText = generate_message(text, message_type, origin)
 		print(MessageText, end = "\n" if end_line else "", flush = flush)
 
 	def get_parser_portals(self, parser_name: str) -> Portals:
