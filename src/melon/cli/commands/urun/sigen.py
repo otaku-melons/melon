@@ -41,7 +41,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:rtype: bool
 		"""
 
-		Config: Path = self.system_objects.options.CONFIGS_DIR.value / f"{required_parser.name}.json"
+		Config: Path = self.system_objects.options.CONFIGS_DIR / f"{required_parser.name}.json"
 
 		if not Config.exists():
 			self.printer.emit("Configuration file not found.")

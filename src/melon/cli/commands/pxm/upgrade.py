@@ -65,7 +65,7 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 		:rtype: bool
 		"""
 
-		self.printer.emit(f"Repository: <i>{self.system_objects.options.REPOS.value}</i>")
+		self.printer.emit(f"Repository: <i>{self.system_objects.options.REPOS}</i>")
 		self.system_objects.manager.upgrade()
 
 		return True

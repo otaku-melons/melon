@@ -91,7 +91,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:rtype: bool
 		"""
 
-		script_work_dir: Path = self.system_objects.options.CONFIGS_DIR.value / "classificator"
+		script_work_dir: Path = self.system_objects.options.CONFIGS_DIR / "classificator"
 		script_work_dir.mkdir(exist_ok = True)
 		
 		try:

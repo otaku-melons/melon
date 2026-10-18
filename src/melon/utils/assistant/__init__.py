@@ -57,7 +57,7 @@ class Assistant:
 
 		self.__packager.clone(
 			directory = self.__template_path,
-			remote = self.__system_objects.options.TEMPLATE_REPOS.value,
+			remote = self.__system_objects.options.TEMPLATE_REPOS.encoded_string(),
 		)
 
 	def __is_parser_exists(self, parser_name: str):
@@ -137,7 +137,7 @@ class Assistant:
 
 		self.__system_objects: SystemObjects = system_objects
 
-		self.__template_path: Path = system_objects.options.TEMP_DIR.value / ".template"
+		self.__template_path: Path = system_objects.options.TEMP_DIR / ".template"
 		self.__packager: Packager = system_objects.manager.packager
 
 	def initialize_extension(self, extension_data: ExtensionData):

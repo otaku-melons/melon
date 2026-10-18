@@ -506,7 +506,7 @@ class ParserSettings[T: BaseModel]:
 		Settings: dict = self.get_base_settings(self.__system_objects, self.__parser_name)
 		ConfigsPaths: tuple[Path, Path] = (
 			self.__system_objects.manager.parsers.root / f"{self.__parser_name}/settings.json",
-			self.__system_objects.options.CONFIGS_DIR.value / f"{self.__parser_name}.json",
+			self.__system_objects.options.CONFIGS_DIR / f"{self.__parser_name}.json",
 		)
 
 		for ConfigPath in ConfigsPaths:

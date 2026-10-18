@@ -113,7 +113,7 @@ class ParserOperator:
 
 		BaseConfig: dict = ParserSettings.get_base_settings(self.__Parsers.manager.system_objects, self.__Name)
 		PresetFile = self.path / "settings.json"
-		StorageFile = self.__Parsers.manager.system_objects.options.CONFIGS_DIR.value / f"{self.__Name}.json"
+		StorageFile = self.__Parsers.manager.system_objects.options.CONFIGS_DIR / f"{self.__Name}.json"
 
 		if PresetFile.exists():
 			Buffer: dict = json.read(PresetFile)
@@ -229,8 +229,8 @@ class ParserOperator:
 
 		if clear:
 			ElementToRemove += [
-				self.__Parsers.manager.system_objects.options.CONFIGS_DIR.value / f"{self.__Name}.json",
-				self.__Parsers.manager.system_objects.options.TEMP_DIR.value / self.__Name,
+				self.__Parsers.manager.system_objects.options.CONFIGS_DIR / f"{self.__Name}.json",
+				self.__Parsers.manager.system_objects.options.TEMP_DIR / self.__Name,
 			]
 
 		for Element in ElementToRemove:

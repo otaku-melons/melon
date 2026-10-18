@@ -30,7 +30,7 @@ class Temper:
 
 		self.__SystemObjects: SystemObjects = system_objects
 
-		self.__TempDirectory = self.__SystemObjects.options.TEMP_DIR.value
+		self.__TempDirectory = self.__SystemObjects.options.TEMP_DIR
 		self.__TempDirectory.mkdir(exist_ok = True)
 
 	def clear_parser_temp(self, parser_name: str, whitelist: Sequence[str] | None = ("collections", "shared")):

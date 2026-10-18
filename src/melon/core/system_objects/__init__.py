@@ -1,6 +1,5 @@
 import atexit
-
-from dulwich import porcelain
+from importlib.metadata import version
 
 from ...core.system_objects.manager import Manager
 from ...core.system_objects.options import Options
@@ -11,53 +10,55 @@ class SystemObjects:
 	"""Коллекция системных объектов."""
 
 	#==========================================================================================#
-	# >>>>> СВОЙСТВА <<<<< #
+	# >>>>> PROPERTIES <<<<< #
 	#==========================================================================================#
 
 	@property
 	def MELON_VERSION(self) -> str:
-		"""Используемая версия Melon."""
+		"""Melon version."""
 
-		return porcelain.tag_list(".")[-1].decode().lstrip("v")
+		return self.__version
 
 	#==========================================================================================#
-	# >>>>> СИСТЕМНЫЕ ОБЪЕКТЫ <<<<< #
+	# >>>>> SYSTEM OBJECTS <<<<< #
 	#==========================================================================================#
 
 	@property
 	def options(self) -> Options:
-		"""Менеджер переменных среды парсера."""
+		"""Melon environment options."""
 
-		return self.__Options
+		return self.__options
 
 	@property
 	def manager(self) -> Manager:
 		"""Системный менеджер."""
 
-		return self.__Manager
+		return self.__manager
 
 	@property
 	def printer(self) -> Printer:
 		"""Оператор вывода."""
 
-		return self.__Printer
+		return self.__printer
 	
 	@property
 	def temper(self) -> Temper:
 		"""Дескриптор каталога временных файлов."""
 
-		return self.__Temper
+		return self.__temper
 
 	#==========================================================================================#
 	# >>>>> PUBLIC METHODS <<<<< #
 	#==========================================================================================#
 
 	def __init__(self):
-		"""Коллекция системных объектов."""
+		"""System objects collection."""
 
-		self.__Options = Options()
-		self.__Manager = Manager(self)
-		self.__Printer = Printer(self)
-		self.__Temper = Temper(self)
+		self.__options = Options()
+		self.__manager = Manager(self)
+		self.__printer = Printer(self)
+		self.__temper = Temper(self)
 
-		atexit.register(self.__Printer.progress_indicator.end)
+		self.__version: str = version("melon")
+
+		atexit.register(self.__printer.progress_indicator.end)

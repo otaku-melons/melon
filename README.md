@@ -29,7 +29,7 @@ uv venv .venv --prompt melon
 ```
 3. Activate virtual environment and run Melon.
 ```Bash
-source .venv/bin/activated
+source .venv/bin/activate
 melon help && pxm help && urun help
 ```
 4. Add Git-repository of parser.
