@@ -32,6 +32,8 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Manifests now validated with [pydantic](https://github.com/pydantic/PYDANTIC).
 - Property `parser_version` replaced to manifest `version`.
 - All exceptions renamed with **N818** [Ruff](https://github.com/astral-sh/ruff) rule.
+- Melon environment options now parsed with [pydantic-settings](https://github.com/pydantic/pydantic-settings).
+- Melon version now determined by Python package version.
 
 ### 🗑️ Deprecated
 - Source operator extension property replaced by extension operator. 

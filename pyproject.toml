@@ -1,5 +1,5 @@
 [build-system]
-requires = ["uv-build>=0.12.18,<0.13.0"]
+requires = ["uv-build>=0.13.1,<0.14.0"]
 build-backend = "uv_build"
 
 [project]
@@ -21,7 +21,9 @@ dependencies = [
 	"opencv-python-headless",
 	"pick",
 	"pillow",
+	"pydantic-settings",
 	"python-dotenv",
+	"questionary",
 	"uv"
 ]
 
