@@ -32,7 +32,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
 		Генерирует модель команды.
-		
+
 		:param model: Шаблон модели команды.
 		:type model: Command
 		:return: Модель команды.
@@ -58,7 +58,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	def _export_description(self) -> str:
 		"""
 		Возвращает описание команды.
-		
+
 		:return: Описание команды.
 		:rtype: str
 		"""
@@ -114,7 +114,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			is_full_filename = bool(parameters.full_name),
 			force_mode = parameters.force_mode,
 		)
-	
+
 		Future.result(result, show_path = True)
 
 		return True

@@ -18,7 +18,7 @@ from .structs import SavingResult
 
 if TYPE_CHECKING:
 	from pydantic import BaseModel
-	
+
 	from ...parsers.base_parser import BaseParser
 	from ...source_operator import BaseSourceOperator
 	from .data import BaseTitleData
@@ -87,7 +87,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 	#==========================================================================================#
 	# >>>>> PROTECTED METHODS ЧТЕНИЯ ЛОКАЛЬНЫХ ФАЙЛОВ <<<<< #
 	#==========================================================================================#
-	
+
 	def _load_data_by_filename(self, filename: str) -> dict | None:
 
 		Filename: str = filename if filename.endswith(".json") else f"{filename}.json"
@@ -103,7 +103,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 
 		Journal = self._parser.source_operator.shared_data.journal
 		TitlesDirectory = self._parser.settings.directories.titles
-	
+
 		if not self._parser.settings.common.use_id_as_filename:
 			Slug = Journal.get_slug_by_id(title_id)
 
@@ -132,7 +132,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 		else:
 			FilePath = TitlesDirectory / f"{slug}.json"
 			if FilePath.exists(): return json.read(FilePath)
-		
+
 		return self._search_file_in_directory(TitlesDirectory, slug, By.Slug)
 
 	def _load_data(self, identifier: int | str, selector_type: By = By.Slug) -> dict | None:
@@ -156,7 +156,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 			case By.Filename:
 				if type(identifier) is not str: raise ValueError("Filename must be str.")
 				DataBuffer = self._load_data_by_filename(identifier)
-				
+
 			case By.Slug:
 				if type(identifier) is not str: raise ValueError("Slug must be str.")
 				DataBuffer = self._load_data_by_slug(identifier)
@@ -186,7 +186,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 		for Element in os.scandir(directory):
 			if not Element.is_file() or not Element.name.endswith(".json"): continue
 
-			try: 
+			try:
 				Data = json.read(Element.path)
 				if Data.get(identifier_type.value) == identifier:
 					self._local_file_path = Path(Element.path)
@@ -301,10 +301,10 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 		try:
 			local_hash = hashlib.sha256(orjson.dumps(json.read(self.path)))
 			memore_hash = hashlib.sha256(orjson.dumps(data))
-			
+
 		except orjson.JSONDecodeError:
 			return False
-		
+
 		return local_hash.hexdigest() == memore_hash.hexdigest()
 
 	def _update_journal(self):
@@ -316,7 +316,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 	#==========================================================================================#
 	# >>>>> OVERRIDABLE METHODS <<<<< #
 	#==========================================================================================#
-	
+
 	@abstractmethod
 	def _export_data_type(self) -> type[TD]:
 		"""
@@ -399,7 +399,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 
 		if not DataBuffer:
 			return 0
-		
+
 		#---> Слияние размеров обложек.
 		#==========================================================================================#
 		CoversData: list[dict] = DataBuffer["covers"]
@@ -423,10 +423,10 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 				for CurrentImage in cast("list[dict]", PersonData["images"]):
 					Link = CurrentImage["link"]
 					TargetImage = PersonObject.find_image(Link)
-					
+
 					if TargetImage:
 						TargetImage.create_resolution(CurrentImage.get("width"), CurrentImage.get("height"))
-			
+
 		#---> Слияние контента глав.
 		#==========================================================================================#
 		ContentData: dict[str, dict] = DataBuffer["content"]
@@ -435,7 +435,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 		for BranchKey in ContentData.keys():
 			for ChapterData in ContentData[BranchKey]:
 				ChapterID = int(ChapterData["id"])
-				
+
 				SearchResult = self._data.find_chapter(ChapterID)
 
 				if SearchResult and SearchResult.chapter.is_empty:

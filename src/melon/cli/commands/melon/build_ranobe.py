@@ -32,7 +32,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
 		Генерирует модель команды.
-		
+
 		:param model: Шаблон модели команды.
 		:type model: Command
 		:return: Модель команды.
@@ -52,7 +52,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	def _export_description(self) -> str:
 		"""
 		Возвращает описание команды.
-		
+
 		:return: Описание команды.
 		:rtype: str
 		"""
@@ -70,8 +70,8 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:type prepared_data: PreparedData
 		:return: Структура **dataclass**.
 		:rtype: Parameters
-		""" 
-	
+		"""
+
 		return Parameters(
 			filename = entity.get_position_value("FILE", expected_type = str, important = True),
 			required_parser = prepared_data.required_parsers[0],
@@ -98,15 +98,15 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			raise exceptions.builders.BuildingError("Undefined title slug.")
 
 		Parser = source_operator.launch_parser(typing_result.content_type)
-		
+
 		Title = Parser.init_empty_title(typing_result.slug)
-	
+
 		if Title.load(parameters.filename, By.Filename):
 			self.printer.emit(f"Loaded file: <i>{parameters.filename}</i>.")
 		else:
 			self.printer.error(f"Unable load file: <b>{parameters.filename}</b>.")
 			return False
-	
+
 		Builder = RanobeBuilder(Parser, Title)
 		Builder.build(parameters.branch_id)
 

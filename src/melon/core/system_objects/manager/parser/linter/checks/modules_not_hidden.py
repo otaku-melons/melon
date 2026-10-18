@@ -9,12 +9,12 @@ if TYPE_CHECKING:
 	from ...operator import ParserOperator
 
 class Check(BaseCheck):
-	"""Linter check."""	
+	"""Linter check."""
 
 	@override
 	def _check(self, operator: "ParserOperator"):
 		"""
-		Process linter check. 
+		Process linter check.
 
 		Use `_emit()` or `_ok()` to interrupt checking. If no stop signal raised check considered successfully completed.
 

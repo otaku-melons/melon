@@ -17,6 +17,6 @@ def GetDictionaryPreset(language_code: str) -> WordsDictionary | None:
 	try:
 		Module = importlib.import_module(f".{language_code}", package = __package__)
 		return getattr(Module, f"WordsDictionary_{language_code}")
-	
+
 	except (ModuleNotFoundError, AttributeError):
 		return None

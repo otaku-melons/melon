@@ -9,7 +9,7 @@ class ExtensionNotFoundError(Exception):
 		:type extension_name: str
 		"""
 
-		super().__init__(extension_name) 
+		super().__init__(extension_name)
 
 class ExtensionAlreadyExistsError(Exception):
 	"""Exception: extension already exists."""
@@ -22,4 +22,4 @@ class ExtensionAlreadyExistsError(Exception):
 		:type extension_name: str
 		"""
 
-		super().__init__(extension_name) 
+		super().__init__(extension_name)

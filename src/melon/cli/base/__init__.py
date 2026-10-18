@@ -79,7 +79,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 		Возвращает строку, представляющую последовательность имён затребованных парсеров, разделённых запятой.
 
 		По умолчанию берёт данные из позиций `PARSER` или `PARSERS`.
-		
+
 		:param entity: Сущность команды.
 		:type entity: CommandEntity
 		:return: Строка с именами парсеров или `None`, если не требуются.
@@ -99,7 +99,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 	def _launch_source_operator(self, parser_operator: "ParserOperator") -> "BaseSourceOperator":
 		"""
 		Запускает оператор контента.
-		
+
 		Автоматически применяет зеркало, полученное из ключа `--mirror`, а также кэширует результат для быстрого повторного вызова.
 
 		:param parser_operator: Оператор парсера.
@@ -173,7 +173,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 	def _process_safely(self, parameters: PARAMS) -> bool:
 		"""
 		Оборачивает метод `_process()` для отлова исключений.
-		
+
 		:param parameters: Required by command processor parameters.
 		:type parameters: BaseParameters
 		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
@@ -188,7 +188,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 
 		except exceptions.parsers.ParserAlreadyExistsError as exception:
 			self.printer.error(f"Parser <b>{exception}</b> already exists.")
-			
+
 		except exceptions.parsers.ParserNotFoundError as exception:
 			self.printer.error(f"Parser <b>{exception}</b> not found.")
 
@@ -268,7 +268,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
 		Генерирует модель команды.
-		
+
 		:param model: Шаблон модели команды.
 		:type model: Command
 		:return: Модель команды.
@@ -281,7 +281,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 	def _export_description(self) -> str:
 		"""
 		Возвращает описание команды.
-		
+
 		:return: Описание команды.
 		:rtype: str
 		"""
@@ -376,5 +376,5 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 
 		if not self._process_safely(parameters):
 			sys.exit(1)
-		
+
 		self._end_timer()

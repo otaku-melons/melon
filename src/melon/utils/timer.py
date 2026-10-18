@@ -10,7 +10,7 @@ class Timer:
 		:param start: Указывает, нужно ли запустить таймер при инициализации.
 		:type start: bool
 		"""
-		
+
 		self.__StartTime: float | None = None
 
 		if start: self.start()
@@ -30,7 +30,7 @@ class Timer:
 		self.__StartTime = None
 
 		return Delay
-	
+
 	def ends(self) -> str:
 		"""
 		Завершает отсчёт интервала и возвращает форматированную строку времени.
@@ -44,9 +44,9 @@ class Timer:
 		Minutes, Seconds = divmod(Delay, 60)
 		Minutes = int(Minutes)
 		Seconds = int(Seconds)
-		
+
 		StrMinutes = ""
-		if Minutes: StrMinutes = f"{Minutes} minutes " 
+		if Minutes: StrMinutes = f"{Minutes} minutes "
 		else: Seconds = Delay if Delay else round(OriginalDelay, 4)
 		StrTime = f"{StrMinutes}{Seconds} seconds"
 

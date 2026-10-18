@@ -36,8 +36,8 @@ pxm = "melon:main"
 urun = "melon:main"
 
 [tool.ruff.lint]
-select = ["A", "ARG", "C", "COM", "E", "F", "I", "N818", "TC", "UP"]
-ignore = ["C901", "E701", "E501"]
+select = ["A", "ARG", "C", "COM", "E", "F", "I", "N818", "TC", "UP", "W"]
+ignore = ["C901", "E701", "E501", "W191"]
 
 [tool.ruff.lint.isort]
 lines-after-imports = 1

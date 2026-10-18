@@ -3,13 +3,13 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
 	from pydantic import BaseModel
-	
+
 	from .formats.base_format.chapter import BaseChapter
 	from .formats.base_format.controller import BaseTitleController
 	from .formats.base_format.data import BaseTitleData
 	from .parsers.base_parser import BaseParser
 	from .source_operator import BaseSourceOperator
-	
+
 #==========================================================================================#
 # >>>>> БАЗОВЫЙ СБОРЩИК <<<<< #
 #==========================================================================================#
@@ -75,10 +75,10 @@ class BaseBuilder:
 		:param title: Тайтл.
 		:type title: BaseTitleController
 		"""
-		
+
 		self._Parser = parser
 		self._Title = title
-		
+
 		self._SystemObjects = self._Parser.source_operator.system_objects
 		self._ParserSettings = self._Parser.settings
 		self._Temper = self._SystemObjects.temper

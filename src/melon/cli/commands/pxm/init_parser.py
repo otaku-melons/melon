@@ -65,7 +65,7 @@ class CommandProcessor(CommandProcessorTemplate[BaseParameters]):
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
 		Генерирует модель команды.
-		
+
 		:param model: Шаблон модели команды.
 		:type model: Command
 		:return: Модель команды.
@@ -78,7 +78,7 @@ class CommandProcessor(CommandProcessorTemplate[BaseParameters]):
 	def _export_description(self) -> str:
 		"""
 		Возвращает описание команды.
-		
+
 		:return: Описание команды.
 		:rtype: str
 		"""
@@ -95,7 +95,7 @@ class CommandProcessor(CommandProcessorTemplate[BaseParameters]):
 		"""
 
 		return ProcessorOptions(use_timer = False)
-		
+
 	@override
 	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> BaseParameters:
 		"""

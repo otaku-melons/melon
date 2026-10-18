@@ -40,7 +40,7 @@ class Footnote:
 		"""Уникальный идентификатор заметки."""
 
 		return self.__UUID
-	
+
 	#==========================================================================================#
 	# >>>>> PUBLIC METHODS <<<<< #
 	#==========================================================================================#
@@ -56,7 +56,7 @@ class Footnote:
 		self.__Parser = parser
 
 		self.__Portals = self.__Parser.portals
-		
+
 		self.__UUID = str(uuid.uuid4())
 		self.__Elements: list[Paragraph | Image] = []
 		self.__Placeholder = "*"
@@ -78,7 +78,7 @@ class Footnote:
 				raise RecursionError("Paragraph can't contain footnotes.")
 			self.__Elements.append(element)
 			return
-		
+
 		if type(element) is Image:
 			self.__Elements.append(element)
 			self.__ImagesCount += 1
@@ -152,7 +152,7 @@ class Footnote:
 
 		if not self.__Elements:
 			raise ValueError("Footnote must contain elements.")
-		
+
 		ElementsHTML: tuple[str | None, ...] = tuple(Element.to_html() for Element in self.__Elements)
 
 		return "".join(Element for Element in ElementsHTML if Element)
@@ -169,7 +169,7 @@ class Header:
 		"""Набор заметок."""
 
 		return tuple(self._Footnotes)
-	
+
 	#==========================================================================================#
 	# >>>>> ЗАЩИЩЁННЫЕ МЕТОДЫ <<<<< #
 	#==========================================================================================#
@@ -200,7 +200,7 @@ class Header:
 			FootnoteIndex += 1
 
 		return Text
-	
+
 	def _PrettyText(self, text: str) -> str:
 		"""
 		Улучшает качество текста благодаря исправлению форматирования.
@@ -437,7 +437,7 @@ class Image:
 
 		Source = TagValue.get("src")
 
-		if not Source: 
+		if not Source:
 			self.__Portals.printer.warning("Image hasn't source. Skipped.")
 			return
 		else:
@@ -446,7 +446,7 @@ class Image:
 		if Source.startswith("data:"):
 			self.decode_from_base64(Source)
 		else:
-			self.set_link(Source)	
+			self.set_link(Source)
 
 	def rename(self, filename: str):
 		"""
@@ -476,7 +476,7 @@ class Image:
 
 		if not validators.url(link):
 			raise ValueError("Invalid URL.")
-		
+
 		self.rename(Path(link).name)
 
 	def to_html(self) -> str | None:
@@ -523,7 +523,7 @@ class Paragraph(Header):
 
 		if Tag.find("img"):
 			raise ValueError("Images must be contained in separated element.")
-		
+
 		self.__ValidateHTML(Tag)
 
 		return True
@@ -558,7 +558,7 @@ class Paragraph(Header):
 		:rtype: BeautifulSoup
 		:raise UnresolvedTagError: Выбрасывается при наличии неразрешённого тега в тексте.
 		"""
-		
+
 		for CurrentTag in paragraph.find_all():
 
 			if CurrentTag.name not in self.__AllowedTags.keys():
@@ -631,7 +631,7 @@ class Paragraph(Header):
 			text = self._PrettyText(text)
 
 		self._Text = text
-	
+
 class Blockquote:
 	"""Блок текста."""
 

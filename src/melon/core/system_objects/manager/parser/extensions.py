@@ -135,7 +135,7 @@ class ExtensionsOperator:
 			return
 
 		file_states: dict = json.read(self.__activation_file)
-		
+
 		for name in self.names:
 			is_enabled = file_states.get(name, False)
 			self.__states[name] = is_enabled

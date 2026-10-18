@@ -20,7 +20,7 @@ class ClassificatorsTypes(Enum):
 class _DirectiveValidationData:
 	"""
 	Данные валидации директивы.
-	
+
 	* **values** – последовательность принимаемых значений или `None` для любого значения;
 	* **allow_list** – разрешено ли указание нескольких значений;
 	* **allow_empty** – разрешено ли не указывать значения.
@@ -32,7 +32,7 @@ class _DirectiveValidationData:
 
 class Directives(Enum):
 	"""Перечисление директив."""
-	
+
 	DELETE = _DirectiveValidationData(values = None, allow_list = False, allow_empty = True)
 	DROP = _DirectiveValidationData(values = ("case", "delete", "type"), allow_list = True, allow_empty = True)
 	CASE = _DirectiveValidationData(values = ("low", "title", "up"), allow_list = False, allow_empty = True)

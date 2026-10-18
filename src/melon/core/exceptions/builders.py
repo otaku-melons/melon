@@ -9,4 +9,4 @@ class BuildingError(Exception):
 		:type message: str
 		"""
 
-		super().__init__(message) 
+		super().__init__(message)

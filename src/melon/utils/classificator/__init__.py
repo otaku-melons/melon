@@ -46,7 +46,7 @@ class Classificator:
 		if Name not in tuple(Element.name for Element in Directives):
 			ERRORS.append(ScriptValidationError(line, f"Unknown directive: \"@{Name}\"."))
 			return ERRORS
-		
+
 		Directive: Directives | None = None
 
 		for Element in Directives:
@@ -61,17 +61,17 @@ class Classificator:
 
 		if not Values and not ValidationData.allow_empty:
 			ERRORS.append(ScriptValidationError(line, f"Directive \"@{Directive.name}\" must have values."))
-		
+
 		if len(Values) > 1 and not ValidationData.allow_list:
 			ERRORS.append(ScriptValidationError(line, f"Directive \"@{Directive.name}\" must have only one value."))
-		
+
 		if ValidationData.values:
 			for Value in Values:
 				if Value not in ValidationData.values:
 					ERRORS.append(ScriptValidationError(line, f"Unknown value \"{Value}\" for directive \"@{Directive.name}\"."))
-				
+
 		return ERRORS
-		
+
 	def __validate_operation(self, line: ExecutableLine) -> list[ScriptValidationError]:
 		"""
 		Производит валидацию операции.
@@ -83,24 +83,24 @@ class Classificator:
 		"""
 
 		ERRORS: list[ScriptValidationError] = []
-		
+
 		OperationString: str = line.value.lstrip("*").lstrip()
 		OperationParts: tuple[str, ...] = tuple(shlex.split(OperationString))
 
 		if len(OperationParts) == 2:
-			
+
 			if OperationParts[1] not in ("-", ">"):
 				Operator: str = OperationParts[1]
 				ERRORS.append(ScriptValidationError(line, f"Unknown operator: \"{Operator}\"."))
-			
+
 			if OperationParts[1] == ">":
 				ERRORS.append(ScriptValidationError(line, "Renaming operator requires value."))
-		
+
 		elif len(OperationParts) == 3:
 
 			if OperationParts[1] != ">":
 				ERRORS.append(ScriptValidationError(line, "Only renaming operator supports two values."))
-			
+
 		return ERRORS
 
 	#==========================================================================================#
@@ -310,7 +310,7 @@ class Classificator:
 			operations_cache = {CurrentProcedure.name.lower(): CurrentProcedure for CurrentProcedure in procedures}
 		else:
 			operations_cache = {CurrentProcedure.name: CurrentProcedure for CurrentProcedure in procedures}
-		
+
 		target_operation: Operation | None = operations_cache.get(target.lower() if ignore_case else target)
 		if not target_operation: return ClassificationResult()
 
@@ -347,7 +347,7 @@ class Classificator:
 		}
 
 		for line in script_lines:
-			
+
 			if line.is_operation:
 				operation_line: str = line.value[1:]
 				parts: list[str] = shlex.split(operation_line)
@@ -398,5 +398,5 @@ class Classificator:
 			if line.is_directive(): errors += self.__validate_directive(line)
 			elif line.is_operation: errors += self.__validate_operation(line)
 			else: errors.append(ScriptValidationError(line, "Unknown string assignment."))
-			
+
 		return tuple(errors)

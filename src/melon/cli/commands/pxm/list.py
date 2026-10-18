@@ -21,7 +21,7 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
 		Генерирует модель команды.
-		
+
 		:param model: Шаблон модели команды.
 		:type model: Command
 		:return: Модель команды.
@@ -34,7 +34,7 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 	def _export_description(self) -> str:
 		"""
 		Возвращает описание команды.
-		
+
 		:return: Описание команды.
 		:rtype: str
 		"""
@@ -85,7 +85,7 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 			"DOMAIN": [],
 			"collect": [],
 		}
-	
+
 		for ParserName in self.system_objects.manager.parsers.installed:
 			parser_operator = self.system_objects.manager.parsers.get_operator(ParserName)
 			SourceOperator = parser_operator.launch()
@@ -93,17 +93,17 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 				ContentTypes.Manga: "m",
 				ContentTypes.Ranobe: "r",
 			}
-	
+
 			ParserVersion = SourceOperator.manifest.version or ""
 			ParserContentTypes: list[str] = [TypesEmoji[CurrentType] for CurrentType in SourceOperator.manifest.content_types]
 			ParserSite: str = "https://" + SourceOperator.manifest.domain
-	
+
 			TableData["NAME"].append(ParserName)
 			TableData["VERSION"].append(ParserVersion)
 			TableData["TYPES"].append(", ".join(ParserContentTypes))
 			TableData["DOMAIN"].append(ParserSite)
 			TableData["collect"].append(str(SourceOperator.is_collector_implemented))
-	
+
 		self.printer.templates.manager.parsers_table(TableData)
 
 		return True

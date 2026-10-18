@@ -24,7 +24,7 @@ class CommandProcessor(CommandProcessorTemplate[T_SingleParserRequired]):
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
 		Генерирует модель команды.
-		
+
 		:param model: Шаблон модели команды.
 		:type model: Command
 		:return: Модель команды.
@@ -39,7 +39,7 @@ class CommandProcessor(CommandProcessorTemplate[T_SingleParserRequired]):
 	def _export_description(self) -> str:
 		"""
 		Возвращает описание команды.
-		
+
 		:return: Описание команды.
 		:rtype: str
 		"""
@@ -56,7 +56,7 @@ class CommandProcessor(CommandProcessorTemplate[T_SingleParserRequired]):
 		"""
 
 		return ProcessorOptions(use_timer = False)
-		
+
 	@override
 	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> T_SingleParserRequired:
 		"""
@@ -95,7 +95,7 @@ class CommandProcessor(CommandProcessorTemplate[T_SingleParserRequired]):
 		name: str | None = questionary.text("Extension name:").ask(kbi_msg = self.__kbi_msg)
 		if name is None: return False
 		class_name: str | None = questionary.text("Class name (if empty will be used default):").ask(kbi_msg = self.__kbi_msg)
-		
+
 		if class_name is None:
 			return False
 		elif class_name == "":

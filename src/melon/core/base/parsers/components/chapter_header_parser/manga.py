@@ -27,13 +27,13 @@ class MangaChapterHeaderParser:
 		"""Номер тома."""
 
 		return self._Volume
-	
+
 	@property
 	def number(self) -> str | None:
 		"""Номер главы."""
 
 		return self._Number
-	
+
 	@property
 	def name(self) -> str | None:
 		"""Название главы."""
@@ -100,7 +100,7 @@ class MangaChapterHeaderParser:
 
 		if not self._Header or not self._WordsDictionary.part:
 			return
-		
+
 		Buffer = ""
 		Offset = 0
 
@@ -169,12 +169,12 @@ class MangaChapterHeaderParser:
 		self._Number = None
 
 		self._PostInitMethod()
-	
+
 	def __repr__(self) -> str:
 		"""Реинтерпретирует экземпляр в строковое представление."""
-		
+
 		return f"ChapterData(volume={self.volume}, number={self.number}, name={self._Header})"
-	
+
 	def parse(self) -> "MangaChapterHeaderParser":
 		"""
 		Парсит заголовок главы.

@@ -68,7 +68,7 @@ class TextFilters:
 		"""Список регулярных выражений фильтрации."""
 
 		return self.__Data.get("regexs", [])
-	
+
 	@property
 	def strings(self) -> list[str]:
 		"""Список удаляемых строк."""
@@ -116,7 +116,7 @@ class ImagesFilters:
 		"""Минимальная высота изображения."""
 
 		return self.__data["min_height"]
-	
+
 	@property
 	def min_size(self) -> int:
 		"""Минимальный размер изображения в байтах."""
@@ -128,19 +128,19 @@ class ImagesFilters:
 		"""Минимальная ширина изображения."""
 
 		return self.__data["min_width"]
-	
+
 	@property
 	def max_height(self) -> int | None:
 		"""Максимальная высота изображения."""
 
 		return self.__data["max_height"]
-	
+
 	@property
 	def max_width(self) -> int | None:
 		"""Максимальная ширина изображения."""
 
 		return self.__data["max_width"]
-	
+
 	@property
 	def signatures(self) -> tuple[str, ...]:
 		"""Последовательность сигнатур изображений."""
@@ -194,19 +194,19 @@ class Directories:
 		"""Путь к директории контента."""
 
 		return self.__GetDirectory("content")
-	
+
 	@property
 	def images(self) -> Path:
 		"""Путь к директории изображений."""
 
 		return self.__GetDirectory("images")
-	
+
 	@property
 	def titles(self) -> Path:
 		"""Путь к директории файлов тайтлов."""
 
 		return self.__GetDirectory("titles")
-	
+
 	#==========================================================================================#
 	# >>>>> МЕТОДЫ <<<<< #
 	#==========================================================================================#
@@ -222,7 +222,7 @@ class Directories:
 		"""
 
 		Directory: str | None = zerotify(self.__DirectoriesDict.get(dir_type))
-		
+
 		DirectoryPath: Path = Path(Directory) if Directory else Path(f"{self.__SystemObjects.options.DEFAULT_OUTPUT_DIR}/{self.__ParserName}/{dir_type}")
 		if Directory in (None, "output"): DirectoryPath.mkdir(parents = True, exist_ok = True)
 
@@ -252,7 +252,7 @@ class Common:
 		"""Состояние: включено ли улучшение качества контента."""
 
 		return self.__CommonSettings["pretty"]
-	
+
 	@property
 	def sizing_images(self) -> bool:
 		"""Указывает, нужно ли пытаться определить размер изображений."""
@@ -287,7 +287,7 @@ class Network:
 		"""Интервал ожидания между последовательными запросами."""
 
 		return self.__NetworkSettings["delay"]
-	
+
 	@property
 	def images_mirrors(self) -> dict[str, str]:
 		"""Словарь заменяемых доменов, используемый при скачивании изображений."""
@@ -322,7 +322,7 @@ class Network:
 
 		for String in self.__NetworkSettings["proxies"]:
 			Proxies.append(Proxy().parse(String))
-			
+
 		return tuple(Proxies)
 
 	#==========================================================================================#
@@ -349,7 +349,7 @@ class Filters:
 		"""Фильтры текста."""
 
 		return self.__TextFilters
-	
+
 	@property
 	def images(self) -> ImagesFilters:
 		"""Фильтры изображений."""
@@ -406,7 +406,7 @@ class Custom:
 		:raises KeyError: Настройка не найдена.
 		"""
 
-		if exception: 
+		if exception:
 			return self.__CustomSettings[key]
 
 		return self.__CustomSettings.get(key)
@@ -466,7 +466,7 @@ class ParserSettings[T: BaseModel]:
 			raise ValueError("Custom settings required, but unparsed.")
 
 		return self.__custom
-	
+
 	@property
 	def directories(self) -> Directories:
 		"""Пути к директориям."""
@@ -529,7 +529,7 @@ class ParserSettings[T: BaseModel]:
 		:param parser_name: Имя парсера.
 		:type parser_name: str
 		"""
-		
+
 		self.__system_objects: SystemObjects = system_objects
 		self.__parser_name: str = parser_name
 		self.__settings: dict = self.__read()

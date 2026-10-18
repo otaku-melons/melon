@@ -51,7 +51,7 @@ class RanobeBuilder(BaseBuilder):
 		ChapterImages = []
 
 		Soup = BeautifulSoup("".join(chapter.paragraphs), "html.parser")
-		
+
 		for Image in Soup.find_all("img"):
 			ImageSource = str(Image["src"])
 			PathObject = Path(ImageSource)
@@ -72,7 +72,7 @@ class RanobeBuilder(BaseBuilder):
 			content = f"<h2>{ChapterNumeration}{chapter.name}</h2>" + str(Soup),
 			lang = self._Title.data.content_language,
 		)
-		
+
 		return ChapterItems(ChapterContent, tuple(ChapterImages))
 
 	#==========================================================================================#
@@ -90,7 +90,7 @@ class RanobeBuilder(BaseBuilder):
 		Branches = self._Title.data.branches
 		if not Branches:
 			raise exceptions.builders.BuildingError("Title hasn't branches.")
-		
+
 		BranchToBuild = Branches[0]
 
 		if branch_id:
@@ -98,7 +98,7 @@ class RanobeBuilder(BaseBuilder):
 
 			if SearchResult:
 				raise exceptions.builders.BuildingError(f"Branch {branch_id} not found.")
-			
+
 			BranchToBuild = cast("Branch", SearchResult)
 
 		Book = epub.EpubBook()

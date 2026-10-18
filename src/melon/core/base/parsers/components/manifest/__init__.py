@@ -43,13 +43,13 @@ class ParserManifest:
 		"""Source domain (can be replaced by mirror)."""
 
 		return self.__mirror or self.original_domain
-	
+
 	@property
 	def content_types(self) -> tuple[ContentTypes, ...]:
 		"""Supported content types."""
 
 		return tuple(self.__manifest.content_types)
-	
+
 	@property
 	def parent(self) -> str | None:
 		"""Parent parser name."""
@@ -119,7 +119,7 @@ class ParserManifest:
 			except errors.NotGitRepository: pass
 
 		return None
-				
+
 	def __load(self) -> StoredManifestStruct:
 		"""
 		Load manifest.
@@ -164,7 +164,7 @@ class ParserManifest:
 		:param parser_name: Parser name.
 		:type parser_name: str
 		"""
-		
+
 		self.__system_objects: SystemObjects = system_objects
 		self.__parser_name: str = parser_name
 
@@ -174,7 +174,7 @@ class ParserManifest:
 	def set_mirror(self, mirror: str | None):
 		"""
 		Set mirror domain and replace original domain in manifest with it.
-		
+
 		Doesn't change manifest file!
 
 		:param mirror: Mirror domain.

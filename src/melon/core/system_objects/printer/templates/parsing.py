@@ -23,7 +23,7 @@ class ParsingTemplates(_BaseTemplatesSection):
 
 		Text = f"Amended chapters count: {amended_chapter_count}."
 		self.printer.emit(Text)
-	
+
 	def chapter_amended(self, chapter: "BaseChapter", progress: tuple[int, int], message: str | None = None):
 		"""
 		Message template: chapter amending result (warning if chapter is empty).
@@ -42,7 +42,7 @@ class ParsingTemplates(_BaseTemplatesSection):
 		message = message.strip() if message else ""
 
 		text = f"{progress_string} {chapter_note} {chapter.id} {result}.{message}"
-		
+
 		if chapter.is_empty: self.printer.warning(text)
 		else: self.printer.emit(text)
 

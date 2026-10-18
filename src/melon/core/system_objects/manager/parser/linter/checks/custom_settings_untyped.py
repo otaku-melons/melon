@@ -17,7 +17,7 @@ class Check(BaseCheck):
 	@override
 	def _check(self, operator: "ParserOperator"):
 		"""
-		Process linter check. 
+		Process linter check.
 
 		Use `_emit()` or `_ok()` to interrupt checking. If no stop signal raised check considered successfully completed.
 
@@ -36,6 +36,6 @@ class Check(BaseCheck):
 		if settings.get("custom"):
 			if "custom.py" not in files:
 				self._emit(ChecksStatuses.Error, "Custom settings must provide typing model.")
-		
+
 		else:
 			self._emit(ChecksStatuses.Skipped, "Custom settings not provided.")

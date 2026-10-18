@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 class CollectingResult:
 	"""
 	Результат сборки тайтлов из каталога.
-	
+
 	- **slugs** – последовательность собранных алиасов;
 	- **added** – количество уникальных добавленных в коллекцию алиасов;
 	- **descriptors** – последовательность дескрипторов тайтлов, из которых собраны алиасы.
@@ -45,10 +45,10 @@ class Collector:
 	@property
 	def is_operation_cached(self) -> bool:
 		"""
-		Состояние: используется ли кэш для операции. 
+		Состояние: используется ли кэш для операции.
 
 		Кэширование выполняется только для метода сборки `collect_not_found()`.
-		
+
 		При отключении кэша через переменную среды `MELON_USE_CACHE` всегда возвращает `False`.
 		"""
 
@@ -188,7 +188,7 @@ class Collector:
 			return
 
 		try:
-			Title = json.read(cast("Path", descriptor.path)) 
+			Title = json.read(cast("Path", descriptor.path))
 			descriptor.extra["is_broken"] = False
 			Slug = Title.get("slug")
 			if Slug: descriptor.set_slug(Slug)
@@ -234,7 +234,7 @@ class Collector:
 		SlugsSet = to_sequence(slugs, target_type = set)
 		CollectionSet = set(self.__collection)
 		UniqueSlugsSet = SlugsSet - CollectionSet
-		
+
 		self.__collection = sorted(CollectionSet | SlugsSet)
 		self.save()
 
@@ -257,7 +257,7 @@ class Collector:
 		if self.__collection_file.exists():
 			CollectionSlugs: list[str] = sorted(text.read(self.__collection_file, split = True, strip_level = 2))
 			return self.add(CollectionSlugs)
-		
+
 		return 0
 
 	def replace(self, slug: str, new_slug: str) -> bool:
@@ -290,7 +290,7 @@ class Collector:
 		"""
 
 		text.write(self.__collection_file, self.__collection)
-	
+
 	#==========================================================================================#
 	# >>>>> PUBLIC METHODS СБОРКИ ПО КРИТЕРИЯМ <<<<< #
 	#==========================================================================================#
@@ -365,7 +365,7 @@ class Collector:
 
 		Slugs = tuple(Descriptor.slug for Descriptor in NotFoundDescriptors if Descriptor.slug)
 		self.__clear_cache()
-		
+
 		return CollectingResult(
 			slugs = Slugs,
 			added = Added if autosave else self.add(Slugs),

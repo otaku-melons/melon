@@ -32,7 +32,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
 		Генерирует модель команды.
-		
+
 		:param model: Шаблон модели команды.
 		:type model: Command
 		:return: Модель команды.
@@ -55,7 +55,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	def _export_description(self) -> str:
 		"""
 		Возвращает описание команды.
-		
+
 		:return: Описание команды.
 		:rtype: str
 		"""
@@ -73,7 +73,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:type prepared_data: PreparedData
 		:return: Структура **dataclass**.
 		:rtype: Parameters
-		""" 
+		"""
 
 		filename: str = entity.get_position_value("FILE", expected_type = str, important = True)
 
@@ -103,7 +103,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		if not parameters.is_target_chapter:
 			self.printer.error("For now only chapters supported as target to repairing.")
 			return False
-	
+
 		typing_result = source_operator.get_content_type_by_file(parameters.filename)
 
 		if not typing_result.slug:
@@ -111,15 +111,15 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		parser = source_operator.launch_parser(typing_result.content_type)
 		title = parser.init_empty_title(typing_result.slug)
-	
+
 		if title.load(parameters.filename, By.Filename):
 			self.printer.emit(f"Loaded file: <i>{parameters.filename}</i>.")
 		else:
 			self.printer.error(f"Unable load file: <b>{parameters.filename}</b>.")
 			return False
-	
+
 		self.printer.emit(f"Repairing chapter <b>{parameters.target_id}</b>… ")
-	
+
 		if not parser.repair(parameters.target_id):
 			self.printer.warning("Chapter is empty. Repairing failure?")
 

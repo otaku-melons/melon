@@ -135,7 +135,7 @@ class PassingTarget_ID(_BaseParserTarget):
 	def _GetSlugs(self) -> list[str]:
 		"""
 		Возвращает список алиасов для парсинга.
-		
+
 		:return: Список алиасов.
 		:rtype: list[str]
 		"""
@@ -165,7 +165,7 @@ class PassingTarget_Last(_BaseParserTarget):
 	def _GetSlugs(self) -> list[str]:
 		"""
 		Возвращает список алиасов для парсинга.
-		
+
 		:return: Список алиасов.
 		:rtype: list[str]
 		"""
@@ -194,7 +194,7 @@ class PassingTarget_Local(_BaseParserTarget):
 	def _GetSlugs(self) -> list[str]:
 		"""
 		Возвращает список алиасов для парсинга.
-		
+
 		:return: Список алиасов.
 		:rtype: list[str]
 		"""
@@ -222,7 +222,7 @@ class PassingTarget_Slug(_BaseParserTarget):
 	def _GetSlugs(self) -> list[str]:
 		"""
 		Возвращает список алиасов для парсинга.
-		
+
 		:return: Список алиасов.
 		:rtype: list[str]
 		"""
@@ -257,7 +257,7 @@ class PassingTarget_Updates(_BaseParserTarget):
 	def _GetSlugs(self) -> list[str]:
 		"""
 		Возвращает список алиасов для парсинга.
-		
+
 		:return: Список алиасов.
 		:rtype: list[str]
 		"""
@@ -370,22 +370,22 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		NotFoundCount: int = 0
 		ErrorsCount: int = 0
 		TotalCount: int = len(slugs)
-	
+
 		CurrentContentType: ContentTypes | None = None
 		Parser = source_operator.launch_parser()
-	
+
 		for Index in range(start_index, TotalCount):
 			Slug = slugs[Index]
 			source_operator.shared_data.set_last_parsed_slug(Slug)
-			
+
 			ContentType = source_operator.get_content_type_by_slug(Slug)
 			if ContentType is not CurrentContentType:
 				CurrentContentType = ContentType
 				Parser = source_operator.launch_parser(ContentType)
-	
+
 			Title = Parser.init_empty_title(Slug)
 			self.printer.templates.parsing.start(Title.data, Index, TotalCount)
-	
+
 			match self.__parse_safely(parameters, Parser, Title):
 
 				case ParsingSignals.Break:
@@ -401,13 +401,13 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 			if parameters.is_download_images: Parser.download_images(parameters.force_mode)
 			else: self.printer.emit("Images downloading skipped by flag.")
-	
+
 			if not Title.is_local_file_loaded and not parameters.is_cold_saving:
 				self.printer.emit("Cold saving disabled by flag. Skipped.")
 			else:
 				result = Parser.save(parameters.is_sorting_enabled)
 				self.printer.templates.parsing.saving_result(result)
-				
+
 			ParsedCount += 1
 
 		return ParsingStatistics(ParsedCount, NotFoundCount, ErrorsCount)
@@ -428,7 +428,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		try:
 			parser.parse()
-			
+
 			if not parameters.force_mode:
 				MergedChaptersCount = title.merge()
 				if MergedChaptersCount: self.printer.emit(f"Merged {MergedChaptersCount} chapters.")
@@ -487,7 +487,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
 		Генерирует модель команды.
-		
+
 		:param model: Шаблон модели команды.
 		:type model: Command
 		:return: Модель команды.
@@ -520,7 +520,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	def _export_description(self) -> str:
 		"""
 		Возвращает описание команды.
-		
+
 		:return: Описание команды.
 		:rtype: str
 		"""
@@ -538,13 +538,13 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:type prepared_data: PreparedData
 		:return: Структура **dataclass**.
 		:rtype: Parameters
-		""" 
+		"""
 
 		return Parameters(
 			required_parser = prepared_data.required_parsers[0],
 			target = self.__get_parsing_targets(entity, prepared_data),
 			parse_from = entity.get_key_value("--from", expected_type = str),
-			
+
 			force_mode = prepared_data.force_mode,
 			is_sorting_enabled = entity.check_flag("-sort"),
 			is_amending_enabled = not entity.check_flag("-no-amend"),
@@ -569,7 +569,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		if parameters.parse_from:
 			target_start_index: int = self.__skip_slugs_before(slugs, parameters.parse_from)
 			if target_start_index: start_index = target_start_index
-	
+
 		if not slugs:
 			self.printer.error("No slugs for parsing.")
 			return False

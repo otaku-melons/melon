@@ -25,7 +25,7 @@ class Chapter(BaseChapter):
 		"""Последовательность абзацев."""
 
 		return tuple(self._data["paragraphs"])
-	
+
 	@property
 	def type(self) -> ChaptersTypes | None:
 		"""Тип главы."""

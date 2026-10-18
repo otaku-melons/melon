@@ -53,7 +53,7 @@ class Printer:
 		:param system_objects: Коллекция системных объектов.
 		:type system_objects: SystemObjects
 		"""
-		
+
 		self.__SystemObjects = system_objects
 
 		self.__ProgressIndicator = ProgressIndicator()

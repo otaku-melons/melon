@@ -8,7 +8,7 @@ from .base.structs import CheckResult
 
 if TYPE_CHECKING:
 	from ..operator import ParserOperator
-	
+
 class Linter:
 	"""Parser linter."""
 
@@ -22,7 +22,7 @@ class Linter:
 		"""
 
 		checks_list: list[BaseCheck] = []
-		
+
 		for module_info in pkgutil.iter_modules(checks.__path__, checks.__name__ + "."):
 			module = importlib.import_module(module_info.name)
 			check_type: type = module.Check

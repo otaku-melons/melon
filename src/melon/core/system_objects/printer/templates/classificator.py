@@ -21,7 +21,7 @@ class ClassificatorTemplates(_BaseTemplatesSection):
 		if not result.is_operation_found:
 			self.printer.error("Operation not found.")
 			return
-		
+
 		if result.delete:
 			self.printer.emit("Classificator must be deleted.")
 			return

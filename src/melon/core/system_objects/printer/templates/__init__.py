@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 class Templates:
 	"""Расширенные шаблоны вывода."""
-	
+
 	@property
 	def cacher(self) -> CacherTemplates:
 		"""Расширенные шаблоны вывода: оператор кэширования пар ID-алиас."""
@@ -36,13 +36,13 @@ class Templates:
 		"""Расширенные шаблоны вывода: обработка изображений."""
 
 		return self.__Images
-	
+
 	@property
 	def manager(self) -> ManagerTemplates:
 		"""Расширенные шаблоны вывода: системный менеджер."""
 
 		return self.__Manager
-	
+
 	@property
 	def parsing(self) -> ParsingTemplates:
 		"""Расширенные шаблоны вывода: процесс парсинга."""

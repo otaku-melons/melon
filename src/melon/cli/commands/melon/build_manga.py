@@ -37,7 +37,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
 		Генерирует модель команды.
-		
+
 		:param model: Шаблон модели команды.
 		:type model: Command
 		:return: Модель команды.
@@ -69,7 +69,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	def _export_description(self) -> str:
 		"""
 		Возвращает описание команды.
-		
+
 		:return: Описание команды.
 		:rtype: str
 		"""
@@ -87,12 +87,12 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:type prepared_data: PreparedData
 		:return: Структура **dataclass**.
 		:rtype: Parameters
-		""" 
-	
+		"""
+
 		target_type: Literal["branch", "chapter"] | None = None
 		if entity.check_key("--chapter"): target_type = "chapter"
 		elif entity.check_key("--branch"): target_type = "branch"
-	
+
 		output_format: str | None = entity.get_position_value("FORMAT", expected_type = str)
 		if output_format: output_format = output_format.lstrip("-")
 
@@ -126,19 +126,19 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		Parser = source_operator.launch_parser(typing_result.content_type)
 		Title = Parser.init_empty_title(typing_result.slug)
-	
+
 		if Title.load(parameters.filename, By.Filename):
 			self.printer.emit(f"Loaded file: <i>{parameters.filename}</i>.")
 		else:
 			self.printer.error(f"Unable load file: <b>{parameters.filename}</b>.")
 			return False
-	
+
 		Builder = MangaBuilder(Parser, Title)
 		if parameters.output_format: Builder.select_output_format(MangaOutputFormats(parameters.output_format))
 		if parameters.chapter_template: Builder.set_chapter_name_template(parameters.chapter_template)
 		if parameters.chapter_template: Builder.set_volume_name_template(parameters.chapter_template)
 		Builder.switch_volumes_sorting(parameters.is_sort_by_volumes)
-	
+
 		match parameters.target_type:
 			case "branch": Builder.build_branch(parameters.target_id)
 			case "chapter": Builder.build_chapter(cast("int", parameters.target_id))

@@ -103,7 +103,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
 		Генерирует модель команды.
-		
+
 		:param model: Шаблон модели команды.
 		:type model: Command
 		:return: Модель команды.
@@ -135,7 +135,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	def _export_description(self) -> str:
 		"""
 		Возвращает описание команды.
-		
+
 		:return: Описание команды.
 		:rtype: str
 		"""
@@ -153,7 +153,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:type prepared_data: PreparedData
 		:return: Структура **dataclass**.
 		:rtype: Parameters
-		""" 
+		"""
 
 		return Parameters(
 			required_parser = prepared_data.required_parsers[0],
@@ -198,7 +198,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			case CollectingTargets.NotFound: added_slugs_count = self.__collect_not_found(collector)
 
 		collector.save()
-	
+
 		if added_slugs_count: self.printer.emit(f"Unique slugs added: {added_slugs_count}.")
 		else: self.printer.emit("No new slugs in collection.")
 

@@ -40,7 +40,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:return: Последовательность путей к шаблонам.
 		:rtype: tuple[Path, ...]
 		"""
-		
+
 		templates: tuple[Path, ...] = (parameters.templates, )
 
 		if parameters.templates.is_dir():
@@ -58,7 +58,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
 		Генерирует модель команды.
-		
+
 		:param model: Шаблон модели команды.
 		:type model: Command
 		:return: Модель команды.
@@ -83,7 +83,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	def _export_description(self) -> str:
 		"""
 		Возвращает описание команды.
-		
+
 		:return: Описание команды.
 		:rtype: str
 		"""
@@ -102,7 +102,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:return: Структура **dataclass**.
 		:rtype: Parameters
 		"""
-		
+
 		return Parameters(
 			image = entity.get_position_value("IMAGE", expected_type = Path, important = True),
 			templates = entity.get_position_value("TEMPLATES", expected_type = Path, important = True),
@@ -131,7 +131,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			matches: int = cutter.calculate_templates_matches(parameters.image, templates)
 			self.printer.emit(f"Matches found: {matches}.")
 			return True
-		
+
 		cut_templates_count: int = cutter.clean_image(parameters.image, templates, parameters.output)
 
 		if cut_templates_count:

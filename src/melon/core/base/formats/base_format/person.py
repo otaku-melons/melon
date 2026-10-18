@@ -32,7 +32,7 @@ class Person:
 		"""Описание."""
 
 		return self.__Data["description"]
-	
+
 	#==========================================================================================#
 	# >>>>> PUBLIC METHODS <<<<< #
 	#==========================================================================================#
@@ -57,7 +57,7 @@ class Person:
 		Добавляет альтернативное имя.
 			another_name – имя.
 		"""
-		
+
 		another_name = another_name.strip()
 		if another_name and another_name != self.name and another_name not in self.another_names:
 			self.__Data["another_names"].append(another_name)
@@ -85,7 +85,7 @@ class Person:
 		for CurrentImage in self.__Images:
 			if CurrentImage.link == link:
 				return CurrentImage
-			
+
 		return None
 
 	def remove_image(self, link: str) -> bool:
@@ -127,7 +127,7 @@ class Person:
 		"""
 
 		Buffer = self.__Data.copy()
-		
+
 		for Index in range(len(self.__Images)):
 			Image = self.__Images[Index]
 			Buffer["images"].append(Image.to_dict(sizing = sizing_images))

@@ -47,7 +47,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		"""Алиас."""
 
 		return self._data["slug"]
-	
+
 	@property
 	def content_language(self) -> str | None:
 		"""Код языка контента по стандарту ISO 639-3."""
@@ -71,7 +71,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		"""Последовательность альтернативных названий."""
 
 		return tuple(self._data["another_names"])
-	
+
 	@property
 	def covers(self) -> tuple[ImageData, ...]:
 		"""Последовательность данных обложек."""
@@ -119,13 +119,13 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		"""Последовательность франшиз."""
 
 		return tuple(self._data["franchises"])
-	
+
 	@property
 	def perons(self) -> tuple[Person, ...]:
 		"""Последовательность персонажей."""
 
 		return tuple(self._persons)
-	
+
 	@property
 	def status(self) -> Statuses | None:
 		"""Статус тайтла."""
@@ -143,7 +143,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		"""Последовательность ветвей тайтла."""
 
 		return tuple(self._branches.values())
-	
+
 	#==========================================================================================#
 	# >>>>> PROTECTED METHODS ПРЕОБРАЗОВАНИЯ КОНТЕЙНЕРОВ ДАННЫХ <<<<< #
 	#==========================================================================================#
@@ -185,7 +185,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		for PersonData in self._data["persons"]:
 			CoverData = cast("dict", PersonData)
 			Buffer = Person(CoverData["name"])
-			
+
 			AnotherNames = CoverData.get("another_names") or ()
 			Images = CoverData.get("images") or ()
 			Description = CoverData.get("description")
@@ -276,14 +276,14 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 			"age_limit": None,
 			"status": None,
 			"is_licensed": None,
-			
+
 			"genres": [],
 			"tags": [],
 			"franchises": [],
 			"persons": [],
-			
+
 			"branches": [],
-			"content": {}, 
+			"content": {},
 		}
 
 		for extra_field in self._export_extra_fields():
@@ -377,7 +377,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		self._covers: list[ImageData] = []
 		self._persons: list[Person] = []
 		self._branches: dict[int, Branch] = {}
-		
+
 		self._post_init()
 
 	def from_dict(self, data: dict):
@@ -408,7 +408,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		self._build_persons()
 		self._update_branches_info()
 		self._build_content(sorting = sorting)
-		
+
 		return self._data.copy()
 
 	#==========================================================================================#
@@ -440,7 +440,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		for CurrentCover in self._covers:
 			if CurrentCover.link == link:
 				return CurrentCover
-			
+
 		return None
 
 	def find_chapter(self, chapter_id: int) -> ChapterSearchResult | None:
@@ -481,7 +481,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		for CurrentPerson in self._persons:
 			if CurrentPerson.name == name:
 				return CurrentPerson
-			
+
 		return None
 
 	#==========================================================================================#
@@ -522,7 +522,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		:param another_name: Название.
 		:type another_name: str
 		"""
-		
+
 		another_name = another_name.strip()
 		if another_name != self._data["localized_name"] and another_name != self._data["eng_name"] and another_name and another_name not in self._data["another_names"]:
 			self._data["another_names"].append(another_name)
@@ -538,11 +538,11 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 		if not cover.link:
 			raise ValueError("Cover must have a link.")
-		
+
 		for CurrentCover in self._covers:
 			if CurrentCover.link == cover.link:
 				return
-		
+
 		self._covers.append(cover)
 
 	def add_author(self, author: str):
@@ -600,11 +600,11 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		:param person: Персонаж.
 		:type person: Person
 		"""
-		
+
 		for CurrentPerson in self._persons:
 			if CurrentPerson.name == person.name:
 				return
-			
+
 		self._persons.append(person)
 
 	def add_branch(self, branch: Branch) -> int:
@@ -709,7 +709,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		:param persons: Список персонажей.
 		:type persons: Sequence[Person]
 		"""
-		
+
 		for CurrentPerson in persons:
 			self.add_person(CurrentPerson)
 
@@ -854,7 +854,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		"""
 
 		self._data["status"] = status.value if status else None
-	
+
 	def set_is_licensed(self, is_licensed: bool | None):
 		"""
 		Задаёт состояние: лицензирован ли тайтл в источнике.

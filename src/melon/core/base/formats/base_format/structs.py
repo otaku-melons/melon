@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 @dataclass(frozen = True)
 class ChapterSearchResult:
 	"""Результат поиска главы."""
-	
+
 	branch: "Branch"
 	chapter: "BaseChapter"
 

@@ -43,8 +43,8 @@ class Cutter:
 		:type template: MatLike
 		:param threshold: Степень сходства.
 		:type threshold: float
-		:return: Возвращает 
-		:rtype: bool
+		:return: Template match searching result or `None` if not found.
+		:rtype: TemplateMatch | None
 		"""
 
 		wb_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)

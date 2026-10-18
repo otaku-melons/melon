@@ -40,7 +40,7 @@ class SystemObjects:
 		"""Оператор вывода."""
 
 		return self.__printer
-	
+
 	@property
 	def temper(self) -> Temper:
 		"""Дескриптор каталога временных файлов."""

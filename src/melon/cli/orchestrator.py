@@ -65,7 +65,7 @@ class CommandsOrchestrator:
 				model = self.__groups[name].create_model("help", "Show commands list. Add command to more info.")
 				model.base.add_argument()
 				model.base.add_argument()
-		
+
 		return self.__groups[name]
 
 	def __get_processors_submodules_names(self, module_name: str) -> tuple[str, ...]:
@@ -89,7 +89,7 @@ class CommandsOrchestrator:
 			commands_submodules_names.remove("_base")
 
 		return tuple(commands_submodules_names)
-	
+
 	def __load_processors(self, module_name: str):
 		"""
 		Загружает обработчики команд из модуля.

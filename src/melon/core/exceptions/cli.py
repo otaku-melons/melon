@@ -9,4 +9,4 @@ class MultipleParsersDeniedForCommandError(Exception):
 		:type command_name: str
 		"""
 
-		super().__init__(command_name) 
+		super().__init__(command_name)

@@ -28,11 +28,11 @@ def SplitParagraph(soup: BeautifulSoup, paragraph: Tag, splitter: str | re.Patte
 
 	if type(splitter) is re.Pattern:
 		if not re.findall(splitter, Text): return (paragraph,)
-		
+
 		for Line in re.split(splitter, Text):
 			Line = Line.strip()
 			if Line: Parts.append(Line)
-	
+
 	elif type(splitter) is str:
 		if splitter not in Text: return (paragraph,)
 

@@ -32,7 +32,7 @@ class Check(BaseCheck):
 		:return: Exported classes names.
 		:rtype: tuple[str, ...]
 		"""
-		
+
 		tree = ast.parse(content)
 		all_list: list[str] = []
 
@@ -76,7 +76,7 @@ class Check(BaseCheck):
 	@override
 	def _check(self, operator: "ParserOperator"):
 		"""
-		Process linter check. 
+		Process linter check.
 
 		Use `_emit()` or `_ok()` to interrupt checking. If no stop signal raised check considered successfully completed.
 

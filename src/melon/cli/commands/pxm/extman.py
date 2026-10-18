@@ -31,7 +31,7 @@ class CustomPicker(Picker):
 		:return: Items lines.
 		:rtype: list[str]
 		"""
-		
+
 		lines: list[str] = []
 
 		for index, option in enumerate(self.options):
@@ -83,7 +83,7 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 			min_selection_count = 0,
 		)
 		picker.selected_indexes = activated_indexes
-		
+
 		try:
 			pick_value = picker.start()
 		except KeyboardInterrupt:
@@ -103,7 +103,7 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 			else:
 				if extensions_operator.disable(name):
 					disabled_count += 1
-		
+
 		if any((enabled_count, disabled_count)):
 			extensions_operator.save_states()
 			self.printer.emit(f"Enabled: {enabled_count}. Disabled: {disabled_count}.")
@@ -118,7 +118,7 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
 		Генерирует модель команды.
-		
+
 		:param model: Шаблон модели команды.
 		:type model: Command
 		:return: Модель команды.
@@ -137,7 +137,7 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 	def _export_description(self) -> str:
 		"""
 		Возвращает описание команды.
-		
+
 		:return: Описание команды.
 		:rtype: str
 		"""

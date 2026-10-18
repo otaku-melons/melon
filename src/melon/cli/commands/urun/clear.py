@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 	from ....core.base.structs.title import TitleDescriptor
 	from ...base.structs import PreparedData
-	
+
 #==========================================================================================#
 # >>>>> ВСПОМОГАТЕЛЬНЫЕ СТРУКТУРЫ ДАННЫХ <<<<< #
 #==========================================================================================#
@@ -54,7 +54,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 
 		IsTitleExists: bool | None = descriptor.extra.get("is_title_exists")
-		
+
 		if IsTitleExists is False:
 			self.printer.emit(f"Title <i>{descriptor.full_filename}</i> marked to remove.")
 
@@ -78,7 +78,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			if FilePath.exists() and FilePath.is_file():
 				FilePath.unlink()
 				FilesRemoved += 1
-		
+
 		return FilesRemoved
 	#==========================================================================================#
 	# >>>>> PRIVATE METHODS РЕАЛИЗАЦИИ ПРАВИЛ <<<<< #
@@ -120,7 +120,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		if RemovedFilesCount: self.printer.emit(f"Removed {RemovedFilesCount} files.")
 		else: self.printer.emit("No broken files found.")
-		
+
 		return True
 
 	def __clear_collection(self, parameters: Parameters) -> bool:
@@ -161,7 +161,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		RemovedFilesCount: int = self.__remove_files_form_directory(SourceOperator.settings.directories.titles, Filenames)
 		if RemovedFilesCount: self.printer.emit(f"Removed {RemovedFilesCount} files.")
-		
+
 		return True
 
 	def __clear_not_found(self, parameters: Parameters) -> bool:
@@ -173,7 +173,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:return: Возвращает `False`, если команда требует прерывания выполнения.
 		:rtype: bool
 		"""
-		
+
 		SourceOperator = self._launch_source_operator(parameters.required_parser)
 		Collector = utils.Collector(SourceOperator)
 		self.printer.emit("Check titles existing…", flush = True)
@@ -195,7 +195,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
 		Генерирует модель команды.
-		
+
 		:param model: Шаблон модели команды.
 		:type model: Command
 		:return: Модель команды.
@@ -218,7 +218,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	def _export_description(self) -> str:
 		"""
 		Возвращает описание команды.
-		
+
 		:return: Описание команды.
 		:rtype: str
 		"""
@@ -242,9 +242,9 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		Rule: ClearingRules = ClearingRules(getattr(Parameter, "name"))
 		CollectionFile: str | None = None
 
-		if Rule is ClearingRules.Collection: 
+		if Rule is ClearingRules.Collection:
 			CollectionFile = entity.get_key_value(ClearingRules.Collection.value, expected_type = str)
-		
+
 		return Parameters(
 			required_parser = prepared_data.required_parsers[0],
 			rule = Rule,

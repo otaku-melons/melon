@@ -27,7 +27,7 @@ class ParserAlreadyExistsError(Exception):
 		:type parser_name: str
 		"""
 
-		super().__init__(parser_name) 
+		super().__init__(parser_name)
 
 class ParserNotFoundError(Exception):
 	"""Исключение: парсер не найден."""
@@ -40,7 +40,7 @@ class ParserNotFoundError(Exception):
 		:type parser_name: str
 		"""
 
-		super().__init__(parser_name) 
+		super().__init__(parser_name)
 
 class TitleNotSetError(Exception):
 	"""Исключение: не задан тайтл."""
@@ -48,7 +48,7 @@ class TitleNotSetError(Exception):
 	def __init__(self):
 		"""Исключение: не задан тайтл."""
 
-		super().__init__("Open title before using methods, that it requires.") 
+		super().__init__("Open title before using methods, that it requires.")
 
 class RepositoryError(Exception):
 	"""Исключение: ошибка работы с репозиториями."""
@@ -61,7 +61,7 @@ class RepositoryError(Exception):
 		:type message: str
 		"""
 
-		super().__init__(message) 
+		super().__init__(message)
 
 class UnsupportedContentError(Exception):
 	"""Исключение: неподдерживаемый тип контента."""
@@ -74,7 +74,7 @@ class UnsupportedContentError(Exception):
 		:type content_type: ContentTypes
 		"""
 
-		super().__init__(content_type.value) 
+		super().__init__(content_type.value)
 
 class UnsupportedFormatError(Exception):
 	"""Исключение: неподдерживаемый формат JSON."""

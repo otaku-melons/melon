@@ -23,7 +23,7 @@ class Temper:
 	def __init__(self, system_objects: "SystemObjects"):
 		"""
 		Оператор временных каталогов и объектов.
-		
+
 		:param system_objects: Коллекция системных объектов.
 		:type system_objects: SystemObjects
 		"""
@@ -45,7 +45,7 @@ class Temper:
 
 		ParserTempDirectory = self.get_parser_temp_directory(parser_name)
 
-		if not whitelist: 
+		if not whitelist:
 			clear_directory(ParserTempDirectory)
 			return
 

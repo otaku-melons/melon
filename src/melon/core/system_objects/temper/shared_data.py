@@ -50,7 +50,7 @@ class SharedData:
 	@property
 	def temper(self) -> "Temper":
 		"""Дескриптор временных каталогов и объектов."""
-		
+
 		return self.__temper
 
 	#==========================================================================================#
@@ -103,7 +103,7 @@ class SharedData:
 
 		self.__data["last_parsed_slug"] = slug
 		self.save()
-		
+
 	def save(self):
 		"""Сохраняет разделяемые данные."""
 

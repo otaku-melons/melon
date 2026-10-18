@@ -26,7 +26,7 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
 		Генерирует модель команды.
-		
+
 		:param model: Шаблон модели команды.
 		:type model: Command
 		:return: Модель команды.
@@ -42,7 +42,7 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 	def _export_description(self) -> str:
 		"""
 		Возвращает описание команды.
-		
+
 		:return: Описание команды.
 		:rtype: str
 		"""
@@ -80,7 +80,7 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 
 		repository_url: str = self.system_objects.manager.repositories.get(parameters.required_parser.name, exception = True)
 		self.printer.emit(f"Repository: <i>{repository_url}</i>.")
-		
+
 		IsUpdated: bool = parameters.required_parser.update(force_mode = parameters.force_mode)
 
 		if IsUpdated: self.printer.emit("Updated.")

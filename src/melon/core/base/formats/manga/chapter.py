@@ -18,7 +18,7 @@ class Chapter(BaseChapter):
 		"""Последовательность изображений."""
 
 		return tuple(self.__slides.values())
-	
+
 	#==========================================================================================#
 	# >>>>> PRIVATE METHODS <<<<< #
 	#==========================================================================================#
@@ -71,7 +71,7 @@ class Chapter(BaseChapter):
 
 		self.clear()
 		self._data = self._data | data
-		
+
 		for SlideData in self._data["slides"]:
 			SlideData = cast("dict", SlideData)
 			SlideIndex: int = SlideData["index"]
@@ -96,7 +96,7 @@ class Chapter(BaseChapter):
 		"""Метод, запускающийся перед генерацией словарного представления объекта."""
 
 		SlidesData: list[dict] = []
-		
+
 		for Index, Image in self.__slides.items():
 			Buffer: dict = {"index": Index} | Image.to_dict(sizing = self._parser.settings.common.sizing_images)
 			SlidesData.append(Buffer)
@@ -126,7 +126,7 @@ class Chapter(BaseChapter):
 		self.__slides[index] = image
 
 		return True
-		
+
 	def set_slides(self, images: "Sequence[ImageData]"):
 		"""
 		Задаёт слайды.
@@ -136,6 +136,6 @@ class Chapter(BaseChapter):
 		"""
 
 		self.clear()
-		
+
 		for current_image in images:
 			self.add_slide(current_image)

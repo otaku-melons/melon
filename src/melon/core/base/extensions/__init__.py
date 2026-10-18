@@ -104,7 +104,7 @@ class BaseExtension[SO: "BaseSourceOperator", EO: BaseModel = BaseModel]:
 
 	def _export_options_model(self) -> type[EO]:
 		"""
-		Export extension options [pydantic](https://github.com/pydantic/pydantic) model. 
+		Export extension options [pydantic](https://github.com/pydantic/pydantic) model.
 
 		:return: Extension options model.
 		:rtype: type[BaseModel]
@@ -144,7 +144,7 @@ class BaseExtension[SO: "BaseSourceOperator", EO: BaseModel = BaseModel]:
 
 		self._source_operator: SO = source_operator
 		self._name: str = self.__module__.split(".")[-1]
-		
+
 		self._cli: BaseExtensionCLI = self._provide_cli()(self)
 		self._options: EO = self._parse_options()
 		self._temp_directory: Path = self._source_operator.system_objects.temper.get_extension_temp_directory(self._source_operator.parser_name, self._name)

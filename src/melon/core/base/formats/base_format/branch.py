@@ -77,10 +77,10 @@ class Branch(ABC):
 
 		if chapter.id is None:
 			raise exceptions.parsing.ParsingError("Chapter must have unique ID.")
-		
+
 		if chapter.id in tuple(Value.id for Value in self._Chapters.values()):
 			return
-		
+
 		self._Chapters[chapter.id] = chapter
 
 	def get_chapter_by_id(self, chapter_id: int) -> BaseChapter:
@@ -95,7 +95,7 @@ class Branch(ABC):
 		"""
 
 		return self._Chapters[chapter_id]
-	
+
 	def has_chapter(self, chapter_id: int) -> bool:
 		"""
 		Проверяет, содержится ли глава с таким ID в ветви.
@@ -107,7 +107,7 @@ class Branch(ABC):
 		"""
 
 		return chapter_id in self._Chapters
-	
+
 	def remove_chapter(self, chapter_id: int):
 		"""
 		Удаляет главу из ветви.
@@ -116,7 +116,7 @@ class Branch(ABC):
 		:type id: int
 		:raises KeyError: Глава не найдена.
 		"""
-		
+
 		del self._Chapters[chapter_id]
 
 	def replace_chapter_by_id(self, chapter: BaseChapter, chapter_id: int):
@@ -132,7 +132,7 @@ class Branch(ABC):
 
 		self.get_chapter_by_id(chapter_id)
 		self._Chapters[chapter_id] = chapter
-	
+
 	def reverse(self):
 		"""Инвертирует порядок глав в ветви."""
 
@@ -157,4 +157,3 @@ class Branch(ABC):
 		"""Возвращает список словарей данных глав, принадлежащих текущей ветви."""
 
 		return [chapter.to_dict() for chapter in self._Chapters.values()]
-	

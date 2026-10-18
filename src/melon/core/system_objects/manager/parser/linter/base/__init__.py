@@ -23,7 +23,7 @@ class BaseCheck(ABC):
 
 	#==========================================================================================#
 	# >>>>> PROTECTED METHODS <<<<< #
-	#==========================================================================================#	
+	#==========================================================================================#
 
 	def _emit(self, status: ChecksStatuses, message: str | None = None) -> NoReturn:
 		"""
@@ -55,7 +55,7 @@ class BaseCheck(ABC):
 	@abstractmethod
 	def _check(self, operator: "ParserOperator"):
 		"""
-		Process linter check. 
+		Process linter check.
 
 		Use `_emit()` or `_ok()` to interrupt checking. If no stop signal raised check considered successfully completed.
 
@@ -81,7 +81,7 @@ class BaseCheck(ABC):
 
 	def check(self, operator: "ParserOperator") -> CheckResult:
 		"""
-		Process linter check. 
+		Process linter check.
 
 		:param operator: Parser operator.
 		:type operator: ParserOperator

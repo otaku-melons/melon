@@ -92,11 +92,11 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		"""Настройки парсера."""
 
 		return self._Settings
-	
+
 	@property
 	def shared_data(self) -> "SharedData":
 		"""Разделяемые в контексте сессий одного парсера данные."""
-		
+
 		return self._SharedData
 
 	@property
@@ -108,7 +108,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 	@property
 	def temp_directory(self) -> Path:
 		"""Путь ко временному каталогу парсера.."""
-		
+
 		return self._Temper.get_parser_temp_directory(self._Manifest.parser_name)
 
 	#==========================================================================================#
@@ -192,10 +192,10 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		Config.headers.generate_user_agent(("desktop",))
 		Config.headers.automatically_accept_client_hints(True)
 		Config.headers.add("referer", f"https://{self.manifest.domain}/")
-		
+
 		WebRequestorObject = WebRequestor(Config)
 		WebRequestorObject.add_proxies(self.settings.network.proxies)
-		
+
 		return WebRequestorObject
 
 	def _is_title_exists(self, slug: str) -> bool | None:  # noqa: ARG002
@@ -258,7 +258,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 
 		self._Printer = self._SystemObjects.printer
 		self._Temper = self._SystemObjects.temper
-		
+
 		self._Settings: ParserSettings[CSM] = ParserSettings(self._SystemObjects, self._Manifest.parser_name)
 		self._Settings.parse_custom_settings(self._export_custom_settings_model())
 
@@ -273,7 +273,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		self._ImagesDownloader = ImagesDownloader(self)
 		self._Portals = self._SystemObjects.printer.get_parser_portals(self._Manifest.parser_name)
 		self._SharedData = self._SystemObjects.temper.load_parser_shared_data(self._Manifest.parser_name)
-		
+
 		self._parser_operator = self._SystemObjects.manager.parsers.get_operator(self.parser_name)
 
 		self._post_init()
@@ -293,7 +293,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		"""
 
 		return tuple(self._collect_slugs(period, filters, pages))
-	
+
 	def download_image(self, url: str, directory: str | PathLike[str] | None = None, filename: str | None = None, is_full_filename: bool = False, force_mode: bool = False) -> ImageDownloadingResult:
 		"""
 		Скачивает изображение.
@@ -304,7 +304,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		:type directory: str | PathLike[str] | None
 		:param filename: Имя файла. По умолчанию будет сгенерировано на основе URL.
 		:type filename: str | None
-		:param is_full_filename: Указывает, является ли имя файла полным. Если имя неполное, то расширение для файла будет сгенерировано автоматически (например, для имени *image* будет создан файл *image.jpg* на основе ссылки), в ином случае имя файла задаётся жёстко. 
+		:param is_full_filename: Указывает, является ли имя файла полным. Если имя неполное, то расширение для файла будет сгенерировано автоматически (например, для имени *image* будет создан файл *image.jpg* на основе ссылки), в ином случае имя файла задаётся жёстко.
 		:type is_full_filename: bool
 		:param force_mode: Переключает режим перезаписи существующих изображений.
 		:type force_mode: bool
@@ -340,7 +340,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 			self._ImagesDownloader.move_from_temp(directory, Result.path.name, filename, is_full_filename, force_mode)
 		else:
 			Result.path.replace(ImageTargetPath)
-		
+
 		return ImageDownloadingResult(
 			url = url,
 			is_already_exists = IsTargetPathExists,
@@ -368,7 +368,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		title_data = json.read(file)
 		title_format: str = title_data["format"]
 		type_name: str = title_format.split("-")[1]
-		
+
 		descriptor = TitleDescriptor(self)
 		descriptor.set_slug(title_data["slug"])
 		descriptor.set_content_type(ContentTypes(type_name))
@@ -384,7 +384,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		:return: Тип контента.
 		:rtype: ContentTypes
 		"""
-		
+
 		# To-Do: метод для определения типа контента по алиасу.
 		return self._Manifest.content_types[0]
 
@@ -454,7 +454,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 	def set_mirror(self, mirror: str | None) -> bool:
 		"""
 		Задаёт домен зеркала, подменяя его в манифесте. Не сохраняет изменения в файл.
-		
+
 		:param mirror: Домен зеркала.
 		:type mirror: str | None
 		:raises ValidationError: Некорректный домен зеркала.

@@ -53,5 +53,5 @@ class BaseRanobeParser[SO: "BaseSourceOperator", CSM: "BaseModel"](BaseParser[SO
 		AmendedChapter = cast("Chapter", SearchResult.chapter)
 		AmendedChapter.clear()
 		self._amend(SearchResult.branch, AmendedChapter)
-		
+
 		return bool(AmendedChapter.paragraphs)

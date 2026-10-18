@@ -60,7 +60,7 @@ class ExtraData:
 	def get(self, key: str) -> Any:
 		"""
 		Возвращает дополнительные данные главы.
-		
+
 		:param key: Ключ, под которым хранятся дополнительные данные.
 		:type key: str
 		:return: Дополнительные данные.
@@ -73,7 +73,7 @@ class ExtraData:
 	def remove(self, key: str):
 		"""
 		Удаляет дополнительные данные главы. Игнорирует отсутствие ключа.
-		
+
 		:param key: Ключ, под которым хранятся дополнительные данные.
 		:type key: str
 		"""
@@ -94,7 +94,7 @@ class ExtraData:
 
 		if key in self.__BaseKeys:
 			raise KeyError(key)
-	
+
 		self.__data[key] = value
 
 	def to_dict(self) -> dict:
@@ -104,7 +104,7 @@ class ExtraData:
 		:return: Словарное представление объекта.
 		:rtype: dict
 		"""
-	
+
 		return self.__data.copy()
 
 class BaseChapter(ABC):
@@ -119,7 +119,7 @@ class BaseChapter(ABC):
 		"""Уникальный идентификатор главы."""
 
 		return self._data["id"]
-	
+
 	@property
 	def slug(self) -> str | None:
 		"""Алиас главы."""
@@ -131,13 +131,13 @@ class BaseChapter(ABC):
 		"""Номер тома."""
 
 		return self._data["volume"]
-	
+
 	@property
 	def number(self) -> str | None:
 		"""Номер главы."""
 
 		return self._data["number"]
-	
+
 	@property
 	def name(self) -> str | None:
 		"""Название главы."""
@@ -155,13 +155,13 @@ class BaseChapter(ABC):
 		"""Состояние: платная ли глава."""
 
 		return self._data["is_paid"]
-	
+
 	@property
 	def workers(self) -> tuple[str]:
 		"""Набор идентификаторов лиц, адаптировавших контент."""
 
 		return tuple(self._data["workers"])
-	
+
 	@property
 	def extra_data(self) -> ExtraData:
 		"""Дополнительные данные главы."""
@@ -308,11 +308,11 @@ class BaseChapter(ABC):
 
 		name = zerotify(name)
 		if name: name = name.strip()
-		
+
 		if name and self._parser.settings.common.pretty:
 			if name.endswith("..."): name = name.rstrip(".") + "…"
 			else: name = name.rstrip(".–")
-		
+
 			name = name.replace("\u00A0", " ")
 			name = remove_recurring_substrings(name, " ")
 
@@ -327,7 +327,7 @@ class BaseChapter(ABC):
 		:param number: Номер главы.
 		:type number: float | int | str | None
 		"""
-		
+
 		self._data["number"] = self._PrettyNumber(number)
 
 	def set_workers(self, workers: Sequence[str]):

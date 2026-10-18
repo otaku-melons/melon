@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
 	from ..parsers.components.manifest import ContentTypes
 	from ..source_operator import BaseSourceOperator
-	
+
 class TitleDescriptor:
 	"""Дескриптор тайтла."""
 
@@ -34,7 +34,7 @@ class TitleDescriptor:
 	def full_filename(self) -> str | None:
 		"""Имя описательного файла тайтла с расширением."""
 
-		return f"{self._filename}.json" if self._filename else None 
+		return f"{self._filename}.json" if self._filename else None
 
 	@property
 	def id(self) -> int | None:
@@ -56,7 +56,7 @@ class TitleDescriptor:
 
 		full_gilename: str | None = self.full_filename
 
-		return self._source_operator.settings.directories.titles / full_gilename if full_gilename else None 
+		return self._source_operator.settings.directories.titles / full_gilename if full_gilename else None
 
 	@property
 	def slug(self) -> str | None:
@@ -79,7 +79,7 @@ class TitleDescriptor:
 		self._source_operator: BaseSourceOperator = source_operator
 
 		self._is_filename_id: bool = self._source_operator.settings.common.use_id_as_filename
-		
+
 		self._id: int | None = None
 		self._slug: str | None = None
 		self._content_type: ContentTypes | None = None

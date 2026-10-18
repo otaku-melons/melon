@@ -29,7 +29,7 @@ class Unstubber:
 		"""
 
 		PixelBytes: bytes = image.convert("RGB").tobytes()
-		
+
 		return hashlib.sha256(PixelBytes).hexdigest()
 
 	def __GetUsedSignaturesVersions(self, signatures: Sequence[str]) -> tuple[SignaturesVersions, ...]:
@@ -66,7 +66,7 @@ class Unstubber:
 		:return: Изображение.
 		:rtype: ImageFile
 		"""
-		
+
 		return open_image(io.BytesIO(image))
 
 	def generate_signature(self, image: ImageFile, signature_version: SignaturesVersions) -> str:

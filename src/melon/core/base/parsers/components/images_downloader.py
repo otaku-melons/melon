@@ -72,7 +72,7 @@ class ImagesDownloader:
 		:param source_operator: Оператор источника.
 		:type source_operator: BaseSourceOperator
 		"""
-		
+
 		self.__SourceOperator = source_operator
 
 		self.__SystemObjects = self.__SourceOperator.system_objects
@@ -91,7 +91,7 @@ class ImagesDownloader:
 		:type url: str
 		:param filename: Имя файла. По умолчанию будет сгенерировано на основе URL.
 		:type filename: str | none
-		:param is_full_filename: Указывает, является ли имя файла полным. Если имя неполное, то расширение для файла будет сгенерировано автоматически (например, для имени *image* будет создан файл *image.jpg* на основе ссылки), в ином случае имя файла задаётся жёстко. 
+		:param is_full_filename: Указывает, является ли имя файла полным. Если имя неполное, то расширение для файла будет сгенерировано автоматически (например, для имени *image* будет создан файл *image.jpg* на основе ссылки), в ином случае имя файла задаётся жёстко.
 		:type is_full_filename: bool
 		:return: Имя файла.
 		:rtype: str
@@ -104,7 +104,7 @@ class ImagesDownloader:
 				return ParsedUrl.with_name(filename).name
 			else:
 				return ParsedUrl.with_stem(filename).name
-			
+
 		return ParsedUrl.name
 
 	def build_target_path(self, url: str, directory: str | PathLike[str] | None = None, filename: str | None = None, is_full_filename: bool = True) -> Path:
@@ -117,7 +117,7 @@ class ImagesDownloader:
 		:type directory: str | PathLike[str] | None
 		:param filename: Имя файла. По умолчанию будет сгенерировано на основе URL.
 		:type filename: str | none
-		:param is_full_filename: Указывает, является ли имя файла полным. Если имя неполное, то расширение для файла будет сгенерировано автоматически (например, для имени *image* будет создан файл *image.jpg* на основе ссылки), в ином случае имя файла задаётся жёстко. 
+		:param is_full_filename: Указывает, является ли имя файла полным. Если имя неполное, то расширение для файла будет сгенерировано автоматически (например, для имени *image* будет создан файл *image.jpg* на основе ссылки), в ином случае имя файла задаётся жёстко.
 		:type is_full_filename: bool
 		:return: Целевой путь изображения.
 		:rtype: Path
@@ -138,7 +138,7 @@ class ImagesDownloader:
 		:type directory: str | PathLike[str] | None
 		:param filename: Имя файла. По умолчанию будет сгенерировано на основе URL.
 		:type filename: str | None
-		:param is_full_filename: Указывает, является ли имя файла полным. Если имя неполное, то расширение для файла будет сгенерировано автоматически (например, для имени *image* будет создан файл *image.jpg* на основе ссылки), в ином случае имя файла задаётся жёстко. 
+		:param is_full_filename: Указывает, является ли имя файла полным. Если имя неполное, то расширение для файла будет сгенерировано автоматически (например, для имени *image* будет создан файл *image.jpg* на основе ссылки), в ином случае имя файла задаётся жёстко.
 		:type is_full_filename: bool
 		:param force_mode: Переключает режим перезаписи существующих изображений.
 		:type force_mode: bool
@@ -183,7 +183,7 @@ class ImagesDownloader:
 			if Response.ok and Response.content:
 				Resolution = self.get_image_resolution(Response.content)
 				IsFiltered = self.filter_image(Response.content, Resolution)
-				
+
 				if IsFiltered is None:
 					with open(ImagePath, "wb") as FileWriter:
 						FileWriter.write(Response.content)
@@ -218,7 +218,7 @@ class ImagesDownloader:
 		if resolution and not self.__SourceOperator.settings.filters.images.check_resolution(resolution):
 			return FilteredBy.Resolution
 
-		MinImageSize = self.__SourceOperator.settings.filters.images.min_size		
+		MinImageSize = self.__SourceOperator.settings.filters.images.min_size
 		if len(image) < MinImageSize:
 			return FilteredBy.Size
 
@@ -241,7 +241,7 @@ class ImagesDownloader:
 
 		if not self.__ParserSettings.common.sizing_images:
 			return None
-		
+
 		if not data:
 			return None
 
@@ -254,7 +254,7 @@ class ImagesDownloader:
 			return None
 
 		return Resolution
-	
+
 	def move_from_temp(self, directory: str | PathLike[str], original_filename: str, filename: str | None = None, is_full_filename: bool = True, force_mode: bool = False) -> Path:
 		"""
 		Перемещает изображение из временного каталога парсера в друкгую директорию.
@@ -267,7 +267,7 @@ class ImagesDownloader:
 		:type original_filename: str
 		:param filename: Новое имя файла. По умолчанию будет использовано оригинальное.
 		:type filename: str | None
-		:param is_full_filename: Указывает, является ли новое имя файла полным. Если имя неполное, то расширение для файла будет сгенерировано автоматически (например, для имени *image* будет создан файл *image.jpg* на основе оригинального имени), в ином случае имя файла задаётся жёстко. 
+		:param is_full_filename: Указывает, является ли новое имя файла полным. Если имя неполное, то расширение для файла будет сгенерировано автоматически (например, для имени *image* будет создан файл *image.jpg* на основе оригинального имени), в ином случае имя файла задаётся жёстко.
 		:type is_full_filename: bool
 		:return: Путь к изображению после перемещения.
 		:rtype: Path
@@ -293,7 +293,7 @@ class ImagesDownloader:
 		shutil.move(ImageOriginalPath, ImageTargetPath)
 
 		return ImageTargetPath
-	
+
 	def replace_url_domain(self, url: str, rules: dict[str, str] | None = None) -> str:
 		"""
 		Заменяет домен в ссылке по набору правил.
@@ -335,7 +335,7 @@ class ImagesDownloader:
 		:type url: str
 		:param filename: Имя файла. По умолчанию будет использовано оригинальное.
 		:type filename: str | None
-		:param is_full_filename: Указывает, является ли имя файла полным. Если имя неполное, то расширение для файла будет сгенерировано автоматически (например, для имени *image* будет создан файл *image.jpg* на основе ссылки), в ином случае имя файла задаётся жёстко. 
+		:param is_full_filename: Указывает, является ли имя файла полным. Если имя неполное, то расширение для файла будет сгенерировано автоматически (например, для имени *image* будет создан файл *image.jpg* на основе ссылки), в ином случае имя файла задаётся жёстко.
 		:type is_full_filename: bool
 		:param force_mode: Переключает режим перезаписи существующих изображений.
 		:type force_mode: bool

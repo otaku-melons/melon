@@ -20,7 +20,7 @@ class CommandProcessor(CommandProcessorTemplate[T_MultipleParsersRequired]):
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
 		Генерирует модель команды.
-		
+
 		:param model: Шаблон модели команды.
 		:type model: Command
 		:return: Модель команды.
@@ -35,7 +35,7 @@ class CommandProcessor(CommandProcessorTemplate[T_MultipleParsersRequired]):
 	def _export_description(self) -> str:
 		"""
 		Возвращает описание команды.
-		
+
 		:return: Описание команды.
 		:rtype: str
 		"""
@@ -71,7 +71,7 @@ class CommandProcessor(CommandProcessorTemplate[T_MultipleParsersRequired]):
 		for parser_operator in parameters.required_parsers:
 			self.printer.emit(f"Caching titles for <b>{parser_operator.name}</b>…")
 			Cacher = utils.Cacher(self._launch_source_operator(parser_operator))
-	
+
 			result = Cacher.cache_parser_output()
 			self.printer.templates.cacher.result(result)
 

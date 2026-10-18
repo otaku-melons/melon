@@ -51,7 +51,7 @@ class FilteredImages:
 
 		link = urlparse(link).path
 		section: str = "by_" + filtered_by.name.lower()
-		
+
 		if link not in self.__data[section]:
 			self.__data[section].append(link)
 			self.save()

@@ -68,10 +68,10 @@ class RanobeChapterHeaderParser(MangaChapterHeaderParser):
 	#==========================================================================================#
 	# >>>>> ПУБЛИЧНЫЙ МЕТОДЫ <<<<< #
 	#==========================================================================================#
-	
+
 	def __repr__(self) -> str:
 		"""Реинтерпретирует экземпляр в строковое представление."""
-		
+
 		return f"ChapterData(volume={self.volume}, number={self.number}, type={self._Type}, name={self._Header})"
 
 	def parse(self) -> "RanobeChapterHeaderParser":

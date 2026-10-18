@@ -74,7 +74,7 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 		"""Настройки парсера."""
 
 		return self._source_operator.settings
-	
+
 	@property
 	def source_operator(self) -> SO:
 		"""Оператор источника."""
@@ -127,7 +127,7 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 			Future = self.portals.printer.templates.images.start_downloading(CurrentImageData.filename, images_type)
 			Result = self._source_operator.images_downloader.download_image(CurrentImageData.link, ImageDirectory, force_mode = force_mode)
 			Results.append(Result)
-			
+
 			if Result.resolution:
 				CurrentImageData.set_resolution(Result.resolution)
 
@@ -277,7 +277,7 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 		"""
 
 		title = cast('BaseTitleController["BaseTitleData"]', self._title)
-		
+
 		covers_results = self._download_images(title.data.covers, ImagesTypes.Cover, force_mode)
 		self._unstub_covers(title, covers_results)
 
@@ -317,7 +317,7 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 		:return: Тайтл.
 		:rtype: BaseTitleController
 		"""
-		
+
 		pass
 
 	@run_before_method("_require_title")

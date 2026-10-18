@@ -16,11 +16,11 @@ def CheckLanguageCode(language_code: str, exception: bool = True) -> bool:
 	"""
 
 	IsCorrect = True
-	
+
 	if len(language_code) != 3:
 		IsCorrect = False
 		if exception: raise ValueError("Language code must contain only 3 characters.")
-	
+
 	if not language_code.isalpha():
 		IsCorrect = False
 		if exception: raise ValueError("Language code must contain only letters.")
@@ -47,7 +47,7 @@ class WordsDictionary:
 		"""Глава."""
 
 		return self._Data["chapter"]
-	
+
 	@property
 	def part(self) -> str | None:
 		"""Часть."""
@@ -69,13 +69,13 @@ class WordsDictionary:
 		"""Послесловие."""
 
 		return self._Data["afterword"]
-	
+
 	@property
 	def art(self) -> str | None:
 		"""Иллюстрация."""
 
 		return self._Data["art"]
-	
+
 	@property
 	def epilogue(self) -> str | None:
 		"""Эпилог."""
@@ -87,13 +87,13 @@ class WordsDictionary:
 		"""Экстра."""
 
 		return self._Data["extra"]
-	
+
 	@property
 	def glossary(self) -> str | None:
 		"""Глоссарий."""
 
 		return self._Data["glossary"]
-	
+
 	@property
 	def prologue(self) -> str | None:
 		"""Пролог."""

@@ -52,7 +52,7 @@ class BaseMangaParser[SO: "BaseSourceOperator", CSM: "BaseModel"](BaseParser[SO,
 
 		chapter = cast("Chapter", search_result.chapter)
 		chapter.clear()
-		
+
 		self._amend(search_result.branch, chapter)
-		
+
 		return bool(chapter.slides)

@@ -33,12 +33,12 @@ class Check(BaseCheck):
 		if "__pycache__" not in lines:
 			return False
 
-		return True			
+		return True
 
 	@override
 	def _check(self, operator: "ParserOperator"):
 		"""
-		Process linter check. 
+		Process linter check.
 
 		Use `_emit()` or `_ok()` to interrupt checking. If no stop signal raised check considered successfully completed.
 

@@ -59,7 +59,7 @@ class Repositories:
 		:return: Имя парсера.
 		:rtype: str
 		"""
-		
+
 		return Path(urlparse(repository).path).name
 
 	def __IsRepositoryAvailable(self, repository: str) -> bool:
@@ -144,7 +144,7 @@ class Repositories:
 
 		if not RepositoryURL and exception:
 			raise exceptions.parsers.RepositoryError(f"Repository for parser \"{parser_name}\" not found.")
-		
+
 		return RepositoryURL
 
 	def load(self) -> int:
@@ -157,7 +157,7 @@ class Repositories:
 		"""
 
 		self.__Repositories.clear()
-		
+
 		if not self.__StorageFile.exists():
 			return 0
 

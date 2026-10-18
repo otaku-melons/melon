@@ -87,7 +87,7 @@ class BaseExtensionCLI[E: "BaseExtension[BaseSourceOperator]"]:
 		:param command_name: Command name.
 		:type command_name: str
 		"""
-		
+
 		model = self._terminalyzer.find_model((command_name,))
 
 		if model is None:
@@ -110,7 +110,7 @@ class BaseExtensionCLI[E: "BaseExtension[BaseSourceOperator]"]:
 		"""
 
 		entity = self._terminalyzer.parse_command(parameters)
-		
+
 		if entity is None:
 			self._command_not_found()
 			return

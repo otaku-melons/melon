@@ -6,7 +6,7 @@ if TYPE_CHECKING:
 #==========================================================================================#
 # >>>>> ИСКЛЮЧЕНИЯ ПРОЦЕССА ПАРСИНГА <<<<< #
 #==========================================================================================#
-	
+
 class AuthorizationRequiredError(Exception):
 	"""Исключение: требуется авторизация."""
 
@@ -18,7 +18,7 @@ class AuthorizationRequiredError(Exception):
 		:type message: str
 		"""
 
-		super().__init__(message) 
+		super().__init__(message)
 
 class ChapterNotFoundError(Exception):
 	"""Исключение: глава не найдена."""
@@ -40,7 +40,7 @@ class ChapterNotFoundError(Exception):
 		elif slug:
 			ChapterIdentifier = f" \"{slug}\""
 
-		super().__init__(f"Chapter{ChapterIdentifier} not found.") 
+		super().__init__(f"Chapter{ChapterIdentifier} not found.")
 
 class ParsingError(Exception):
 	"""Исключение: ошибка парсинга."""
@@ -53,7 +53,7 @@ class ParsingError(Exception):
 		:type description: str | None
 		"""
 
-		super().__init__(description or "Error occurs during parsing.") 
+		super().__init__(description or "Error occurs during parsing.")
 
 class TitleNotFoundError(Exception):
 	"""Исключение: тайтл не найден."""
@@ -66,7 +66,7 @@ class TitleNotFoundError(Exception):
 		:type title: BaseTitleData
 		"""
 
-		super().__init__(f"Title \"{title_data.slug}\" not found.") 
+		super().__init__(f"Title \"{title_data.slug}\" not found.")
 
 #==========================================================================================#
 # >>>>> ИСКЛЮЧЕНИЯ ПРОЦЕССА ПАРСИНГА РАНОБЭ <<<<< #
@@ -83,7 +83,7 @@ class FootnoteCompositionError(Exception):
 		:type description: str
 		"""
 
-		super().__init__(description) 
+		super().__init__(description)
 
 class UnresolvedTagError(Exception):
 	"""Исключение: неразрешённый тег."""
@@ -96,4 +96,4 @@ class UnresolvedTagError(Exception):
 		:type tag: str
 		"""
 
-		super().__init__(f"Unresolved tag \"{tag}\".") 
+		super().__init__(f"Unresolved tag \"{tag}\".")

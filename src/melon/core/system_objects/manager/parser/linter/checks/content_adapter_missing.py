@@ -13,14 +13,14 @@ class Check(BaseCheck):
 	@override
 	def _check(self, operator: "ParserOperator"):
 		"""
-		Process linter check. 
+		Process linter check.
 
 		Use `_emit()` or `_ok()` to interrupt checking. If no stop signal raised check considered successfully completed.
 
 		:param operator: Parser operator.
 		:type operator: ParserOperator
 		"""
-		
+
 		files: list[str] = os.listdir(operator.path)
 		adapters: tuple[str, ...] = ("manga", "ranobe")
 

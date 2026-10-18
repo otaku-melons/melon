@@ -24,7 +24,7 @@ class TitleData(BaseTitleData[Chapter]):
 		TypeValue = self._data.get("type")
 		if TypeValue:
 			return Types(TypeValue)
-		
+
 		return None
 
 	#==========================================================================================#

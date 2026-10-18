@@ -32,7 +32,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
 		Генерирует модель команды.
-		
+
 		:param model: Шаблон модели команды.
 		:type model: Command
 		:return: Модель команды.
@@ -53,7 +53,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	def _export_description(self) -> str:
 		"""
 		Возвращает описание команды.
-		
+
 		:return: Описание команды.
 		:rtype: str
 		"""
@@ -93,32 +93,32 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		script_work_dir: Path = self.system_objects.options.CONFIGS_DIR / "classificator"
 		script_work_dir.mkdir(exist_ok = True)
-		
+
 		try:
 			classificator = utils.Classificator(script_work_dir)
 		except FileNotFoundError as exception_data:
 			self.printer.critical(f"Script file \"{exception_data}\" doesn't exists.")
-			return False			
-		
+			return False
+
 
 		executable_lines = classificator.read_script()
 		validation_errors = classificator.validate_script(executable_lines)
-		
+
 		for error_data in validation_errors:
 			self.printer.error(f"[{error_data.line.file.name}:{error_data.line.number}] {error_data.message}")
-		
+
 		if validation_errors:
 			self.printer.critical("Script failure due to validation errors.")
 			return False
-		
+
 		try:
 			procedures = classificator.parse_operations(executable_lines)
 		except exceptions.utils.classificator.ScriptRuntimeError as exception_data:
 			self.printer.critical(str(exception_data))
 			return False
-		
+
 		classification_result = classificator.classify(parameters.target, procedures, ignore_case = parameters.is_ignore_case)
-		
+
 		if parameters.is_output_json:
 			self.printer.json(classification_result.to_dict())
 		else:

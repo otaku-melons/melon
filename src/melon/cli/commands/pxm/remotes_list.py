@@ -24,7 +24,7 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
 		Генерирует модель команды.
-		
+
 		:param model: Шаблон модели команды.
 		:type model: Command
 		:return: Модель команды.
@@ -37,7 +37,7 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 	def _export_description(self) -> str:
 		"""
 		Возвращает описание команды.
-		
+
 		:return: Описание команды.
 		:rtype: str
 		"""
@@ -86,7 +86,7 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 			"PARSER": [],
 			"REPOSITORY": [],
 		}
-	
+
 		for ParserName in self.system_objects.manager.repositories.available_parsers:
 			RepositoryURL: str = self.system_objects.manager.repositories.get(ParserName, exception = True)
 			Status = "✅" if ParserName in InstalledParsers else "❌"

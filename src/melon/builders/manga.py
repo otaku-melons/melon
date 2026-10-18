@@ -80,7 +80,7 @@ class _MCBF_Simple(_BaseChapterBuilder):
 			os.replace(temp_dir / File, target_dir / File)
 
 		return target_dir
-	
+
 class _MCBF_ZIP(_BaseChapterBuilder):
 	"""Формат сборки: архив *.zip."""
 
@@ -102,7 +102,7 @@ class _MCBF_ZIP(_BaseChapterBuilder):
 		shutil.make_archive(BaseName.as_posix(), "zip", temp_dir)
 
 		return target_dir / f"{name}.zip"
-	
+
 class _MCBF_CBZ(_MCBF_ZIP):
 	"""Формат сборки: архив *.cbz."""
 
@@ -123,7 +123,7 @@ class _MCBF_CBZ(_MCBF_ZIP):
 		ArchivePath = super().build_chapter(name, temp_dir, target_dir)
 		ComicArchivePath = ArchivePath.with_suffix(".cbz")
 		ArchivePath.rename(ComicArchivePath)
-	
+
 		return ComicArchivePath
 
 class _MCBF_PDF(_BaseChapterBuilder):
@@ -177,15 +177,15 @@ class MangaBuilder(BaseBuilder):
 		:type progress: float | None
 		:raises BuildingError: Ошибка сборки.
 		"""
-		
+
 		ProgressString = self.__GetProgressString(progress)
 		self._SystemObjects.printer.emit(f"{ProgressString}Building chapter <b>{chapter.id}</b>…")
 
 		with TemporaryDirectory(dir = self._ParserTempDirectory) as TempDir:
 			TempDirPath = Path(TempDir)
-			Slides = chapter.slides 
+			Slides = chapter.slides
 			SlidesCount = len(Slides)
-			
+
 			for Index in range(SlidesCount):
 				SlideInfo = Slides[Index]
 				FileIndex = Index + 1
@@ -212,7 +212,7 @@ class MangaBuilder(BaseBuilder):
 
 		if progress is None:
 			return ""
-		
+
 		ProgressString = stringify_float(progress * 100.0) + "%"
 		ProgressString = FastStyler(ProgressString).colorize.bright_cyan
 
@@ -288,7 +288,7 @@ class MangaBuilder(BaseBuilder):
 		Branches = self._Title.data.branches
 		if not Branches:
 			raise exceptions.builders.BuildingError("Title hasn't branches.")
-		
+
 		BranchToBuild = Branches[0]
 
 		if branch_id:
@@ -296,7 +296,7 @@ class MangaBuilder(BaseBuilder):
 
 			if SearchResult:
 				raise exceptions.builders.BuildingError(f"Branch {branch_id} not found.")
-			
+
 			BranchToBuild = cast("Branch", SearchResult)
 
 		Chapters = BranchToBuild.chapters

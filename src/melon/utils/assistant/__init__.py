@@ -117,7 +117,7 @@ class Assistant:
 				"DOMAIN": manifest.domain,
 				"EXTENSION_NAME": data.name,
 				"PARSER_NAME": data.parser_name,
-			} 
+			}
 
 		patch = Patch(file)
 

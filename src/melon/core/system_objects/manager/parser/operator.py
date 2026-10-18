@@ -99,7 +99,7 @@ class ParserOperator:
 
 		self.__extensions_operator: ExtensionsOperator = ExtensionsOperator(self, self.__Parsers.manager)
 		self.__linter: Linter = Linter()
-		
+
 	@run_before_method("_RequireInstallation")
 	def export_settings(self, strategy: ExportStrategies = ExportStrategies.Skip) -> ExportResults:
 		"""
@@ -122,7 +122,7 @@ class ParserOperator:
 			return ExportResults.Missing
 
 		if StorageFile.exists():
-			
+
 			match strategy:
 				case ExportStrategies.Skip:
 					return ExportResults.AlreadyExists
@@ -196,7 +196,7 @@ class ParserOperator:
 		:return: Checks result.
 		:rtype: tuple[CheckResult, ...]
 		"""
-		
+
 		return self.__linter.check(self)
 
 	@run_before_method("_RequireInstallation")
@@ -213,7 +213,7 @@ class ParserOperator:
 
 		if not ManifestFile.exists():
 			raise FileNotFoundError(ManifestFile)
-		
+
 		return ParserManifest(self.__Parsers.manager.system_objects, self.__Name)
 
 	@run_before_method("_RequireInstallation")
@@ -224,7 +224,7 @@ class ParserOperator:
 		:param clear: Указывает, нужно ли удалить временные данные и настройки парсера.
 		:type clear: bool
 		"""
-		
+
 		ElementToRemove: list[Path] = [self.path]
 
 		if clear:

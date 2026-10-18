@@ -18,7 +18,7 @@ class IncludeDirectiveDeniedError(Exception):
 		:type line: int
 		"""
 
-		super().__init__(f"File \"{file}\". Line {line}.") 
+		super().__init__(f"File \"{file}\". Line {line}.")
 
 class ScriptRuntimeError(Exception):
 	"""Исключение: ошибка исполнения скрипта."""
@@ -35,4 +35,4 @@ class ScriptRuntimeError(Exception):
 
 		Message: str = f"[{line.file.name}:{line.number}]"
 		if message: Message += " " + message
-		super().__init__(Message) 
+		super().__init__(Message)
