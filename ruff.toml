@@ -1,0 +1,16 @@
+[lint]
+select = ["A", "ARG", "C", "COM", "E", "F", "I", "N818", "TC", "UP", "W"]
+ignore = ["C901", "E701", "E501", "W191"]
+
+[lint.isort]
+lines-after-imports = 1
+sections = {"dublib" = ["dublib"], "melon" = ["melon"]}
+section-order = [
+	"future",
+	"standard-library",
+	"third-party",
+	"dublib",
+	"melon",
+	"first-party",
+	"local-folder"
+]

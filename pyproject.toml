@@ -4,11 +4,11 @@ build-backend = "uv_build"
 
 [project]
 name = "melon"
-version = "1.0.0-rc.6"
+version = "1.0.0-rc.7"
 description = "Modular parsers management system."
 readme = "README.md"
 authors = [
-	{ name = "DUB1401", email = "vlad.milosta@outlook.com" }
+	{ name = "dub1401", email = "vlad.milosta@outlook.com" }
 ]
 requires-python = ">=3.13"
 dependencies = [
@@ -34,23 +34,6 @@ dev = ["ruff", "ty", "typos"]
 melon = "melon:main"
 pxm = "melon:main"
 urun = "melon:main"
-
-[tool.ruff.lint]
-select = ["A", "ARG", "C", "COM", "E", "F", "I", "N818", "TC", "UP", "W"]
-ignore = ["C901", "E701", "E501", "W191"]
-
-[tool.ruff.lint.isort]
-lines-after-imports = 1
-sections = {"dublib" = ["dublib"], "melon" = ["melon"]}
-section-order = [
-	"future",
-	"standard-library",
-	"third-party",
-	"dublib",
-	"melon",
-	"first-party",
-	"local-folder"
-]
 
 [tool.typos.default.extend-words]
 sigen = "sigen" # Short for signature generator.
