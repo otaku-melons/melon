@@ -87,7 +87,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		position.add_flag("-v1", description = "Based on image sizes and pixels SHA256 hash: exact match.")
 		position.add_flag("-v2", description = "Based on perceptual hash: approximate match.")
 
-		self._add_parser_position(key = "--export", description = "Export signature in parser config.")
+		self._add_parser_position(key = "--export", description = "Export signature in parser config.", important = False)
 
 		return model
 

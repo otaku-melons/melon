@@ -15,6 +15,9 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 ### 🔥 Removed
 - Directives, version and content types in manifest.
 
+### 🐛 Fixed
+- Parser always required for `sigen` command.
+
 ## [1.0.0-rc.6] - 2026-10-23
 
 ### ✨ Added
