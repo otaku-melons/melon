@@ -36,7 +36,7 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 	_Title: "BaseTitleController[BaseTitleData] | None"
 
 	#==========================================================================================#
-	# >>>>> СВОЙСТВА <<<<< #
+	# >>>>> PROPERTIES <<<<< #
 	#==========================================================================================#
 
 	@property
