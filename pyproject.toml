@@ -34,6 +34,3 @@ dev = ["ruff", "ty", "typos"]
 melon = "melon:main"
 pxm = "melon:main"
 urun = "melon:main"
-
-[tool.typos.default.extend-words]
-sigen = "sigen" # Short for signature generator.
