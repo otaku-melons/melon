@@ -1,5 +1,5 @@
 [build-system]
-requires = ["uv-build>=0.13.1,<0.14.0"]
+requires = ["uv-build>=0.13,<0.14"]
 build-backend = "uv_build"
 
 [project]
@@ -13,7 +13,7 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
 	"beautifulsoup4",
-	"dublib>=0.32.0",
+	"dublib==0.32.0",
 	"dulwich>=1.2.6",
 	"EbookLib",
 	"imagehash",

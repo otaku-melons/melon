@@ -132,7 +132,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		:type period: int | None
 		:param filters: Filtering parameters. For more details see parser *README.md*.
 		:type filters: str | None
-		:param pages: Количество запрашиваемых страниц каталога.
+		:param pages: Requested pages count.
 		:type pages: int | None
 		:return: Number of requested catalog pages.
 		:rtype: Sequence[str]
@@ -286,7 +286,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		:type period: int | None
 		:param filters: Строка, описывающая параметры фильтрации.
 		:type filters: str | None
-		:param pages: Количество запрашиваемых страниц каталога.
+		:param pages: Requested pages count.
 		:type pages: int | None
 		:return: Набор собранных алиасов.
 		:rtype: tuple[str, ...]

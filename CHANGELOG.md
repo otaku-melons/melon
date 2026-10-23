@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 For visual categorization of changes emojis are used in accordance with [gitmoji](https://gitmoji.dev).
 
-## [1.0.0-rc.6] - YYYY-MM-DD
+## [1.0.0-rc.6] - 2026-10-23
 
 ### ✨ Added
 - Now extensions can create CLI handlers.
