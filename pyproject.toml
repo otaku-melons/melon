@@ -13,7 +13,7 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
 	"beautifulsoup4",
-	"dublib==0.32.0",
+	"dublib>=0.33.0",
 	"dulwich>=1.2.6",
 	"EbookLib",
 	"imagehash",

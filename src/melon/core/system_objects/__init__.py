@@ -1,6 +1,8 @@
 import atexit
 from importlib.metadata import version
 
+from packaging.version import Version
+
 from ...core.system_objects.manager import Manager
 from ...core.system_objects.options import Options
 from ...core.system_objects.printer import Printer
@@ -14,7 +16,7 @@ class SystemObjects:
 	#==========================================================================================#
 
 	@property
-	def MELON_VERSION(self) -> str:
+	def platform_version(self) -> Version:
 		"""Melon version."""
 
 		return self.__version
@@ -59,6 +61,6 @@ class SystemObjects:
 		self.__printer = Printer(self)
 		self.__temper = Temper(self)
 
-		self.__version: str = version("melon")
+		self.__version: Version = Version(version("melon"))
 
 		atexit.register(self.__printer.progress_indicator.end)

@@ -7,8 +7,8 @@ from dublib.engine.patcher import Patch
 from dublib.functions.filesystem import json
 
 from ...core import exceptions
-from ...core.base.parsers.components.manifest import StoredManifestStruct
-from ...core.base.parsers.components.manifest.enums import ContentTypes, Directives
+from ...core.base.parsers.components.manifest.enums import ContentTypes
+from ...core.base.parsers.components.manifest.models import ManifestModel
 from .structs import ExtensionData, ParserData
 
 if TYPE_CHECKING:
@@ -34,16 +34,13 @@ class Assistant:
 		:type parser_data: ParserData
 		"""
 
-		manifest = StoredManifestStruct(
+		manifest = ManifestModel(
 			domain = parser_data.domain,
-			content_types = tuple(parser_data.content_types),
 			parent = None,
-			version = Directives.last_git_tag.value,
-			melon_required_version = self.__system_objects.MELON_VERSION,
+			platform = self.__system_objects.platform_version,
 		)
 
-		manifest_data: dict = TypeAdapter(StoredManifestStruct).dump_python(manifest)
-		manifest_data["content_types"] = tuple(element.value for element in manifest.content_types)
+		manifest_data: dict = TypeAdapter(ManifestModel).dump_python(manifest)
 
 		json.write(self.__template_path / "manifest.json", manifest_data)
 

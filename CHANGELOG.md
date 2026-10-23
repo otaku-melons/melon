@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 For visual categorization of changes emojis are used in accordance with [gitmoji](https://gitmoji.dev).
 
+## [1.0.0-rc.7]
+
+### 🎨 Changed
+- Manifest now parsed with [pydantic](https://github.com/pydantic/PYDANTIC) model and [dublib](https://github.com/dub1401/dublib) validators
+
+### 🔥 Removed
+- Directives, version and content types in manifest.
+
 ## [1.0.0-rc.6] - 2026-10-23
 
 ### ✨ Added

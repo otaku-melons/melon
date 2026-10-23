@@ -1,16 +1,19 @@
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from dulwich import errors, porcelain
+from packaging.version import Version
 from pydantic import TypeAdapter
 
-from dublib.functions.data import to_sequence
 from dublib.functions.filesystem import json
 
-from ......core import exceptions
-from .enums import ContentTypes, Directives
-from .structs import ManifestStruct, StoredManifestStruct
+from .enums import ContentTypes
+from .models import ManifestModel
 
 if TYPE_CHECKING:
+	from dulwich.refs import Ref
+	from packaging.specifiers import SpecifierSet
+
 	from ......core.system_objects import SystemObjects
 
 class ParserManifest:
@@ -48,7 +51,7 @@ class ParserManifest:
 	def content_types(self) -> tuple[ContentTypes, ...]:
 		"""Supported content types."""
 
-		return tuple(self.__manifest.content_types)
+		return self.__content_types
 
 	@property
 	def parent(self) -> str | None:
@@ -57,99 +60,68 @@ class ParserManifest:
 		return self.__manifest.parent
 
 	@property
-	def version(self) -> str | None:
+	def version(self) -> Version | None:
 		"""Parser version."""
 
-		return self.__manifest.version
+		return self.__version
 
 	@property
-	def melon_required_version(self) -> str | None:
-		"""Melon required version."""
+	def platform(self) -> "SpecifierSet | None":
+		"""Melon supported versions range."""
 
-		return self.__manifest.melon_required_version
+		return self.__manifest.platform
 
 	#==========================================================================================#
 	# >>>>> PRIVATE METHODS <<<<< #
 	#==========================================================================================#
 
-	def __parse_melon_required_version(self, buffer: ManifestStruct, parent_manifest: "ParserManifest | None") -> str | None:
+	def __get_supported_content_types(self) -> tuple[ContentTypes, ...]:
 		"""
-		Parse Melon required version.
+		Get supported content types from parser modules.
 
-		:param buffer: Manifest struct.
-		:type buffer: ManifestStruct
-		:param parent_manifest: Parent parser manifest.
-		:type parent_manifest: ParserManifest | None
-		:return: Melon required version.
-		:rtype: str | None
-		:raises ManifestError: Parent not specified.
+		:return: Supported content types.
+		:rtype: tuple[ContentTypes, ...]
 		"""
 
-		if buffer.melon_required_version is Directives.from_parent:
+		supported_types: set[ContentTypes] = set()
 
-			if not parent_manifest:
-				raise exceptions.parsers.ManifestError("Parent must be specified if using \"$from_parent\".")
+		for content_type in ContentTypes:
+			module_path: Path = Path(f"parsers/{self.__parser_name}/{content_type.value}.py")
 
-			return parent_manifest.melon_required_version
+			if module_path.exists():
+				supported_types.add(content_type)
 
-	def __parse_version(self, buffer: ManifestStruct, parent_manifest: "ParserManifest | None") -> str | None:
+		return tuple(supported_types)
+
+	def __get_version(self) -> Version | None:
 		"""
-		Parse parser version.
+		Get parser version from latest Git tag.
 
-		:param buffer: Manifest struct.
-		:type buffer: ManifestStruct
-		:param parent_manifest: Parent parser manifest.
-		:type parent_manifest: ParserManifest | None
 		:return: Parser version.
-		:rtype: str | None
-		:raises ManifestError: Parent not specified.
+		:rtype: packaging.version.Version | None
 		"""
 
-		if buffer.version is Directives.from_parent:
-			if not parent_manifest:
-				raise exceptions.parsers.ManifestError("Parent must be specified if using \"$from_parent\".")
+		parser_tags: list[Ref] = []
 
-			return parent_manifest.version
+		try:
+			parser_tags = porcelain.tag_list(f"parsers/{self.__parser_name}")
+		except errors.NotGitRepository: pass
 
-		elif buffer.version is Directives.last_git_tag:
-			try:
-				parser_tags = porcelain.tag_list(f"parsers/{self.parser_name}")
-				if parser_tags:
-					return parser_tags[-1].decode().lstrip("v")
-			except errors.NotGitRepository: pass
+		if parser_tags:
+			last_tag: str = parser_tags[-1].decode()
+			return Version(last_tag)
 
-		return None
-
-	def __load(self) -> StoredManifestStruct:
+	def __load(self) -> ManifestModel:
 		"""
 		Load manifest.
 
-		:return: Stored manifest struct.
-		:rtype: StoredManifestStruct
-		:raises ManifestError: Manifest parsing error.
+		:return: Filled manifest model.
+		:rtype: ManifestModel
 		"""
 
 		data: dict = json.read(f"parsers/{self.__parser_name}/manifest.json")
-		buffer: ManifestStruct = TypeAdapter(ManifestStruct).validate_python(data)
-		parent_manifest: ParserManifest | None = None
 
-		if buffer.parent:
-
-			if buffer.parent not in self.__system_objects.manager.parsers.installed:
-				raise exceptions.parsers.ManifestError(f"Parent \"{buffer.parent}\" not installed.")
-
-			parent_manifest = self.__system_objects.manager.parsers.get_operator(buffer.parent).load_manifest()
-
-		buffer.melon_required_version = self.__parse_melon_required_version(buffer, parent_manifest)
-		buffer.version = self.__parse_version(buffer, parent_manifest)
-
-		return StoredManifestStruct(
-			domain = buffer.domain,
-			content_types = to_sequence(buffer.content_types),
-			parent = buffer.parent,
-			version = buffer.version,
-			melon_required_version = buffer.melon_required_version,
-		)
+		return TypeAdapter(ManifestModel).validate_python(data)
 
 	#==========================================================================================#
 	# >>>>> PUBLIC METHODS <<<<< #
@@ -168,7 +140,9 @@ class ParserManifest:
 		self.__system_objects: SystemObjects = system_objects
 		self.__parser_name: str = parser_name
 
-		self.__manifest: StoredManifestStruct = self.__load()
+		self.__manifest: ManifestModel = self.__load()
+		self.__content_types: tuple[ContentTypes, ...] = self.__get_supported_content_types()
+		self.__version: Version | None = self.__get_version()
 		self.__mirror: str | None = None
 
 	def set_mirror(self, mirror: str | None):
