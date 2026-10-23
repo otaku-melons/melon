@@ -2,7 +2,7 @@ from typing import Literal, override
 
 from ..base_format.data import BaseTitleData, ExtraField
 from .chapter import Chapter
-from .enums import Types
+from .enums import Type
 
 class TitleData(BaseTitleData[Chapter]):
 	"""Данные тайтла."""
@@ -18,12 +18,12 @@ class TitleData(BaseTitleData[Chapter]):
 		return "melon-manga"
 
 	@property
-	def title_type(self) -> Types | None:
+	def title_type(self) -> Type | None:
 		"""Тип тайтла."""
 
 		TypeValue = self._data.get("type")
 		if TypeValue:
-			return Types(TypeValue)
+			return Type(TypeValue)
 
 		return None
 
@@ -63,12 +63,12 @@ class TitleData(BaseTitleData[Chapter]):
 	# >>>>> PUBLIC METHODS УСТАНОВКИ СВОЙСТВ <<<<< #
 	#==========================================================================================#
 
-	def set_title_type(self, title_type: Types | None):
+	def set_title_type(self, title_type: Type | None):
 		"""
 		Задаёт тип тайтла.
 
 		:param title_type: Тип тайтла.
-		:type title_type: Types | None
+		:type title_type: Type | None
 		"""
 
 		self._data["type"] = title_type.value if title_type else None

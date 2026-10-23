@@ -1,7 +1,7 @@
 from enum import Enum
 
-class Types(Enum):
-	"""Перечисление типов манги."""
+class Type(Enum):
+	"""Manga type."""
 
 	manga = "manga"
 	manhwa = "manhwa"

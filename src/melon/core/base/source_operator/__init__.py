@@ -15,7 +15,7 @@ from ..parsers.components.images_downloader import (
 	ImageDownloadingResult,
 	ImagesDownloader,
 )
-from ..parsers.components.manifest import ContentTypes, ParserManifest
+from ..parsers.components.manifest import ContentType, ParserManifest
 from ..parsers.components.settings import ParserSettings
 from ..structs.title import TitleDescriptor
 from .properties import SourceProperties
@@ -371,18 +371,18 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 
 		descriptor = TitleDescriptor(self)
 		descriptor.set_slug(title_data["slug"])
-		descriptor.set_content_type(ContentTypes(type_name))
+		descriptor.set_content_type(ContentType(type_name))
 
 		return descriptor
 
-	def get_content_type_by_slug(self, slug: str) -> ContentTypes:  # noqa: ARG002
+	def get_content_type_by_slug(self, slug: str) -> ContentType:  # noqa: ARG002
 		"""
 		Определяет тип контента по алиасу тайтла.
 
 		:param slug: Алиас тайтла.
 		:type slug: str
 		:return: Тип контента.
-		:rtype: ContentTypes
+		:rtype: ContentType
 		"""
 
 		# To-Do: метод для определения типа контента по алиасу.
@@ -400,12 +400,12 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 
 		return self._is_title_exists(slug)
 
-	def launch_parser(self, content_type: ContentTypes | None = None) -> "BaseParser":
+	def launch_parser(self, content_type: ContentType | None = None) -> "BaseParser":
 		"""
 		Инициализирует парсер для контента определённого типа.
 
 		:param content_type: Тип контента. По умолчанию берётся первый описанный.
-		:type content_type: ContentTypes | None
+		:type content_type: ContentType | None
 		:raises UnsupportedContentError: Неподдерживаемый тип контента.
 		:return: Парсер.
 		:rtype: BaseParser

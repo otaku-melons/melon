@@ -7,7 +7,7 @@ from dublib.engine.patcher import Patch
 from dublib.functions.filesystem import json
 
 from ...core import exceptions
-from ...core.base.parsers.components.manifest.enums import ContentTypes
+from ...core.base.parsers.components.manifest.enums import ContentType
 from ...core.base.parsers.components.manifest.models import ManifestModel
 from .structs import ExtensionData, ParserData
 
@@ -183,7 +183,7 @@ class Assistant:
 		self.__replace_placeholders(self.__template_path / "README.md", parser_data)
 		self.__create_manifest(parser_data)
 
-		for content_type in ContentTypes:
+		for content_type in ContentType:
 			if content_type not in parser_data.content_types:
 				submodule_name = self.__template_path / f"{content_type.value}.py"
 				submodule_name.unlink()

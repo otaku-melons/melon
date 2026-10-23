@@ -5,7 +5,7 @@ import questionary
 from dublib.cli.text_styler import FastStyler
 from dublib.validators import types
 
-from ....core.base.parsers.components.manifest.enums import ContentTypes
+from ....core.base.parsers.components.manifest.enums import ContentType
 from ....utils.assistant import Assistant
 from ....utils.assistant.structs import ParserData
 from ...base.structs import PreparedData, ProcessorOptions
@@ -22,12 +22,12 @@ class CommandProcessor(CommandProcessorTemplate[BaseParameters]):
 	# >>>>> PRIVATE METHODS <<<<< #
 	#==========================================================================================#
 
-	def __ask_content_types(self) -> tuple[ContentTypes, ...] | None:
+	def __ask_content_types(self) -> tuple[ContentType, ...] | None:
 		"""
 		Ask content types and parse it.
 
 		:return: Content types.
-		:rtype: tuple[ContentTypes, ...] | None
+		:rtype: tuple[ContentType, ...] | None
 		"""
 
 		choice: str | None = questionary.select("Content types:", choices = ("manga", "ranobe", "all")).ask(kbi_msg = self.__kbi_msg)
@@ -35,9 +35,9 @@ class CommandProcessor(CommandProcessorTemplate[BaseParameters]):
 		if choice is None:
 			return
 		elif choice == "all":
-			return (ContentTypes.Manga, ContentTypes.Ranobe)
+			return (ContentType.Manga, ContentType.Ranobe)
 
-		return (ContentTypes(choice),)
+		return (ContentType(choice),)
 
 	def __ask_domain(self) -> str | None:
 		"""
@@ -133,7 +133,7 @@ class CommandProcessor(CommandProcessorTemplate[BaseParameters]):
 		if name is None: return False
 		domain: str | None = self.__ask_domain()
 		if domain is None: return False
-		content_types: tuple[ContentTypes, ...] | None = self.__ask_content_types()
+		content_types: tuple[ContentType, ...] | None = self.__ask_content_types()
 		if content_types is None: return False
 
 		data = ParserData(name, domain, content_types)

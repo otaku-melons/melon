@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, override
 from dublib.functions.filesystem import text
 
 from ..base import BaseCheck
-from ..enums import ChecksStatuses
+from ..enums import CheckStatus
 
 if TYPE_CHECKING:
 	from pathlib import Path
@@ -49,7 +49,7 @@ class Check(BaseCheck):
 		git: Path = operator.path / ".git"
 
 		if not git.exists():
-			self._emit(ChecksStatuses.Skipped, "Git repository not found.")
+			self._emit(CheckStatus.Skipped, "Git repository not found.")
 
 		if not self.__is_pycache_ignored(operator):
-			self._emit(ChecksStatuses.Warning, "<b>__pycache__</b> should be ignored.")
+			self._emit(CheckStatus.Warning, "<b>__pycache__</b> should be ignored.")

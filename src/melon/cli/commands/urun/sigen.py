@@ -20,7 +20,7 @@ class Parameters(T_OptionalSingleParser):
 	"""Required by command processor parameters."""
 
 	image: Path
-	signature_version: utils.unstubber.SignaturesVersions
+	signature_version: utils.unstubber.SignatureVersion
 
 class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	"""Обработчик команды."""
@@ -117,7 +117,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		version_key: str = entity.get_position_value("VERSION", expected_type = str, important = True)
 		version_key = version_key.lstrip("-")
-		version = utils.unstubber.SignaturesVersions[version_key]
+		version = utils.unstubber.SignatureVersion[version_key]
 
 		return Parameters(
 			required_parser = prepared_data.required_parsers[0] if prepared_data.required_parsers else None,

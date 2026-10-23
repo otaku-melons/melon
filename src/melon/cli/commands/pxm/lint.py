@@ -7,7 +7,7 @@ from dublib.cli.text_styler import FastStyler
 from dublib.functions.data import stringify_float
 
 from ....core.system_objects.manager.parser.linter.base.structs import CheckResult
-from ....core.system_objects.manager.parser.linter.enums import ChecksStatuses
+from ....core.system_objects.manager.parser.linter.enums import CheckStatus
 from ...base import BaseCommandProcessor
 from ...base.templates import T_SingleParserRequired
 
@@ -38,12 +38,12 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 	# >>>>> PRIVATE METHODS <<<<< #
 	#==========================================================================================#
 
-	def __colorize_text(self, status: ChecksStatuses, text: str) -> str:
+	def __colorize_text(self, status: CheckStatus, text: str) -> str:
 		"""
 		Colorize text according check status.
 
 		:param status: Checks statuses enumeration.
-		:type status: ChecksStatuses
+		:type status: CheckStatus
 		:param text: Text for colorization.
 		:type text: str
 		:return: Colorized text.
@@ -51,10 +51,10 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 		"""
 
 		match status:
-			case ChecksStatuses.OK: return FastStyler(text).colorize.green
-			case ChecksStatuses.Skipped: return FastStyler(text).colorize.bright_cyan
-			case ChecksStatuses.Error: return FastStyler(text).colorize.red
-			case ChecksStatuses.Warning: return FastStyler(text).colorize.yellow
+			case CheckStatus.OK: return FastStyler(text).colorize.green
+			case CheckStatus.Skipped: return FastStyler(text).colorize.bright_cyan
+			case CheckStatus.Error: return FastStyler(text).colorize.red
+			case CheckStatus.Warning: return FastStyler(text).colorize.yellow
 
 		return text
 
@@ -86,7 +86,7 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 			progress_string: str = stringify_float(progress, round_factor = 1) + "%"
 			progress_string = progress_string.rjust(5)
 			progress_string = f"[{number}/{results_count} {progress_string}]"
-			status: str = "passed" if result.status is ChecksStatuses.OK else result.status.name.lower()
+			status: str = "passed" if result.status is CheckStatus.OK else result.status.name.lower()
 			name: str = result.name
 			message: str = result.message or ""
 
@@ -182,9 +182,9 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 
 		for result in linting_results:
 			match result.status:
-				case ChecksStatuses.Skipped: statistics.skipped += 1
-				case ChecksStatuses.Error: statistics.errors += 1
-				case ChecksStatuses.Warning: statistics.warnings += 1
+				case CheckStatus.Skipped: statistics.skipped += 1
+				case CheckStatus.Error: statistics.errors += 1
+				case CheckStatus.Warning: statistics.warnings += 1
 
 		self.__print_results(linting_results)
 		self.__print_statistics(statistics)

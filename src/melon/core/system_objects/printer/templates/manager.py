@@ -2,26 +2,26 @@ from prettytable import PLAIN_COLUMNS, PrettyTable
 
 from dublib.cli.text_styler import FastStyler
 
-from ...manager.parser.enums import ExportResults
+from ...manager.parser.enums import ExportResult
 from ._base import _BaseTemplatesSection
 
 class ManagerTemplates(_BaseTemplatesSection):
 	"""Расширенные шаблоны вывода: системный менеджер."""
 
-	def exported(self, result: ExportResults):
+	def exported(self, result: ExportResult):
 		"""
 		Шаблон вывода: результат экспорта настроек.
 
 		:param result: Результат экспорта настроек.
-		:type result: ExportResults
+		:type result: ExportResult
 		"""
 
 		match result:
-			case ExportResults.Missing: self.printer.emit("Preset missing. Skipped.")
-			case ExportResults.Installed: self.printer.emit("Config installed.")
-			case ExportResults.AlreadyExists: self.printer.emit("Config already exists. Skipped.")
-			case ExportResults.Overwtitten: self.printer.emit("Config overwritten.")
-			case ExportResults.Merged: self.printer.emit("Config merged with preset.")
+			case ExportResult.Missing: self.printer.emit("Preset missing. Skipped.")
+			case ExportResult.Installed: self.printer.emit("Config installed.")
+			case ExportResult.AlreadyExists: self.printer.emit("Config already exists. Skipped.")
+			case ExportResult.Overwtitten: self.printer.emit("Config overwritten.")
+			case ExportResult.Merged: self.printer.emit("Config merged with preset.")
 
 	def parsers_table(self, columns: dict[str, list[str]]):
 		"""

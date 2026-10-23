@@ -1,7 +1,7 @@
 from enum import Enum
 
-class ChecksStatuses(Enum):
-	"""Checks statuses enumeration."""
+class CheckStatus(Enum):
+	"""Linter rule check status."""
 
 	OK = 0
 	Skipped = 1

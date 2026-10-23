@@ -1,6 +1,6 @@
 from enum import Enum
 
-class ContentTypes(Enum):
+class ContentType(Enum):
 	"""Content types enumeration."""
 
 	Manga = "manga"

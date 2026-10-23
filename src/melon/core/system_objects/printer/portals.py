@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Literal, NoReturn, overload
 from dublib.web_requestor import WebResponse
 
 from ... import exceptions
-from ...base.formats.base_format.enums import ImagesTypes
+from ...base.formats.base_format.enums import ImageType
 
 if TYPE_CHECKING:
 	from ...base.formats.base_format.chapter import BaseChapter
@@ -205,6 +205,6 @@ class Portals:
 		"""
 
 		title.data.clear_covers()
-		title.remove_images_type_directory(ImagesTypes.Cover)
+		title.remove_images_type_directory(ImageType.Cover)
 
 		self.__Printer.emit("Stubs detected. Covers data cleared.")

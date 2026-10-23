@@ -9,7 +9,7 @@ from .... import exceptions
 from ...parsers.components.words_dictionary import CheckLanguageCode
 from ...structs.image import ImageData
 from .branch import Branch
-from .enums import Statuses
+from .enums import Status
 from .person import Person
 from .structs import ChapterSearchResult, ExtraField
 
@@ -127,7 +127,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		return tuple(self._persons)
 
 	@property
-	def status(self) -> Statuses | None:
+	def status(self) -> Status | None:
 		"""Статус тайтла."""
 
 		return self._data["status"]
@@ -845,12 +845,12 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 		self._data["slug"] = slug
 
-	def set_status(self, status: Statuses | None):
+	def set_status(self, status: Status | None):
 		"""
 		Задаёт статус тайтла.
 
 		:param status: Статус тайтла.
-		:type status: Statuses | None
+		:type status: Status | None
 		"""
 
 		self._data["status"] = status.value if status else None

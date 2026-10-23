@@ -9,7 +9,7 @@ from ....core import exceptions
 from ..formats.base_format.branch import Branch
 from ..formats.base_format.controller import BaseTitleController
 from ..formats.base_format.data import BaseTitleData
-from ..formats.base_format.enums import ImagesTypes
+from ..formats.base_format.enums import ImageType
 from ..parsers.components.images_downloader import (
 	ImageDownloadingResult,
 	ImagesDownloader,
@@ -98,14 +98,14 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 	#==========================================================================================#
 
 	@run_before_method("_require_title")
-	def _download_images(self, images_data: Sequence[ImageData], images_type: ImagesTypes, force_mode: bool) -> list[ImageDownloadingResult]:
+	def _download_images(self, images_data: Sequence[ImageData], images_type: ImageType, force_mode: bool) -> list[ImageDownloadingResult]:
 		"""
 		Скачивает изображения тайтла определённого типа.
 
 		:param images_data: Данные изображений.
 		:type images_data: Sequence[ImageData]
 		:param images_type: Тип изображений.
-		:type images_type: ImagesTypes
+		:type images_type: ImageType
 		:param force_mode: Указывает, перезаписывать ли существующие файлы изображений.
 		:type force_mode: bool
 		:return: Список результатов скачивания изображений.
@@ -278,14 +278,14 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 
 		title = cast('BaseTitleController["BaseTitleData"]', self._title)
 
-		covers_results = self._download_images(title.data.covers, ImagesTypes.Cover, force_mode)
+		covers_results = self._download_images(title.data.covers, ImageType.Cover, force_mode)
 		self._unstub_covers(title, covers_results)
 
 		persons_images: list[ImageData] = []
 		for person in title.data.perons:
 			persons_images += person.images
 
-		persons_results = self._download_images(persons_images, ImagesTypes.Person, force_mode)
+		persons_results = self._download_images(persons_images, ImageType.Person, force_mode)
 		self._unstub_persons(title.data, persons_results)
 
 		return tuple(covers_results + persons_results)

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, NoReturn
 
-from ..enums import ChecksStatuses
+from ..enums import CheckStatus
 from .signals import CheckStopSignalError
 from .structs import CheckResult
 
@@ -25,12 +25,12 @@ class BaseCheck(ABC):
 	# >>>>> PROTECTED METHODS <<<<< #
 	#==========================================================================================#
 
-	def _emit(self, status: ChecksStatuses, message: str | None = None) -> NoReturn:
+	def _emit(self, status: CheckStatus, message: str | None = None) -> NoReturn:
 		"""
 		Raise lint check stop signal and emit message.
 
 		:param status: Check status.
-		:type status: ChecksStatuses
+		:type status: CheckStatus
 		:param message: Check message.
 		:type message: str | None
 		:raises CheckStopSignalError: Stop checking signal.
@@ -46,7 +46,7 @@ class BaseCheck(ABC):
 		:type message: str | None
 		"""
 
-		self._emit(ChecksStatuses.OK, message)
+		self._emit(CheckStatus.OK, message)
 
 	#==========================================================================================#
 	# >>>>> OVERRIDABLE METHODS <<<<< #
@@ -94,4 +94,4 @@ class BaseCheck(ABC):
 		except CheckStopSignalError as exception:
 			return CheckResult(self.name, exception.status, exception.message)
 
-		return CheckResult(self.name, ChecksStatuses.OK)
+		return CheckResult(self.name, CheckStatus.OK)

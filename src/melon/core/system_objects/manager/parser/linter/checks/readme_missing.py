@@ -2,7 +2,7 @@ import os
 from typing import TYPE_CHECKING, override
 
 from ..base import BaseCheck
-from ..enums import ChecksStatuses
+from ..enums import CheckStatus
 
 if TYPE_CHECKING:
 	from ...operator import ParserOperator
@@ -25,6 +25,6 @@ class Check(BaseCheck):
 
 		for file in lower_files:
 			if file.startswith("readme."):
-				self._emit(ChecksStatuses.OK)
+				self._emit(CheckStatus.OK)
 
-		self._emit(ChecksStatuses.Warning, "Readme file not provided.")
+		self._emit(CheckStatus.Warning, "Readme file not provided.")

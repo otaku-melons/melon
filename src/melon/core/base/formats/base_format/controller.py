@@ -13,7 +13,7 @@ from dublib.functions.data import zerotify
 from dublib.functions.filesystem import json
 
 from .... import exceptions
-from .enums import By, ImagesTypes
+from .enums import By, ImageType
 from .structs import SavingResult
 
 if TYPE_CHECKING:
@@ -353,12 +353,12 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 
 		self._post_init()
 
-	def get_images_type_directory(self, images_type: ImagesTypes, create: bool = True) -> Path:
+	def get_images_type_directory(self, images_type: ImageType, create: bool = True) -> Path:
 		"""
 		Возвращает путь к директории типа изображений, автоматически создаёт её.
 
 		:param images_type: Тип изображений.
-		:type images_type: ImagesTypes
+		:type images_type: ImageType
 		:param create: Указывает, пытаться ли создавать директорию.
 		:type create: bool
 		:return: Путь к существующей директории типа изображений.
@@ -444,12 +444,12 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 
 		return MergedChaptersCount
 
-	def remove_images_type_directory(self, images_type: ImagesTypes):
+	def remove_images_type_directory(self, images_type: ImageType):
 		"""
 		Удаляет директорию типа изображений со всем содержимым.
 
 		:param images_type: Тип изображений.
-		:type images_type: ImagesTypes
+		:type images_type: ImageType
 		"""
 
 		directory = self.get_images_type_directory(images_type, create = False)

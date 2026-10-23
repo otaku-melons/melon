@@ -1,14 +1,14 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from .enums import Cases, ClassificatorsTypes, Directives
+from .enums import Case, ClassificatorType, Directive
 
 @dataclass
 class WorkData:
 	"""Данные процесса обработки скрипта."""
 
-	current_type: ClassificatorsTypes | None = None
-	current_case: Cases | None = None
+	current_type: ClassificatorType | None = None
+	current_case: Case | None = None
 	is_delete: bool = False
 
 @dataclass(frozen = True)
@@ -17,7 +17,7 @@ class ClassificationResult:
 
 	is_operation_found: bool = False
 	name: str | None = None
-	type: ClassificatorsTypes | None = None
+	type: ClassificatorType | None = None
 	delete: bool | None = None
 	is_renamed: bool | None = None
 
@@ -51,12 +51,12 @@ class ExecutableLine:
 
 		return self.value.startswith("*")
 
-	def is_directive(self, directive: Directives | None = None) -> bool:
+	def is_directive(self, directive: Directive | None = None) -> bool:
 		"""
 		Проверяет, представляет ли исполняемая строка скрипта директиву.
 
 		:param directive: Тип директивы для конкретизации проверки. По умолчанию любая директива.
-		:type directive: Directives | None
+		:type directive: Directive | None
 		:return: Возвращает `True`, если строка представляет соответствующую директиву.
 		:rtype: bool
 		"""
@@ -71,10 +71,10 @@ class Operation:
 	"""Представление операции над классификатором."""
 
 	name: str
-	type: ClassificatorsTypes | None
+	type: ClassificatorType | None
 	delete: bool | None
 	rename: str | None
-	case: Cases | None
+	case: Case | None
 
 	def process(self, value: str) -> str | None:
 		"""
@@ -93,9 +93,9 @@ class Operation:
 			return self.rename
 
 		match self.case:
-			case Cases.Low: return value.lower()
-			case Cases.Title: return value.title()
-			case Cases.Up: return value.upper()
+			case Case.Low: return value.lower()
+			case Case.Title: return value.title()
+			case Case.Up: return value.upper()
 
 		return value
 

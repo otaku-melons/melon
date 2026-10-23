@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, cast, override
 
 from ..base_format.chapter import BaseChapter
 from .elements import Blockquote, Header, Image, Paragraph
-from .enums import ChaptersTypes
+from .enums import ChapterType
 
 if TYPE_CHECKING:
 	from collections.abc import Sequence
@@ -27,10 +27,10 @@ class Chapter(BaseChapter):
 		return tuple(self._data["paragraphs"])
 
 	@property
-	def type(self) -> ChaptersTypes | None:
+	def type(self) -> ChapterType | None:
 		"""Тип главы."""
 
-		return ChaptersTypes[self._data["type"]]
+		return ChapterType[self._data["type"]]
 
 	#==========================================================================================#
 	# >>>>> OVERRIDABLE METHODS <<<<< #
@@ -107,12 +107,12 @@ class Chapter(BaseChapter):
 
 		for Element in elements: self.add_element(Element)
 
-	def set_type(self, chapter_type: ChaptersTypes | None):
+	def set_type(self, chapter_type: ChapterType | None):
 		"""
 		Задаёт тип главы.
 
 		:param chapter_type: Тип главы.
-		:type chapter_type: ChaptersTypes | None
+		:type chapter_type: ChapterType | None
 		"""
 
 		self._data["type"] = chapter_type.value if chapter_type else None

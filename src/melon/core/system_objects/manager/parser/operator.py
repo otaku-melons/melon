@@ -10,7 +10,7 @@ from dublib.functions.filesystem import json
 from .....core import exceptions
 from ....base.parsers.components.manifest import ParserManifest
 from ....base.parsers.components.settings import ParserSettings
-from .enums import ExportResults, ExportStrategies
+from .enums import ExportResult, ExportStrategy
 from .extensions import ExtensionsOperator
 from .linter import CheckResult, Linter
 
@@ -101,14 +101,14 @@ class ParserOperator:
 		self.__linter: Linter = Linter()
 
 	@run_before_method("_RequireInstallation")
-	def export_settings(self, strategy: ExportStrategies = ExportStrategies.Skip) -> ExportResults:
+	def export_settings(self, strategy: ExportStrategy = ExportStrategy.Skip) -> ExportResult:
 		"""
 		Экспортирует настройки парсера.
 
 		:param strategy: Стратегия экспорта настроек при конфликте файлов.
-		:type strategy: ExportStrategies
+		:type strategy: ExportStrategy
 		:return: Результат экспорта настроек.
-		:rtype: ExportResults
+		:rtype: ExportResult
 		"""
 
 		BaseConfig: dict = ParserSettings.get_base_settings(self.__Parsers.manager.system_objects, self.__Name)
@@ -119,27 +119,27 @@ class ParserOperator:
 			Buffer: dict = json.read(PresetFile)
 			Config = dictionary.deep_merge(BaseConfig, Buffer, uniqueness = True)
 		else:
-			return ExportResults.Missing
+			return ExportResult.Missing
 
 		if StorageFile.exists():
 
 			match strategy:
-				case ExportStrategies.Skip:
-					return ExportResults.AlreadyExists
+				case ExportStrategy.Skip:
+					return ExportResult.AlreadyExists
 
-				case ExportStrategies.Overwrite:
+				case ExportStrategy.Overwrite:
 					json.write(StorageFile, Config)
-					return ExportResults.Overwtitten
+					return ExportResult.Overwtitten
 
-				case ExportStrategies.Merge:
+				case ExportStrategy.Merge:
 					CurrentConfig: dict = json.read(StorageFile)
 					Config = dictionary.deep_merge(Config, CurrentConfig, uniqueness = True)
 					json.write(StorageFile, Config)
-					return ExportResults.Merged
+					return ExportResult.Merged
 
 		json.write(StorageFile, Config)
 
-		return ExportResults.Installed
+		return ExportResult.Installed
 
 	def install(self):
 		"""

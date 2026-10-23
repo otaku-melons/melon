@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, override
 
 from ..base import BaseCheck
-from ..enums import ChecksStatuses
+from ..enums import CheckStatus
 
 if TYPE_CHECKING:
 	from ...operator import ParserOperator
@@ -30,4 +30,4 @@ class Check(BaseCheck):
 				stem: str = file_path.stem
 
 				if stem not in allowed_scripts:
-					self._emit(ChecksStatuses.Warning, f"Script file <b>{stem}</b> should be in modules subdirectory.")
+					self._emit(CheckStatus.Warning, f"Script file <b>{stem}</b> should be in modules subdirectory.")

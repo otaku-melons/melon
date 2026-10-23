@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 	from ....core.base.formats.base_format.controller import BaseTitleController
 	from ....core.base.parsers.base_parser import BaseParser
-	from ....core.base.parsers.components.manifest import ContentTypes
+	from ....core.base.parsers.components.manifest import ContentType
 	from ....core.base.source_operator import BaseSourceOperator
 	from ...base.structs import PreparedData
 
@@ -303,7 +303,7 @@ class Parameters(T_ForceModeRequired, T_SingleParserRequired):
 	is_download_images: bool
 	is_cold_saving: bool
 
-class ParsingSignals(Enum):
+class ParsingSignal(Enum):
 	"""Сигналы парсинга."""
 
 	OK = 0
@@ -371,31 +371,31 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		ErrorsCount: int = 0
 		TotalCount: int = len(slugs)
 
-		CurrentContentType: ContentTypes | None = None
+		CurrentContentType: ContentType | None = None
 		Parser = source_operator.launch_parser()
 
 		for Index in range(start_index, TotalCount):
 			Slug = slugs[Index]
 			source_operator.shared_data.set_last_parsed_slug(Slug)
 
-			ContentType = source_operator.get_content_type_by_slug(Slug)
-			if ContentType is not CurrentContentType:
-				CurrentContentType = ContentType
-				Parser = source_operator.launch_parser(ContentType)
+			content_type = source_operator.get_content_type_by_slug(Slug)
+			if content_type is not CurrentContentType:
+				CurrentContentType = content_type
+				Parser = source_operator.launch_parser(content_type)
 
 			Title = Parser.init_empty_title(Slug)
 			self.printer.templates.parsing.start(Title.data, Index, TotalCount)
 
 			match self.__parse_safely(parameters, Parser, Title):
 
-				case ParsingSignals.Break:
+				case ParsingSignal.Break:
 					break
 
-				case ParsingSignals.NotFound:
+				case ParsingSignal.NotFound:
 					NotFoundCount += 1
 					continue
 
-				case ParsingSignals.Error:
+				case ParsingSignal.Error:
 					ErrorsCount += 1
 					continue
 
@@ -412,7 +412,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		return ParsingStatistics(ParsedCount, NotFoundCount, ErrorsCount)
 
-	def __parse_safely(self, parameters: Parameters, parser: "BaseParser", title: "BaseTitleController") -> ParsingSignals:
+	def __parse_safely(self, parameters: Parameters, parser: "BaseParser", title: "BaseTitleController") -> ParsingSignal:
 		"""
 		Выполняет парсинг тайта, отлавливая общие исключения.
 
@@ -423,7 +423,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:param title: Контроллер тайтла.
 		:type title: BaseTitleController
 		:return: Сигнал парсинга.
-		:rtype: ParsingSignals
+		:rtype: ParsingSignal
 		"""
 
 		try:
@@ -440,24 +440,24 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 				self.printer.emit("Amending skipped by flag.")
 
 		except exceptions.parsing.AuthorizationRequiredError:
-			return ParsingSignals.Break
+			return ParsingSignal.Break
 
 		except exceptions.parsing.ParsingError:
-			return ParsingSignals.Error
+			return ParsingSignal.Error
 
 		except exceptions.parsing.TitleNotFoundError:
-			return ParsingSignals.NotFound
+			return ParsingSignal.NotFound
 
 		except (JSONDecodeError, exceptions.parsers.UnsupportedFormatError):
 			self.printer.error("Unsupported JSON format or decoding error.")
-			return ParsingSignals.Error
+			return ParsingSignal.Error
 
 		except Exception:
 			Traceback = traceback.format_exc().rstrip()
 			self.printer.error(f"Current title skipped due to exception: \"{Traceback}\".")
-			return ParsingSignals.Error
+			return ParsingSignal.Error
 
-		return ParsingSignals.OK
+		return ParsingSignal.OK
 
 	def __skip_slugs_before(self, slugs: tuple[str, ...], starting_slug: str) -> int:
 		"""

@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-	from ..parsers.components.manifest import ContentTypes
+	from ..parsers.components.manifest import ContentType
 	from ..source_operator import BaseSourceOperator
 
 class TitleDescriptor:
@@ -13,7 +13,7 @@ class TitleDescriptor:
 	#==========================================================================================#
 
 	@property
-	def content_type(self) -> "ContentTypes | None":
+	def content_type(self) -> "ContentType | None":
 		"""Тип контента."""
 
 		return self._content_type
@@ -82,16 +82,16 @@ class TitleDescriptor:
 
 		self._id: int | None = None
 		self._slug: str | None = None
-		self._content_type: ContentTypes | None = None
+		self._content_type: ContentType | None = None
 		self._filename: str | None = None
 		self._extra: dict[str, Any] = {}
 
-	def set_content_type(self, content_type: "ContentTypes | None"):
+	def set_content_type(self, content_type: "ContentType | None"):
 		"""
 		Задаёт тип контента.
 
 		:param content_type: Тип контента.
-		:type content_type: ContentTypes | None
+		:type content_type: ContentType | None
 		"""
 
 		self._content_type = content_type

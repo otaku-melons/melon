@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, override
 from dublib.functions.filesystem import text
 
 from ..base import BaseCheck
-from ..enums import ChecksStatuses
+from ..enums import CheckStatus
 
 if TYPE_CHECKING:
 	from pathlib import Path
@@ -64,7 +64,7 @@ class Check(BaseCheck):
 			match = re.fullmatch(self.__pattern, import_line)
 
 			if not match:
-				self._emit(ChecksStatuses.Error, "Extension name export error.")
+				self._emit(CheckStatus.Error, "Extension name export error.")
 
 			module_name: str = match.group(1)
 			class_name: str = match.group(2)
@@ -86,11 +86,11 @@ class Check(BaseCheck):
 
 		extensions_diresctory: Path = operator.path / "extensions"
 		if not extensions_diresctory.exists():
-			self._emit(ChecksStatuses.Skipped, "Extensions not found.")
+			self._emit(CheckStatus.Skipped, "Extensions not found.")
 
 		extensions_module: Path = operator.path / "extensions" / "__init__.py"
 		if not extensions_module.exists():
-			self._emit(ChecksStatuses.Error, "Extensions names not exported.")
+			self._emit(CheckStatus.Error, "Extensions names not exported.")
 
 		content: str = text.read(extensions_module)
 
@@ -104,11 +104,11 @@ class Check(BaseCheck):
 
 		for name in extensions_names:
 			if name not in exported_names:
-				self._emit(ChecksStatuses.Error, f"Extension <b>{name}</b> not exported.")
+				self._emit(CheckStatus.Error, f"Extension <b>{name}</b> not exported.")
 
 		for name in exported_classes:
 			if name not in all_names:
-				self._emit(ChecksStatuses.Error, f"Extension class name <b>{name}</b> isn't present in <b>__all__</b> list.")
+				self._emit(CheckStatus.Error, f"Extension class name <b>{name}</b> isn't present in <b>__all__</b> list.")
 
 	def _post_init(self):
 		"""This method will be executed after instance initialization."""

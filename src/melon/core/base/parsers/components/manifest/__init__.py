@@ -7,7 +7,7 @@ from pydantic import TypeAdapter
 
 from dublib.functions.filesystem import json
 
-from .enums import ContentTypes
+from .enums import ContentType
 from .models import ManifestModel
 
 if TYPE_CHECKING:
@@ -48,7 +48,7 @@ class ParserManifest:
 		return self.__mirror or self.original_domain
 
 	@property
-	def content_types(self) -> tuple[ContentTypes, ...]:
+	def content_types(self) -> tuple[ContentType, ...]:
 		"""Supported content types."""
 
 		return self.__content_types
@@ -75,17 +75,17 @@ class ParserManifest:
 	# >>>>> PRIVATE METHODS <<<<< #
 	#==========================================================================================#
 
-	def __get_supported_content_types(self) -> tuple[ContentTypes, ...]:
+	def __get_supported_content_types(self) -> tuple[ContentType, ...]:
 		"""
 		Get supported content types from parser modules.
 
 		:return: Supported content types.
-		:rtype: tuple[ContentTypes, ...]
+		:rtype: tuple[ContentType, ...]
 		"""
 
-		supported_types: set[ContentTypes] = set()
+		supported_types: set[ContentType] = set()
 
-		for content_type in ContentTypes:
+		for content_type in ContentType:
 			module_path: Path = Path(f"parsers/{self.__parser_name}/{content_type.value}.py")
 
 			if module_path.exists():
@@ -141,7 +141,7 @@ class ParserManifest:
 		self.__parser_name: str = parser_name
 
 		self.__manifest: ManifestModel = self.__load()
-		self.__content_types: tuple[ContentTypes, ...] = self.__get_supported_content_types()
+		self.__content_types: tuple[ContentType, ...] = self.__get_supported_content_types()
 		self.__version: Version | None = self.__get_version()
 		self.__mirror: str | None = None
 

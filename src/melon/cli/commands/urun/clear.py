@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 # >>>>> ВСПОМОГАТЕЛЬНЫЕ СТРУКТУРЫ ДАННЫХ <<<<< #
 #==========================================================================================#
 
-class ClearingRules(Enum):
+class ClearingRule(Enum):
 	"""Правила очистки."""
 
 	All = "-all"
@@ -32,7 +32,7 @@ class ClearingRules(Enum):
 class Parameters(T_SingleParserRequired):
 	"""Required by command processor parameters."""
 
-	rule: ClearingRules
+	rule: ClearingRule
 	collection_file: str | None
 
 #==========================================================================================#
@@ -205,10 +205,10 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		self._add_parser_position()
 
 		position = model.create_position(name = "RULE", description = "Rule to clearing files.", important = True)
-		position.add_flag(ClearingRules.All.value, description = "Delete all files.")
-		position.add_flag(ClearingRules.Broken.value, description = "Delete broken JSON files.")
-		position.add_flag(ClearingRules.NotFound.value, description = "Delete files for titles that not found on server by slug.")
-		position.add_key(ClearingRules.Collection.value, description = "Delete files from collection.")
+		position.add_flag(ClearingRule.All.value, description = "Delete all files.")
+		position.add_flag(ClearingRule.Broken.value, description = "Delete broken JSON files.")
+		position.add_flag(ClearingRule.NotFound.value, description = "Delete files for titles that not found on server by slug.")
+		position.add_key(ClearingRule.Collection.value, description = "Delete files from collection.")
 
 		self._add_mirror_key()
 
@@ -239,11 +239,11 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 
 		Parameter = entity.get_position_parameter("RULE")
-		Rule: ClearingRules = ClearingRules(getattr(Parameter, "name"))
+		Rule: ClearingRule = ClearingRule(getattr(Parameter, "name"))
 		CollectionFile: str | None = None
 
-		if Rule is ClearingRules.Collection:
-			CollectionFile = entity.get_key_value(ClearingRules.Collection.value, expected_type = str)
+		if Rule is ClearingRule.Collection:
+			CollectionFile = entity.get_key_value(ClearingRule.Collection.value, expected_type = str)
 
 		return Parameters(
 			required_parser = prepared_data.required_parsers[0],
@@ -265,9 +265,9 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		Result: bool = True
 
 		match parameters.rule:
-			case ClearingRules.All: Result = self.__clear_all(parameters)
-			case ClearingRules.Broken: Result = self.__clear_broken(parameters)
-			case ClearingRules.Collection: Result = self.__clear_collection(parameters)
-			case ClearingRules.NotFound: Result = self.__clear_not_found(parameters)
+			case ClearingRule.All: Result = self.__clear_all(parameters)
+			case ClearingRule.Broken: Result = self.__clear_broken(parameters)
+			case ClearingRule.Collection: Result = self.__clear_collection(parameters)
+			case ClearingRule.NotFound: Result = self.__clear_not_found(parameters)
 
 		return Result

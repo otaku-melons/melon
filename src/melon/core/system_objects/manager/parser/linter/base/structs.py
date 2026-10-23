@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 
-from ..enums import ChecksStatuses
+from ..enums import CheckStatus
 
 @dataclass(frozen = True)
 class CheckResult:
 	"""Check result."""
 
 	name: str
-	status: ChecksStatuses
+	status: CheckStatus
 	message: str | None = None

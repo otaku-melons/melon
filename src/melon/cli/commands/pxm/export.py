@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, override
 
-from ....core.system_objects.manager.parser.enums import ExportStrategies
+from ....core.system_objects.manager.parser.enums import ExportStrategy
 from ...base.templates import T_SingleParserRequired
 from ._base import CommandProcessorTemplate
 
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class Parameters(T_SingleParserRequired):
 	"""Required by command processor parameters."""
 
-	config_strategy: ExportStrategies
+	config_strategy: ExportStrategy
 
 class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	"""Обработчик команды."""
@@ -68,7 +68,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		return Parameters(
 			required_parser = prepared_data.required_parsers[0],
-			config_strategy = ExportStrategies(strategy),
+			config_strategy = ExportStrategy(strategy),
 		)
 
 	@override

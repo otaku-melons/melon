@@ -1,17 +1,17 @@
-from ....formats.ranobe.enums import ChaptersTypes
+from ....formats.ranobe.enums import ChapterType
 from .manga import MangaChapterHeaderParser
 
 class RanobeChapterHeaderParser(MangaChapterHeaderParser):
 	"""Парсер заголовка главы."""
 
-	_Type: ChaptersTypes | None
+	_Type: ChapterType | None
 
 	#==========================================================================================#
 	# >>>>> PROPERTIES <<<<< #
 	#==========================================================================================#
 
 	@property
-	def type(self) -> ChaptersTypes | None:
+	def type(self) -> ChapterType | None:
 		"""Тип главы."""
 
 		return self._Type
@@ -24,22 +24,22 @@ class RanobeChapterHeaderParser(MangaChapterHeaderParser):
 		"""Получает тип главы из заголовка."""
 
 		Determinations: dict = {
-			ChaptersTypes.prologue: self._WordsDictionary.prologue,
-			ChaptersTypes.epilogue: self._WordsDictionary.epilogue,
-			ChaptersTypes.art: self._WordsDictionary.art,
-			ChaptersTypes.afterword: self._WordsDictionary.afterword,
-			ChaptersTypes.glossary: self._WordsDictionary.glossary,
-			ChaptersTypes.extra: self._WordsDictionary.extra,
+			ChapterType.prologue: self._WordsDictionary.prologue,
+			ChapterType.epilogue: self._WordsDictionary.epilogue,
+			ChapterType.art: self._WordsDictionary.art,
+			ChapterType.afterword: self._WordsDictionary.afterword,
+			ChapterType.glossary: self._WordsDictionary.glossary,
+			ChapterType.extra: self._WordsDictionary.extra,
 		}
 
 		LowerHeader = self._Header.lower()
 
-		for ChapterType, Word in Determinations.items():
+		for chapter_type, Word in Determinations.items():
 			if LowerHeader.startswith(Word):
-				self._Type = ChapterType
+				self._Type = chapter_type
 				break
 
-		if not self._Type and self._Number: self._Type = ChaptersTypes.chapter
+		if not self._Type and self._Number: self._Type = ChapterType.chapter
 
 	def _RemovePartTypers(self):
 		"""Удаляет ключевые слова типизации."""
@@ -63,7 +63,7 @@ class RanobeChapterHeaderParser(MangaChapterHeaderParser):
 	def _PostInitMethod(self):
 		"""Метод, выполняющийся после инициализации объекта."""
 
-		self._Type: ChaptersTypes | None = None
+		self._Type: ChapterType | None = None
 
 	#==========================================================================================#
 	# >>>>> ПУБЛИЧНЫЙ МЕТОДЫ <<<<< #

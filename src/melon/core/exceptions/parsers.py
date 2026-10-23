@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-	from ..base.parsers.components.manifest import ContentTypes
+	from ..base.parsers.components.manifest import ContentType
 
 class ManifestError(Exception):
 	"""Исключение: неверное определение манифеста."""
@@ -66,12 +66,12 @@ class RepositoryError(Exception):
 class UnsupportedContentError(Exception):
 	"""Исключение: неподдерживаемый тип контента."""
 
-	def __init__(self, content_type: "ContentTypes"):
+	def __init__(self, content_type: "ContentType"):
 		"""
 		Исключение: неподдерживаемый тип контента.
 
 		:param content_type: Тип контента.
-		:type content_type: ContentTypes
+		:type content_type: ContentType
 		"""
 
 		super().__init__(content_type.value)

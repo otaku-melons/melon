@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, override
 
-from ....core.base.parsers.components.manifest import ContentTypes
+from ....core.base.parsers.components.manifest import ContentType
 from ...base import BaseCommandProcessor
 from ...base.structs import ProcessorOptions
 from ...base.templates import BaseParameters
@@ -90,17 +90,17 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 			parser_operator = self.system_objects.manager.parsers.get_operator(ParserName)
 			SourceOperator = parser_operator.launch()
 			TypesEmoji = {
-				ContentTypes.Manga: "m",
-				ContentTypes.Ranobe: "r",
+				ContentType.Manga: "m",
+				ContentType.Ranobe: "r",
 			}
 
 			ParserVersion = SourceOperator.manifest.version or ""
-			ParserContentTypes: list[str] = [TypesEmoji[CurrentType] for CurrentType in SourceOperator.manifest.content_types]
+			ParserContentType: list[str] = [TypesEmoji[CurrentType] for CurrentType in SourceOperator.manifest.content_types]
 			ParserSite: str = "https://" + SourceOperator.manifest.domain
 
 			TableData["NAME"].append(ParserName)
 			TableData["VERSION"].append(ParserVersion)
-			TableData["TYPES"].append(", ".join(ParserContentTypes))
+			TableData["TYPES"].append(", ".join(ParserContentType))
 			TableData["DOMAIN"].append(ParserSite)
 			TableData["collect"].append(str(SourceOperator.is_collector_implemented))
 

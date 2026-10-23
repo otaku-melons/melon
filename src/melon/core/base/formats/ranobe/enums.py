@@ -1,6 +1,6 @@
 from enum import Enum
 
-class ChaptersTypes(Enum):
+class ChapterType(Enum):
 	"""Определения типов глав."""
 
 	afterword = "afterword"

@@ -1,6 +1,6 @@
 from enum import Enum
 
-class ExportResults(Enum):
+class ExportResult(Enum):
 	"""Результаты экспорта настроек."""
 
 	Missing = 0
@@ -9,7 +9,7 @@ class ExportResults(Enum):
 	Overwtitten = 3
 	Merged = 4
 
-class ExportStrategies(Enum):
+class ExportStrategy(Enum):
 	"""Стратегии экспорта настроек."""
 
 	Skip = "-s"

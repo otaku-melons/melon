@@ -1,14 +1,14 @@
 from dataclasses import dataclass
 from enum import Enum
 
-class Cases(Enum):
+class Case(Enum):
 	"""Перечисление приведений регистра."""
 
 	Low = "low"
 	Up = "up"
 	Title = "title"
 
-class ClassificatorsTypes(Enum):
+class ClassificatorType(Enum):
 	"""Перечисление типов классификаторов."""
 
 	Franchise = "franchises"
@@ -30,7 +30,7 @@ class _DirectiveValidationData:
 	allow_list: bool
 	allow_empty: bool
 
-class Directives(Enum):
+class Directive(Enum):
 	"""Перечисление директив."""
 
 	DELETE = _DirectiveValidationData(values = None, allow_list = False, allow_empty = True)
