@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, override
 
-from dublib.validators import ValidableTypes
+from dublib.validators import ValidableType
 
 from ....builders.ranobe import RanobeBuilder
 from ....core import exceptions
@@ -44,7 +44,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		self._add_parser_position(key = "--use")
 
-		model.base.add_key("--branch", value_type = ValidableTypes.UnsignedInteger, description = "Branch ID to building.")
+		model.base.add_key("--branch", value_type = ValidableType.UnsignedInteger, description = "Branch ID to building.")
 
 		return model
 

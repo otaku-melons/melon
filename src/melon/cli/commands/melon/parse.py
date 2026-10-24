@@ -7,7 +7,7 @@ from json import JSONDecodeError
 from typing import TYPE_CHECKING, override
 
 from dublib.cli.text_styler import get_styled_text_from_html
-from dublib.validators import ValidableTypes
+from dublib.validators import ValidableType
 
 from .... import utils
 from ....core import exceptions
@@ -499,8 +499,8 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		position.add_flag("-local", description = "Parse all locally saved titles.")
 		position.add_flag("-last", description = "Parse last parsed title.")
 		position.add_key("--collection", description = get_styled_text_from_html("Name of collection file. Put . to default <i>collection</i>."))
-		position.add_key("--id", value_type = ValidableTypes.UnsignedInteger, description = "Title ID.")
-		position.add_key("--updates", value_type = ValidableTypes.UnsignedInteger, description = "Parse updates for period in hours.")
+		position.add_key("--id", value_type = ValidableType.UnsignedInteger, description = "Title ID.")
+		position.add_key("--updates", value_type = ValidableType.UnsignedInteger, description = "Parse updates for period in hours.")
 
 		self._add_parser_position(key = "--use")
 		self._add_force_mode_flag()

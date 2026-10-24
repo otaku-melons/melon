@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, override
 
 from dublib.functions.filesystem import json
-from dublib.validators import ValidableTypes
+from dublib.validators import ValidableType
 
 from .... import utils
 from ...base.templates import T_OptionalSingleParser
@@ -81,7 +81,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 
 		position = model.create_position("IMAGE", "Path to image.", important = True)
-		position.set_argument(ValidableTypes.ValidPath)
+		position.set_argument(ValidableType.ExistingFilePath)
 
 		position = model.create_position("VERSION", "Signature version.", important = True)
 		position.add_flag("-v1", description = "Based on image sizes and pixels SHA256 hash: exact match.")

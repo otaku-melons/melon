@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Literal, NoReturn, overload
 
 import orjson
 
-from dublib.cli.messages.generator import MessagesTypes, generate_message
+from dublib.cli.messages.generator import MessageType, generate_message
 from dublib.cli.progress_indicator import ProgressIndicator
 from dublib.cli.text_styler import get_styled_text_from_html
 
@@ -59,14 +59,14 @@ class Printer:
 		self.__ProgressIndicator = ProgressIndicator()
 		self.__Templates = Templates(self)
 
-	def emit(self, text: str, message_type: MessagesTypes | None = None, origin: str | None = None, end_line: bool = True, flush: bool = False, parse_html: bool = True):
+	def emit(self, text: str, message_type: MessageType | None = None, origin: str | None = None, end_line: bool = True, flush: bool = False, parse_html: bool = True):
 		"""
 		Отправляет сообщение в поток вывода.
 
 		:param text: Текст сообщения.
 		:type text: str
 		:param message_type: Тип сообщения.
-		:type message_type: MessagesTypes | None
+		:type message_type: MessageType | None
 		:param origin: Источник сообщения.
 		:type origin: str | None
 		:param end_line: Указывает, нужно ли добавить в конец строки символ новой строки.
@@ -114,7 +114,7 @@ class Printer:
 		:type end_work: bool
 		"""
 
-		self.emit(text, MessagesTypes.Critical, origin)
+		self.emit(text, MessageType.Critical, origin)
 		if end_work: sys.exit(1)
 
 	def debug(self, text: str, origin: str | None = None):
@@ -128,7 +128,7 @@ class Printer:
 		"""
 
 		if self.__SystemObjects.options.DEBUG:
-			self.emit(text, MessagesTypes.Debug, origin)
+			self.emit(text, MessageType.Debug, origin)
 
 	def error(self, text: str, origin: str | None = None):
 		"""
@@ -140,7 +140,7 @@ class Printer:
 		:type origin: str | None
 		"""
 
-		self.emit(text, MessagesTypes.Error, origin)
+		self.emit(text, MessageType.Error, origin)
 
 	def json(self, data: dict):
 		"""
@@ -162,4 +162,4 @@ class Printer:
 		:type origin: str | None
 		"""
 
-		self.emit(text, MessagesTypes.Warning, origin)
+		self.emit(text, MessageType.Warning, origin)

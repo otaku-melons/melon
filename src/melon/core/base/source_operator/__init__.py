@@ -5,10 +5,10 @@ from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, overload
 
-from dublib.exceptions.web_requestor import TokenExpiredError
 from dublib.functions.filesystem import json
 from dublib.validators import types
-from dublib.web_requestor import WebConfig, WebLibs, WebRequestor
+from dublib.web_requestor import WebConfig, WebLib, WebRequestor
+from dublib.web_requestor.exceptions import TokenExpiredError
 
 from ... import exceptions
 from ..parsers.components.images_downloader import (
@@ -184,7 +184,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		"""
 
 		Config = WebConfig()
-		Config.select_lib(WebLibs.requests)
+		Config.select_lib(WebLib.requests)
 		Config.set_retries_count(self.settings.network.retries)
 		Config.set_delay(self.settings.network.delay)
 		Config.enable_proxy_protocol_switching(True)

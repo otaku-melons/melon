@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, override
 
-from dublib.validators import ValidableTypes
+from dublib.validators import ValidableType
 
 from ....core import exceptions
 from ....core.base.formats.base_format.enums import By
@@ -43,8 +43,8 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		position.set_argument()
 
 		position = model.create_position("TARGET", "Target to repairing.", important = True)
-		position.add_key("--branch", value_type = ValidableTypes.UnsignedInteger, description = "Branch ID.")
-		position.add_key("--chapter", value_type = ValidableTypes.UnsignedInteger, description = "Chapter ID.")
+		position.add_key("--branch", value_type = ValidableType.UnsignedInteger, description = "Branch ID.")
+		position.add_key("--chapter", value_type = ValidableType.UnsignedInteger, description = "Chapter ID.")
 
 		self._add_parser_position(key = "--use")
 		self._add_mirror_key()

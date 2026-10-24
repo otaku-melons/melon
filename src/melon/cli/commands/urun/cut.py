@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, override
 
-from dublib.validators import ValidableTypes
+from dublib.validators import ValidableType
 
 from ....utils.cutter import Cutter
 from ...base.templates import BaseParameters
@@ -66,14 +66,14 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 
 		position = model.create_position("IMAGE", "Path to image.", important = True)
-		position.set_argument(ValidableTypes.ValidPath)
+		position.set_argument(ValidableType.ExistingFilePath)
 
 		position = model.create_position("TEMPLATES", "Templates source.", important = True)
-		position.add_key("--dir", value_type = ValidableTypes.ValidPath, description = "Path to templates images directory.")
-		position.set_argument(value_type = ValidableTypes.ValidPath, description = "Path to template image.")
+		position.add_key("--dir", value_type = ValidableType.ExistingDirPath, description = "Path to templates images directory.")
+		position.set_argument(value_type = ValidableType.ExistingFilePath, description = "Path to template image.")
 
 		position = model.create_position("OUTPUT", "Output image path.")
-		position.set_argument(ValidableTypes.Path)
+		position.set_argument(ValidableType.Path)
 
 		model.base.add_flag("-d", description = "Dry run for only matches checking.")
 

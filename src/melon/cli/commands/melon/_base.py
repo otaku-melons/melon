@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from dublib.validators import ValidableTypes
+from dublib.validators import ValidableType
 
 from ...base import BaseCommandProcessor
 
@@ -17,4 +17,4 @@ class CommandProcessorTemplate[PARAMS: "BaseParameters"](BaseCommandProcessor[PA
 	def _add_mirror_key(self):
 		"""Добавляет ключ подключения зеркала."""
 
-		self._model.base.add_key("--mirror", value_type = ValidableTypes.Domain, description = "Source mirror to requests.")
+		self._model.base.add_key("--mirror", value_type = ValidableType.Domain, description = "Source mirror to requests.")

@@ -3,7 +3,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, override
 
 from dublib.cli.text_styler import get_styled_text_from_html
-from dublib.validators import ValidableTypes
+from dublib.validators import ValidableType
 
 from .... import utils
 from ...base.templates import T_ForceModeRequired, T_SingleParserRequired
@@ -126,8 +126,8 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		self._add_mirror_key()
 
 		model.base.add_key("--filters", description = "Query string for filtering titles.")
-		model.base.add_key("--pages", value_type = ValidableTypes.UnsignedInteger, description = "Count of pages to collecting.")
-		model.base.add_key("--period", value_type = ValidableTypes.UnsignedInteger, description = "Period in hours for parsing updates.")
+		model.base.add_key("--pages", value_type = ValidableType.UnsignedInteger, description = "Count of pages to collecting.")
+		model.base.add_key("--period", value_type = ValidableType.UnsignedInteger, description = "Period in hours for parsing updates.")
 
 		return model
 

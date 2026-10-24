@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal, cast, override
 
-from dublib.validators import ValidableTypes
+from dublib.validators import ValidableType
 
 from ....builders.manga import MangaBuilder, MangaOutputFormats
 from ....core import exceptions
@@ -50,8 +50,8 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		self._add_parser_position(key = "--use")
 
 		position = model.create_position("TARGET", "Target for building. By default longest branch.")
-		position.add_key("--branch", value_type = ValidableTypes.UnsignedInteger, description = "Branch ID.")
-		position.add_key("--chapter", value_type = ValidableTypes.UnsignedInteger, description = "Chapter ID.")
+		position.add_key("--branch", value_type = ValidableType.UnsignedInteger, description = "Branch ID.")
+		position.add_key("--chapter", value_type = ValidableType.UnsignedInteger, description = "Chapter ID.")
 
 		position = model.create_position("FORMAT", "Format of output content. By default downloads images in folder.")
 		position.add_flag("-cbz", description = "Make *.CBZ files.")
