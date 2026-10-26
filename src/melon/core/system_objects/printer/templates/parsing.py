@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING
 
-from dublib.cli.text_styler import FastStyler
 from dublib.functions.data import stringify_float
 
 from ._base import _BaseTemplatesSection
@@ -70,9 +69,9 @@ class ParsingTemplates(_BaseTemplatesSection):
 
 		Number = index + 1
 		Progress = round(Number / count * 100, 2)
-		NumberString = FastStyler(str(Number)).colorize.magenta
+		NumberString = f"[magenta]{Number}[/]"
 		ProgressString = stringify_float(Progress)
-		ProgressString = FastStyler(ProgressString + "%").colorize.cyan
+		ProgressString = f"[cyan]{ProgressString}%[/]"
 
 		self.printer.progress_indicator.set_progress(Progress)
 		self.printer.emit(f"[{NumberString} / {count} | {ProgressString}] ", end_line = False, flush = True)
@@ -129,9 +128,9 @@ class ParsingTemplates(_BaseTemplatesSection):
 		"""
 
 		self.printer.emit("===== SUMMARY =====")
-		Parsed = FastStyler(str(parsed)).colorize.green if parsed else FastStyler(str(parsed)).colorize.red
-		NotFound = FastStyler(str(not_found)).colorize.yellow if not_found else FastStyler(str(not_found)).colorize.green
-		Errors = FastStyler(str(errors)).colorize.red if errors else FastStyler(str(errors)).colorize.green
+		Parsed = f"[green]{parsed}[/]" if parsed else f"[red]{parsed}[/]"
+		NotFound = f"[yellow]{not_found}[/]" if not_found else f"[green]{parsed}[/]"
+		Errors = f"[red]{errors}[/]" if errors else f"[green]{errors}[/]"
 
 		self.printer.progress_indicator.end()
 		self.printer.emit(f"Parsed: {Parsed}. Not found: {NotFound}. Errors: {Errors}.")

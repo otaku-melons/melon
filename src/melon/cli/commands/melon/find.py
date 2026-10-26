@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, override
 
-from dublib.cli.text_styler import FastStyler
 from dublib.validators import ValidableType
 
 from ....core.base.structs.title import TitleDescriptor
@@ -64,7 +63,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 				del data["Path"]
 
 			for key, value in data.items():
-				value = FastStyler(str(value)).decorate.italic if value else FastStyler("not found").colorize.red
+				value = f"[i]{value}[/]" if value else "[red]not found[/]"
 				self.printer.emit(f"{key}: {value}")
 
 	#==========================================================================================#

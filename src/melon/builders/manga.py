@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, cast
 
 import img2pdf
 
-from dublib.cli.text_styler import FastStyler
 from dublib.functions.data import stringify_float
 
 from ..core import exceptions
@@ -214,7 +213,7 @@ class MangaBuilder(BaseBuilder):
 			return ""
 
 		ProgressString = stringify_float(progress * 100.0) + "%"
-		ProgressString = FastStyler(ProgressString).colorize.bright_cyan
+		ProgressString = f"[bright_cyan]{ProgressString}[/]"
 
 		return f"[{ProgressString}] "
 

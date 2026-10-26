@@ -1,6 +1,7 @@
 from typing import Literal, override
 
-from ...parsers.components.words_dictionary import CheckLanguageCode
+from dublib.validators import types
+
 from ..base_format.data import BaseTitleData, ExtraField
 from .chapter import Chapter
 
@@ -19,7 +20,7 @@ class TitleData(BaseTitleData[Chapter]):
 
 	@property
 	def original_language(self) -> str | None:
-		"""Оригинальный язык контента по стандарту ISO 639-3."""
+		"""Original language ISO 639-3 code."""
 
 		return self._data["original_language"]
 
@@ -61,12 +62,15 @@ class TitleData(BaseTitleData[Chapter]):
 
 	def set_original_language(self, language_code: str | None):
 		"""
-		Задаёт оригинальный язык контента по стандарту ISO 639-3.
+		Set original language ISO 639-3 code.
 
-		:param language_code: Код языка.
-		:type language_code: str | None
-		:raise ValueError: Выбрасывается при несоответствии кода языка стандарту.
+		Args:
+			language_code (str | None): Language ISO 639-3 code.
+		Raises:
+			ValidationError: Incorrect language code.
 		"""
 
-		if language_code: CheckLanguageCode(language_code)
+		if language_code:
+			language_code = types.LanguageCode.parse(language_code)
+
 		self._data["original_language"] = language_code.lower() if language_code else None

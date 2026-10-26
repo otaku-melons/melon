@@ -37,7 +37,7 @@ class Assistant:
 		manifest = ManifestModel(
 			domain = parser_data.domain,
 			parent = None,
-			platform = self.__system_objects.platform_version,
+			platform = f">={self.__system_objects.platform_version}",
 		)
 
 		manifest_data: dict = TypeAdapter(ManifestModel).dump_python(manifest)

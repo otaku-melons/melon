@@ -1,7 +1,5 @@
 from prettytable import PLAIN_COLUMNS, PrettyTable
 
-from dublib.cli.text_styler import FastStyler
-
 from ...manager.parser.enums import ExportResult
 from ._base import _BaseTemplatesSection
 
@@ -35,13 +33,13 @@ class ManagerTemplates(_BaseTemplatesSection):
 		TableObject.set_style(PLAIN_COLUMNS)
 		Implementations = ("collect",)
 		ImplementationStatuses = {
-			"True": FastStyler("true").colorize.green,
-			"False": FastStyler("false").colorize.yellow,
-			"None": FastStyler("error").colorize.red,
+			"True": "[green]true[/]",
+			"False": "[yellow]false[/]",
+			"None": "[red]error[/]",
 		}
 
 		for DomainIndex in range(len(columns["DOMAIN"])):
-			columns["DOMAIN"][DomainIndex] = FastStyler(columns["DOMAIN"][DomainIndex]).decorate.italic
+			columns["DOMAIN"][DomainIndex] = f"[i]{columns["DOMAIN"][DomainIndex]}[/]"
 
 		for ColumnName in Implementations:
 
@@ -49,11 +47,11 @@ class ManagerTemplates(_BaseTemplatesSection):
 				columns[ColumnName][StatusIndex] = ImplementationStatuses[columns[ColumnName][StatusIndex]]
 
 		for ColumnName in columns.keys():
-			Buffer = FastStyler(ColumnName).decorate.bold
+			Buffer = f"[b]{ColumnName}[/]"
 			TableObject.add_column(Buffer, columns[ColumnName])
 
 		TableObject.align = "l"
-		TableObject.sortby = FastStyler("NAME").decorate.bold
+		TableObject.sortby = "[b]{NAME}[/]"
 		TableString = str(TableObject).strip()
 		self.printer.emit(TableString if TableString else "Parsers not installed.")
 

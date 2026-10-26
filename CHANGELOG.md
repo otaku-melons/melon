@@ -14,6 +14,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 
 ### 🔥 Removed
 - Directives, version and content types in manifest.
+- Function `ChackLanguageCode()` replaced by `dublib.validators`.
 
 ### 🐛 Fixed
 - Parser always required for `sigen` command.

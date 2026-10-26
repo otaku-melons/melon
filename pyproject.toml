@@ -12,7 +12,6 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
-	"beautifulsoup4",
 	"dublib[cli,requestor]>=0.33",
 	"dulwich>=1.2.6",
 	"EbookLib",
@@ -21,6 +20,7 @@ dependencies = [
 	"opencv-python-headless",
 	"pick",
 	"pillow",
+	"prettytable",
 	"pydantic-settings",
 	"python-dotenv",
 	"questionary",

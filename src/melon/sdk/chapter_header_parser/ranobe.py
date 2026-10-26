@@ -1,4 +1,4 @@
-from ....formats.ranobe.enums import ChapterType
+from ...core.base.formats.ranobe.enums import ChapterType
 from .manga import MangaChapterHeaderParser
 
 class RanobeChapterHeaderParser(MangaChapterHeaderParser):

@@ -2,8 +2,6 @@ from typing import TYPE_CHECKING, override
 
 from prettytable import PLAIN_COLUMNS, PrettyTable
 
-from dublib.cli.text_styler import FastStyler
-
 from ...base import BaseCommandProcessor
 from ...base.structs import ProcessorOptions
 from ...base.templates import BaseParameters
@@ -91,17 +89,17 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 			RepositoryURL: str = self.system_objects.manager.repositories.get(ParserName, exception = True)
 			Status = "✅" if ParserName in InstalledParsers else "❌"
 			TableData["PARSER"].append(f"{Status} {ParserName}")
-			TableData["REPOSITORY"].append(FastStyler(RepositoryURL).decorate.italic)
+			TableData["REPOSITORY"].append(f"[i]{RepositoryURL}[/]")
 
 		TableObject = PrettyTable()
 		TableObject.set_style(PLAIN_COLUMNS)
 
 		for ColumnName in TableData.keys():
-			Buffer = FastStyler(ColumnName).decorate.bold
+			Buffer = f"[b]{ColumnName}[/]"
 			TableObject.add_column(Buffer, TableData[ColumnName])
 
 		TableObject.align = "l"
-		TableObject.sortby = FastStyler("PARSER").decorate.bold
+		TableObject.sortby = "[b]PARSER[/]"
 		TableString = str(TableObject).strip()
 		self.printer.emit(TableString)
 

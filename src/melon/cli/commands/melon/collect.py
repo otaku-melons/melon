@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, override
 
-from dublib.cli.text_styler import get_styled_text_from_html
 from dublib.validators import ValidableType
 
 from .... import utils
@@ -118,7 +117,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		position = model.create_position(
 			name = "FILE",
-			description = get_styled_text_from_html("Collection filename without filetype. By default <i>collection</i>."),
+			description = "Collection filename without filetype. By default [i]collection[/].",
 		)
 		position.add_key("--file")
 

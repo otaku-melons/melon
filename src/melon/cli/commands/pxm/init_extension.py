@@ -2,8 +2,6 @@ from typing import TYPE_CHECKING, override
 
 import questionary
 
-from dublib.cli.text_styler import FastStyler
-
 from ....utils.assistant import Assistant
 from ....utils.assistant.structs import ExtensionData
 from ...base.structs import PreparedData, ProcessorOptions
@@ -78,7 +76,7 @@ class CommandProcessor(CommandProcessorTemplate[T_SingleParserRequired]):
 	def _post_init(self):
 		"""Execute after instance initialization."""
 
-		self.__kbi_msg: str = FastStyler("Cancelled.").colorize.red
+		self.__kbi_msg: str = "[red]Cancelled.[/]"
 
 	@override
 	def _process(self, parameters: T_SingleParserRequired) -> bool:

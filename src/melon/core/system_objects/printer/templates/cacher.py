@@ -1,7 +1,5 @@
 from typing import TYPE_CHECKING
 
-from dublib.cli.text_styler import FastStyler
-
 from ._base import _BaseTemplatesSection
 
 if TYPE_CHECKING:
@@ -21,7 +19,7 @@ class CacherTemplates(_BaseTemplatesSection):
 		self.printer.emit(f"Total: {result.total_files}. Found in cache: {result.found_in_cache}. Cached: {result.cached}. Updated: {result.updated}.")
 
 		if result.errors:
-			self.printer.emit(FastStyler("Errors:").decorate.bold)
+			self.printer.emit("[bold]Errors:[/]")
 			for Error in result.errors:
-				self.printer.emit(" - " + FastStyler(Error + ".json").colorize.red)
+				self.printer.emit(f" - [red]{Error}.json[/]")
 

@@ -1,7 +1,5 @@
 from typing import TYPE_CHECKING
 
-from dublib.cli.text_styler import FastStyler
-
 from ._base import _BaseTemplatesSection
 
 if TYPE_CHECKING:
@@ -26,8 +24,8 @@ class ClassificatorTemplates(_BaseTemplatesSection):
 			self.printer.emit("Classificator must be deleted.")
 			return
 
-		self.printer.emit(f"Name: <i>{result.name}</i>")
+		self.printer.emit(f"Name: [i]{result.name}[/i]")
 		is_renamed: str = str(result.is_renamed).lower()
 		self.printer.emit(f"Renamed: {is_renamed}")
-		classificator_type :str = result.type.name.lower() if result.type else FastStyler("null").colorize.red
+		classificator_type :str = result.type.name.lower() if result.type else "[red]null[/]"
 		self.printer.emit(f"Type: {classificator_type}")

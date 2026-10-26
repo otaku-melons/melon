@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING, override
 
 import questionary
 
-from dublib.cli.text_styler import FastStyler
 from dublib.validators import types
 
 from ....core.base.parsers.components.manifest.enums import ContentType
@@ -115,7 +114,7 @@ class CommandProcessor(CommandProcessorTemplate[BaseParameters]):
 	def _post_init(self):
 		"""Execute after instance initialization."""
 
-		self.__kbi_msg: str = FastStyler("Cancelled.").colorize.red
+		self.__kbi_msg: str = "[red]Cancelled.[/]"
 
 	@override
 	def _process(self, parameters: BaseParameters) -> bool:

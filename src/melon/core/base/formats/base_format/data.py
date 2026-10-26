@@ -6,7 +6,6 @@ from dublib.functions.data.dictionary import insert_item
 from dublib.validators import types
 
 from .... import exceptions
-from ...parsers.components.words_dictionary import CheckLanguageCode
 from ...structs.image import ImageData
 from .branch import Branch
 from .enums import Status
@@ -763,22 +762,16 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 		self._data["id"] = title_id
 
-	def set_content_language(self, language_code: str | None, load_preset: bool = True):
+	def set_content_language(self, language_code: str | None):
 		"""
-		Задаёт язык контента по стандарту ISO 639-3.
+		Set content language ISO 639-3 code.
 
-		:param original_language: Код языка.
-		:type original_language: str | None
-		:param load_preset: Указывает, стоит ли попытаться загрузить готовый словарь ключевых локальных определений.
-		:type load_preset: bool
-		:raise ValueError: Выбрасывается при несоответствии кода языка стандарту.
+		Args:
+			language_code (str | None): Language ISO 639-3 code.
 		"""
 
 		if language_code:
-			CheckLanguageCode(language_code)
-
-			if load_preset:
-				self._title_controller.parser.load_words_dictionary_preset(language_code)
+			types.LanguageCode.parse(language_code)
 
 		self._data["content_language"] = language_code
 

@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING, override
 
 from prettytable import PrettyTable
 
-from dublib.cli.text_styler import FastStyler
 from dublib.functions.data import stringify_float
 
 from ....core.system_objects.manager.parser.linter.base.structs import CheckResult
@@ -51,10 +50,10 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 		"""
 
 		match status:
-			case CheckStatus.OK: return FastStyler(text).colorize.green
-			case CheckStatus.Skipped: return FastStyler(text).colorize.bright_cyan
-			case CheckStatus.Error: return FastStyler(text).colorize.red
-			case CheckStatus.Warning: return FastStyler(text).colorize.yellow
+			case CheckStatus.OK: return f"[green]{text}[/]"
+			case CheckStatus.Skipped: return f"[bright_cyan]{text}[/]"
+			case CheckStatus.Error: return f"[red]{text}[/]"
+			case CheckStatus.Warning: return f"[yellow]{text}[/]"
 
 		return text
 
@@ -69,7 +68,7 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 		results_count: int = len(results)
 
 		headers: tuple[str, ...] = ("Progress", "Status", "Name", "Message")
-		headers = tuple(FastStyler(string).decorate.bold for string in headers)
+		headers = tuple(f"[b]{string}[/]" for string in headers)
 
 		table = PrettyTable(headers)
 		table.border = False
@@ -105,16 +104,16 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 		:type statistics: Statistics
 		"""
 
-		passed: str = FastStyler(str(statistics.passed)).colorize.green
+		passed: str = f"[green]{statistics.passed}[/]"
 
 		if statistics.errors:
-			passed = FastStyler(str(statistics.passed)).colorize.red
+			passed = f"[red]{statistics.passed}[/]"
 		elif statistics.warnings:
-			passed = FastStyler(str(statistics.passed)).colorize.yellow
+			passed = f"[yellow]{statistics.passed}[/]"
 
-		errors: str = FastStyler(str(statistics.errors)).colorize.red if statistics.errors else FastStyler("0").colorize.green
-		warnings: str = FastStyler(str(statistics.warnings)).colorize.yellow if statistics.warnings else FastStyler("0").colorize.green
-		skipped: str = FastStyler(str(statistics.skipped)).colorize.bright_cyan if statistics.skipped else "0"
+		errors: str = f"[red]{statistics.errors}[/]" if statistics.errors else "[green]0[/]"
+		warnings: str = f"[yellow]{statistics.warnings}[/]" if statistics.warnings else "[green]0[/]"
+		skipped: str = f"[bright_cyan]{statistics.warnings}[/]" if statistics.skipped else "0"
 
 		self.printer.emit(f"Total <b>{statistics.total}</b>. Passed {passed}. Skipped: {skipped}. Errors: {errors}. Warnings: {warnings}.")
 

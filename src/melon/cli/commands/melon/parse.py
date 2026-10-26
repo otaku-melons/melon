@@ -6,7 +6,6 @@ from enum import Enum
 from json import JSONDecodeError
 from typing import TYPE_CHECKING, override
 
-from dublib.cli.text_styler import get_styled_text_from_html
 from dublib.validators import ValidableType
 
 from .... import utils
@@ -498,7 +497,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		position.set_argument(description = "Title slug.")
 		position.add_flag("-local", description = "Parse all locally saved titles.")
 		position.add_flag("-last", description = "Parse last parsed title.")
-		position.add_key("--collection", description = get_styled_text_from_html("Name of collection file. Put . to default <i>collection</i>."))
+		position.add_key("--collection", description = "Name of collection file. Put . to default [i]collection[/].")
 		position.add_key("--id", value_type = ValidableType.UnsignedInteger, description = "Title ID.")
 		position.add_key("--updates", value_type = ValidableType.UnsignedInteger, description = "Parse updates for period in hours.")
 

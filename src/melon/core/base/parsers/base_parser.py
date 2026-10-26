@@ -15,7 +15,6 @@ from ..parsers.components.images_downloader import (
 	ImagesDownloader,
 )
 from ..structs.image import ImageData
-from .components.words_dictionary import WordsDictionary, presets
 
 if TYPE_CHECKING:
 	from pydantic import BaseModel
@@ -86,12 +85,6 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 		"""Тайтл."""
 
 		return self._title
-
-	@property
-	def words_dictionary(self) -> WordsDictionary:
-		"""Словарь ключевых локализованных определений."""
-
-		return self._words_dictionary
 
 	#==========================================================================================#
 	# >>>>> PROTECTED METHODS <<<<< #
@@ -234,7 +227,6 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 
 		self._source_operator = source_operator
 
-		self._words_dictionary: WordsDictionary = WordsDictionary(None)
 		self._title: BaseTitleController[BaseTitleData] | None = None
 
 		self._post_init()
@@ -289,23 +281,6 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 		self._unstub_persons(title.data, persons_results)
 
 		return tuple(covers_results + persons_results)
-
-	def load_words_dictionary_preset(self, language_code: str) -> WordsDictionary | None:
-		"""
-		Загружает готовый словарь локализованных определений. Словарь будет установлен в качестве рабочего для парсера.
-
-		:param language_code: Код языка по стандарту ISO 639-3.
-		:type language_code: str
-		:return: Пресет словаря для определённого языка или `None` при его отсутствии.
-		:rtype: WordsDictionary | None
-		"""
-
-		Preset = presets.GetDictionaryPreset(language_code)
-
-		if Preset:
-			self._words_dictionary = Preset
-
-		return Preset
 
 	@abstractmethod
 	def init_empty_title(self, slug: str) -> BaseTitleController:

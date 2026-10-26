@@ -1,20 +1,21 @@
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from dublib.functions.data import zerotify
+
+from ..words_dictionary import PRESETS, WordsDictionaryTemplate
 
 if TYPE_CHECKING:
 	from collections.abc import Sequence
 
-	from ......core.base.parsers.base_parser import BaseParser
-	from ......core.base.parsers.components.words_dictionary import WordsDictionary
+	from ...core.base.parsers.base_parser import BaseParser, BaseTitleController
 
 class MangaChapterHeaderParser:
 	"""Парсер заголовка главы."""
 
 	_Parser: "BaseParser"
 	_Header: str
-	_WordsDictionary: "WordsDictionary"
+	_WordsDictionary: WordsDictionaryTemplate
 	_Volume: str | None
 	_Number: str | None
 
@@ -163,7 +164,8 @@ class MangaChapterHeaderParser:
 		self._Parser = parser
 		self._Header = header
 
-		self._WordsDictionary = self._Parser.words_dictionary
+		# To-Do: resolve this shit!
+		self._WordsDictionary = cast("WordsDictionaryTemplate", PRESETS.get(cast("BaseTitleController", self._Parser.title).data.content_language))
 
 		self._Volume = None
 		self._Number = None
