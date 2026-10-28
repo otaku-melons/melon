@@ -1,11 +1,12 @@
-from typing import TYPE_CHECKING, cast, override
+from typing import TYPE_CHECKING, override
 
 from ..base_format.chapter import BaseChapter
-from .elements import Blockquote, Header, Image, Paragraph
 from .enums import ChapterType
 
 if TYPE_CHECKING:
 	from collections.abc import Sequence
+
+	from ....html.base_elements import BaseElement
 
 class Chapter(BaseChapter):
 	"""Глава ранобэ."""
@@ -76,33 +77,23 @@ class Chapter(BaseChapter):
 	# >>>>> PUBLIC METHODS <<<<< #
 	#==========================================================================================#
 
-	def add_element(self, element: "Paragraph | Image | Header | Blockquote"):
+	def add_element(self, element: "BaseElement"):
 		"""
 		Добавляет элемент в главу.
 
 		:param element: Элемент главы.
-		:type element: Paragraph | Image | Header | Blockquote
+		:type element: BaseElement
 		:raise TypeError: Выбрасывается при передаче неподдерживаемого элемента.
 		"""
 
-		if type(element) not in (Paragraph, Image, Header, Blockquote):
-			raise TypeError("Unsupported element.")
+		self._data["paragraphs"].append(element.to_html())
 
-		if type(element) in (Paragraph, Blockquote, Header):
-			element = cast("Paragraph | Blockquote | Header", element)
-			self._data["paragraphs"].append(element.to_html(footnotes_offset = len(self.footnotes)))
-			for CurrentNote in element.footnotes:
-				self._data["footnotes"].append(CurrentNote.to_html())
-
-		else:
-			self._data["paragraphs"].append(element.to_html())
-
-	def set_elements(self, elements: "Sequence[Paragraph | Image | Header | Blockquote]"):
+	def set_elements(self, elements: "Sequence[BaseElement]"):
 		"""
 		Задаёт набор элементов главы.
 
 		:param elements: Набор элементов главы.
-		:type elements: Sequence[Paragraph | Image | Header | Blockquote]
+		:type elements: Sequence[BaseElement]
 		"""
 
 		for Element in elements: self.add_element(Element)

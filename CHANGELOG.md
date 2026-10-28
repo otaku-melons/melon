@@ -9,8 +9,15 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 
 ## [1.0.0-rc.7]
 
+### ✨ Added
+- Module `sdk` to improve parsers developers experience.
+- New abstract HTNL parser with **HTML to Melon elements** features.
+
 ### 🎨 Changed
 - Manifest now parsed with [pydantic](https://github.com/pydantic/PYDANTIC) model and [dublib](https://github.com/dub1401/dublib) validators
+- Modules `words_dictionary` and `chapter_header_parser` separated into own module `sdk`.
+- Reworked all HTML elements. There are separated into `core.html` module.
+- Use [Rich](https://github.com/textualize/rich) as ANSI styles render backend.
 
 ### 🔥 Removed
 - Directives, version and content types in manifest.

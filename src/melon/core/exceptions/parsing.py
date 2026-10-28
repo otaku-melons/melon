@@ -3,10 +3,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from ..base.formats.base_format.data import BaseTitleData
 
-#==========================================================================================#
-# >>>>> ИСКЛЮЧЕНИЯ ПРОЦЕССА ПАРСИНГА <<<<< #
-#==========================================================================================#
-
 class AuthorizationRequiredError(Exception):
 	"""Исключение: требуется авторизация."""
 
@@ -67,33 +63,3 @@ class TitleNotFoundError(Exception):
 		"""
 
 		super().__init__(f"Title \"{title_data.slug}\" not found.")
-
-#==========================================================================================#
-# >>>>> ИСКЛЮЧЕНИЯ ПРОЦЕССА ПАРСИНГА РАНОБЭ <<<<< #
-#==========================================================================================#
-
-class FootnoteCompositionError(Exception):
-	"""Исключение: ошибка композиции заметки."""
-
-	def __init__(self, description: str):
-		"""
-		Исключение: ошибка композиции заметки.
-
-		:param description: Описание ошибки.
-		:type description: str
-		"""
-
-		super().__init__(description)
-
-class UnresolvedTagError(Exception):
-	"""Исключение: неразрешённый тег."""
-
-	def __init__(self, tag: str):
-		"""
-		Исключение: неразрешённый тег.
-
-		:param tag: Имя тега.
-		:type tag: str
-		"""
-
-		super().__init__(f"Unresolved tag \"{tag}\".")
