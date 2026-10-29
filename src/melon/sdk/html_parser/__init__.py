@@ -13,6 +13,8 @@ from ...core.html.enums import Align, TagCategory
 if TYPE_CHECKING:
 	from collections.abc import Sequence
 
+	from bs4._typing import AttributeValueList
+
 class HyperTextParser:
 	"""HTML elements parser."""
 
@@ -69,7 +71,7 @@ class HyperTextParser:
 
 	def clear_attributes(self, tag: Tag) -> tuple[str, ...]:
 		"""
-		Clear unresolved tag attributes.
+		Clear unresolved attributes for tag and inner tags.
 
 		Args:
 			tag (Tag): HTML tag.
@@ -78,27 +80,85 @@ class HyperTextParser:
 			UnresolvedTagError: Unresolved tag.
 
 		Returns:
-			tuple[str, ...]: Removed attributes.
+			tuple[str, ...]: Removed attributes names.
 		"""
-
-		attributes: dict = tag.attrs.copy()
-		tag_data = ALLOWED_TAGS.get_tag(tag.name)
-
-		if not tag_data:
-			raise UnresolvedTagError(tag.name)
 
 		removed: list[str] = []
 
-		for attribute in tag.attrs:
+		targets: list[Tag] = [child for child in tag.contents if isinstance(child, Tag)]
+		targets.append(tag)
 
-			if tag_data.is_support_data and attribute.startswith("data-"):
+		for target in targets:
+			tag_data = ALLOWED_TAGS.get_tag(target.name)
+			attributes: dict = target.attrs.copy()
+
+			if not tag_data:
+				raise UnresolvedTagError(target.name)
+
+			for attribute in target.attrs:
+
+				if tag_data.is_support_data and attribute.startswith("data-"):
+					continue
+
+				if attribute == "style" and tag_data.styles:
+					continue
+
+				if attribute not in tag_data.attributes:
+					del attributes[attribute]
+					removed.append(attribute)
+
+			target.attrs = attributes
+
+		return tuple(removed)
+
+	def clear_styles(self, tag: Tag) -> tuple[str, ...]:
+		"""
+		Clear unresolved styles for tag and inner tags.
+
+		Args:
+			tag (Tag): HTML tag.
+
+		Raises:
+			UnresolvedTagError: Unresolved tag.
+
+		Returns:
+			tuple[str, ...]: Removed styles names.
+		"""
+
+		removed: list[str] = []
+
+		targets: list[Tag] = [child for child in tag.contents if isinstance(child, Tag)]
+		targets.append(tag)
+
+		for target in targets:
+			tag_data = ALLOWED_TAGS.get_tag(target.name)
+
+			if not tag_data:
+				raise UnresolvedTagError(target.name)
+
+			style: AttributeValueList | str | None = target.attrs.get("style")
+
+			if not style:
 				continue
 
-			if attribute not in tag_data.attributes:
-				del attributes[attribute]
-				removed.append(attribute)
+			style = str(style)
+			styles: list[str] = style.split(";")
+			filtered_styles: dict[str, str] = {}
 
-		tag.attrs = attributes
+			for current_style in styles:
+				name, value = current_style.split(":")
+				name: str = name.strip()
+				value: str = value.strip()
+
+				if name in tag_data.styles:
+					filtered_styles[name] = value
+				else:
+					removed.append(name)
+
+			if filtered_styles:
+				target["style"] = ";".join(f"{name}: {value}" for name, value in filtered_styles.items())
+			else:
+				del target["style"]
 
 		return tuple(removed)
 
@@ -116,13 +176,14 @@ class HyperTextParser:
 
 		return bool(tag.find(child))
 
-	def make_tag(self, name: str, content: "PageElement | Sequence[PageElement] | str") -> Tag:
+	def make_tag(self, name: str, content: "PageElement | Sequence[PageElement] | str", attributes: dict[str, "AttributeValueList | str"] | None = None) -> Tag:
 		"""
 		Make tag without builder.
 
 		Args:
 			name (str): Tag name.
 			content (PageElement | Sequence[PageElement] | str): Tag content.
+			attributes (attributes: dict[str, AttributeValueList | str] | None): Attributes dictionary.
 
 		Returns:
 			Tag: New tag.
@@ -135,6 +196,10 @@ class HyperTextParser:
 
 		for item in to_sequence(content):
 			new_tag.append(item)
+
+		if attributes:
+			for name in attributes.keys():
+				new_tag[name] = attributes[name]
 
 		return new_tag
 
@@ -170,11 +235,11 @@ class HyperTextParser:
 			Align | None: Tag align or `None` if parsing failed.
 		"""
 
-		align: Align | None = None
+		align_value: str | None = None
 
 		if "align" in tag.attrs:
 			value: str = str(tag.attrs["align"])
-			align = Align(value)
+			align_value = value
 
 		elif "style" in tag.attrs:
 			values: list[str] = str(tag.attrs["style"]).split(";")
@@ -185,29 +250,35 @@ class HyperTextParser:
 
 				if name == "text-align":
 					value = value.strip()
-					align = Align(value)
+					align_value = value
 					break
 
-		return align
+		try:
+			return Align(align_value)
+		except ValueError:
+			pass
 
 	def split(self, tag: Tag) -> tuple[Tag, ...]:
 		"""
 		Split tag childrens into paragraphs by `<br>` and `\n`.
 
-		If tag doesn't contain splitters, in fact it will be replaced by `p`.
+		If tag doesn't contain splitters, in fact it will be replaced by `p`. If tag has align, all new tags also will be have same align.
 
 		Args:
 			tag (Tag): HTML tag.
 
 		Returns:
-			tuple[Tag, ...]: Paragraphs.
+			tuple[Tag, ...]: Paragraphs tags. Doesn't affined with builder!
 		"""
 
 		result: list[Tag] = []
 		current_content: list[PageElement] = []
 
+		align: Align | None = self.parse_align(tag)
+		attrs: dict[str, AttributeValueList | str] | None = {"style": f"text-align: {align.value}"} if align else None
+
 		def __add_paragraph():
-			new_tag = self.make_tag("p", current_content)
+			new_tag = self.make_tag("p", current_content, attrs)
 			result.append(new_tag)
 			current_content.clear()
 
@@ -282,6 +353,7 @@ class HyperTextParser:
 
 			self.unwrap_non_styling_childrens(inner_paragraph)
 			self.clear_attributes(inner_paragraph)
+			self.clear_styles(inner_paragraph)
 
 			text: str = inner_paragraph.decode_contents()
 

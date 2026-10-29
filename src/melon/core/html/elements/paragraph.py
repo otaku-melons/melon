@@ -37,7 +37,7 @@ class Paragraph(AlignableElement, TextElement):
 		inner = self._parse(self._text)
 
 		if self._align:
-			tag["style"] = f"align: {self._align.value}"
+			tag["style"] = f"text-align: {self._align.value}"
 
 		tag.append(inner)
 		soup.append(tag)

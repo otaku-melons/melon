@@ -27,10 +27,10 @@ dependencies = [
 	"uv"
 ]
 
-[project.optional-dependencies]
-dev = ["ruff", "ty", "typos"]
-
 [project.scripts]
 melon = "melon:main"
 pxm = "melon:main"
 urun = "melon:main"
+
+[dependency-groups]
+dev = ["ruff", "pytest", "ty", "typos"]

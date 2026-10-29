@@ -11,6 +11,7 @@ class TagData:
 	name: str
 	categories: tuple[TagCategory, ...] = ()
 	attributes: tuple[str, ...] = ()
+	styles: tuple[str, ...] = ()
 	is_support_data: bool = False
 
 class AllowedTags:
@@ -57,7 +58,7 @@ class AllowedTags:
 
 		data: list[TagData] = []
 
-		paragraph = TagData("p", attributes = ("align",))
+		paragraph = TagData("p", styles = ("text-align",))
 		data.append(paragraph)
 
 		blockquote = TagData("blockquote", is_support_data = True)

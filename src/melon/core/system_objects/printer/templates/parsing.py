@@ -113,7 +113,7 @@ class ParsingTemplates(_BaseTemplatesSection):
 		if titles_count > 1:
 			self.progress(index, titles_count)
 
-		self.printer.emit(f"Parsing <b>{title_data.slug}</b>{NoteID}…")
+		self.printer.emit(f"Parsing [b]{title_data.slug}[/]{NoteID}…")
 
 	def summary(self, parsed: int, not_found: int, errors: int):
 		"""
@@ -129,7 +129,7 @@ class ParsingTemplates(_BaseTemplatesSection):
 
 		self.printer.emit("===== SUMMARY =====")
 		Parsed = f"[green]{parsed}[/]" if parsed else f"[red]{parsed}[/]"
-		NotFound = f"[yellow]{not_found}[/]" if not_found else f"[green]{parsed}[/]"
+		NotFound = f"[yellow]{not_found}[/]" if not_found else f"[green]{not_found}[/]"
 		Errors = f"[red]{errors}[/]" if errors else f"[green]{errors}[/]"
 
 		self.printer.progress_indicator.end()

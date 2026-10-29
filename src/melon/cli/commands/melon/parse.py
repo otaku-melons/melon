@@ -453,7 +453,8 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		except Exception:
 			Traceback = traceback.format_exc().rstrip()
-			self.printer.error(f"Current title skipped due to exception: \"{Traceback}\".")
+			self.printer.error("Current title skipped due to exception:")
+			self.printer.emit(Traceback)
 			return ParsingSignal.Error
 
 		return ParsingSignal.OK

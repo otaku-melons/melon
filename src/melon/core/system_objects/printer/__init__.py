@@ -90,7 +90,7 @@ class Printer:
 			case "html": text = self.__styler.convert_from_html(text)
 			case "rich": text = self.__styler.convert(text)
 
-		message_text: str = generate_message(text, message_type, origin)
+		message_text: str = generate_message(text, message_type, origin).lstrip()
 		print(message_text, end = "\n" if end_line else "", flush = flush)
 
 	def get_parser_portals(self, parser_name: str) -> Portals:
