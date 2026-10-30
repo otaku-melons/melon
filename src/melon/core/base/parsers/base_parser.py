@@ -105,9 +105,8 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 		if not images_data:
 			return []
 
-		Title = cast("BaseTitleController", self._title)
+		title = cast("BaseTitleController", self._title)
 
-		ImageDirectory: Path = Title.get_images_type_directory(images_type)
 		Results: list = []
 		ImagesCount: int = len(images_data)
 
@@ -115,7 +114,11 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 			CurrentImageData = images_data[Index]
 
 			Future = self.portals.printer.templates.images.start_downloading(CurrentImageData.filename, images_type)
-			Result = self._source_operator.images_downloader.download_image(CurrentImageData.link, ImageDirectory, force_mode = force_mode)
+			Result = self._source_operator.images_downloader.download_image_from_data(
+				data = CurrentImageData,
+				title = title,
+				force_mode = force_mode,
+			)
 			Results.append(Result)
 
 			if Result.resolution:

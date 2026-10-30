@@ -59,7 +59,7 @@ class ImageData:
 	# >>>>> PUBLIC METHODS <<<<< #
 	#==========================================================================================#
 
-	def __init__(self, link: str, image_type: ImageType | None = None):
+	def __init__(self, link: str, image_type: ImageType | None):
 		"""
 		Image data.
 

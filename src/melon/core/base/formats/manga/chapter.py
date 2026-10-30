@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, cast, override
 
-from ...structs.image import ImageData
+from ...structs.image import ImageData, ImageType
 from ..base_format.chapter import BaseChapter
 
 if TYPE_CHECKING:
@@ -75,7 +75,7 @@ class Chapter(BaseChapter):
 		for SlideData in self._data["slides"]:
 			SlideData = cast("dict", SlideData)
 			SlideIndex: int = SlideData["index"]
-			SlideImage = ImageData(SlideData["link"])
+			SlideImage = ImageData(SlideData["link"], ImageType.Slide)
 
 			Width, Height = SlideData.get("width"), SlideData.get("height")
 

@@ -7,11 +7,12 @@ from typing import TYPE_CHECKING
 from urllib.parse import urlparse, urlunparse
 
 from .....utils.unstubber import Unstubber
-from ...structs.image import ImageResolution
+from ...structs.image import ImageData, ImageResolution
 
 if TYPE_CHECKING:
 	from dublib.web_requestor import WebRequestor
 
+	from ...formats.base_format.controller import BaseTitleController
 	from ...source_operator import BaseSourceOperator
 
 #==========================================================================================#
@@ -202,6 +203,38 @@ class ImagesDownloader:
 			path = ImagePath,
 			error_message = ErrorMessage,
 		)
+
+	def download_image_from_data(self, data: ImageData, title: "BaseTitleController", force_mode: bool = False) -> ImageDownloadingResult:
+		"""
+		Download image from data.
+
+		Args:
+			data (ImageData): Image data.
+			title (BaseTitleController): Title controller.
+			force_mode (bool): Condition: is file overwriting enabled.
+
+		Returns:
+			ImageDownloadingResult: Image downloading result.
+		"""
+
+		image_type_directory: Path = Path(data.image_type.value if data.image_type else "")
+		directory = self.__SourceOperator.settings.directories.images / title.used_filename / image_type_directory
+
+		result = self.download_image(
+			url = data.link,
+			directory = directory,
+			filename = data.filename,
+			is_full_filename = True,
+			force_mode = force_mode,
+		)
+
+		if not data.resolution and result.resolution:
+			data.set_resolution(result.resolution)
+
+		if result.path:
+			data.set_file_path(image_type_directory / data.filename)
+
+		return result
 
 	def filter_image(self, image: bytes, resolution: ImageResolution | None) -> FilteredBy | None:
 		"""

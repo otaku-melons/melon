@@ -6,7 +6,7 @@ from dublib.functions.data.dictionary import insert_item
 from dublib.validators import types
 
 from .... import exceptions
-from ...structs.image import ImageData
+from ...structs.image import ImageData, ImageType
 from .branch import Branch
 from .enums import Status
 from .person import Person
@@ -172,7 +172,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 		for CoverData in self._data["covers"]:
 			CoverData = cast("dict", CoverData)
-			Buffer = ImageData(CoverData["link"])
+			Buffer = ImageData(CoverData["link"], ImageType.Cover)
 			Buffer.create_resolution(CoverData.get("width"), CoverData.get("height"))
 			self._covers.append(Buffer)
 
@@ -194,7 +194,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 			for CurrentImageData in Images:
 				CurrentImageData = cast("dict", CurrentImageData)
-				Image = ImageData(CurrentImageData["link"])
+				Image = ImageData(CurrentImageData["link"], ImageType.Person)
 				Image.create_resolution(CurrentImageData.get("width"), CurrentImageData.get("height"))
 				Buffer.add_image(Image)
 
