@@ -67,7 +67,7 @@ class BaseBuilder:
 	# >>>>> PUBLIC METHODS <<<<< #
 	#==========================================================================================#
 
-	def __init__(self, parser: "BaseParser[BaseSourceOperator, BaseModel]", title: "BaseTitleController[BaseTitleData]"):
+	def __init__(self, parser: "BaseParser[BaseSourceOperator, BaseModel, BaseTitleController]", title: "BaseTitleController[BaseTitleData]"):
 		"""
 		Базовый сборщик.
 

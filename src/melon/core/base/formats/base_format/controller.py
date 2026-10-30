@@ -13,7 +13,8 @@ from dublib.functions.data import zerotify
 from dublib.functions.filesystem import json
 
 from .... import exceptions
-from .enums import By, ImageType
+from ...structs.image import ImageType
+from .enums import By
 from .structs import SavingResult
 
 if TYPE_CHECKING:
@@ -339,7 +340,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 
 	def __init__(self, parser: "BaseParser", slug: str):
 
-		self._parser: BaseParser[BaseSourceOperator, BaseModel] = parser
+		self._parser: BaseParser[BaseSourceOperator, BaseModel, BaseTitleController] = parser
 		self._slug: str = slug
 
 		self._data: TD = self._export_data_type()(

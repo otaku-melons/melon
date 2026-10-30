@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Literal, NoReturn, overload
 from dublib.web_requestor import WebResponse
 
 from ... import exceptions
-from ...base.formats.base_format.enums import ImageType
+from ...base.structs.image import ImageType
 
 if TYPE_CHECKING:
 	from ...base.formats.base_format.chapter import BaseChapter

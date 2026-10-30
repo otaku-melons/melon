@@ -6,9 +6,10 @@ from dublib.functions.data import to_sequence
 from dublib.functions.data.string import remove_recurring_substrings
 
 from ...core.base.parsers.components.images_downloader import ImageResolution
+from ...core.base.structs.image import ImageData
 from ...core.exceptions.html import UnresolvedTagError
 from ...core.html.allowed_tags import ALLOWED_TAGS
-from ...core.html.elements import Header, Image, Paragraph
+from ...core.html.elements import Header, Paragraph
 from ...core.html.enums import Align, TagCategory
 
 if TYPE_CHECKING:
@@ -327,7 +328,7 @@ class HyperTextParser:
 
 		return header
 
-	def parse_image(self, tag: Tag) -> Image | None:
+	def parse_image(self, tag: Tag) -> ImageData | None:
 		"""
 		Parse image from HTML tag.
 
@@ -338,7 +339,7 @@ class HyperTextParser:
 			ValueError: Image can be parsed only from \"img\" tag.
 
 		Returns:
-			Image | None: Image element or `None` if missing source.
+			ImageData | None: Image data or `None` if missing source.
 		"""
 
 		if tag.name != "img":
@@ -349,7 +350,7 @@ class HyperTextParser:
 		if not source:
 			return
 
-		image = Image(str(source))
+		image = ImageData(str(source))
 
 		width, height = tag.attrs.get("width"), tag.attrs.get("height")
 

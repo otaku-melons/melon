@@ -7,14 +7,6 @@ class By(Enum):
 	Slug = "slug"
 	ID = "id"
 
-class ImageType(Enum):
-	"""Title image type."""
-
-	Cover = "covers"
-	Person = "persons"
-	Slide = "slides"
-	Illustration = "illustration"
-
 class Status(Enum):
 	"""Title status type."""
 

@@ -9,21 +9,22 @@ from .base_parser import BaseParser
 if TYPE_CHECKING:
 	from pydantic import BaseModel
 
+	from ..formats.base_format.controller import BaseTitleController
 	from ..formats.manga.chapter import Chapter
 	from ..source_operator import BaseSourceOperator
 
-class BaseMangaParser[SO: "BaseSourceOperator", CSM: "BaseModel"](BaseParser[SO, CSM]):
+class BaseMangaParser[SO: "BaseSourceOperator", CSM: "BaseModel"](BaseParser[SO, CSM, Manga]):
 	"""Базовый парсер манги."""
 
 	@override
-	def init_empty_title(self, slug: str) -> Manga:
+	def init_empty_title(self, slug: str) -> "BaseTitleController":
 		"""
 		Устанавливает пустой тайтл для парсера.
 
 		:param slug: Алиас тайтла.
 		:type slug: str
 		:return: Тайтл.
-		:rtype: Manga
+		:rtype: BaseTitleController
 		"""
 
 		self._title = Manga(self, slug)

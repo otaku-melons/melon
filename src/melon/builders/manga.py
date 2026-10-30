@@ -12,7 +12,7 @@ from dublib.functions.data import stringify_float
 
 from ..core import exceptions
 from ..core.base.builder import BaseBuilder
-from ..core.base.formats.base_format.enums import ImageType
+from ..core.base.structs.image import ImageType
 
 if TYPE_CHECKING:
 	from ..core.base.formats.base_format.branch import Branch

@@ -165,7 +165,7 @@ def test_parse_image():
 	image = parser.parse_image(tag)
 
 	assert image is not None
-	assert image.source == "https://example.com/image.png"
+	assert image.link == "https://example.com/image.png"
 	assert image.resolution is not None
 	assert image.resolution.width == 1280
 	assert image.resolution.height == 720

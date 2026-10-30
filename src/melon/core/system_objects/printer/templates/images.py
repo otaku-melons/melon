@@ -1,9 +1,9 @@
 from .....utils.timer import Timer
-from ....base.formats.base_format.enums import ImageType
 from ....base.parsers.components.images_downloader import (
 	FilteredBy,
 	ImageDownloadingResult,
 )
+from ....base.structs.image import ImageType
 from ._base import _BaseTemplatesSection
 
 #==========================================================================================#

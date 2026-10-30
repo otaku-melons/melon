@@ -7,14 +7,12 @@ from dublib.functions.decorators import run_before_method
 
 from ....core import exceptions
 from ..formats.base_format.branch import Branch
-from ..formats.base_format.controller import BaseTitleController
 from ..formats.base_format.data import BaseTitleData
-from ..formats.base_format.enums import ImageType
 from ..parsers.components.images_downloader import (
 	ImageDownloadingResult,
 	ImagesDownloader,
 )
-from ..structs.image import ImageData
+from ..structs.image import ImageData, ImageType
 
 if TYPE_CHECKING:
 	from pydantic import BaseModel
@@ -27,12 +25,11 @@ if TYPE_CHECKING:
 	from ....core.base.parsers.components.manifest import ParserManifest
 	from ....core.base.parsers.components.settings import ParserSettings
 	from ....core.system_objects.printer import Portals
+	from ..formats.base_format.controller import BaseTitleController
 	from ..source_operator import BaseSourceOperator
 
-class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
+class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleController"](ABC):
 	"""Базовый парсер."""
-
-	_Title: "BaseTitleController[BaseTitleData] | None"
 
 	#==========================================================================================#
 	# >>>>> PROPERTIES <<<<< #
@@ -81,7 +78,7 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 		return self._source_operator
 
 	@property
-	def title(self) -> "BaseTitleController[BaseTitleData] | None":
+	def title(self) -> "T | None":
 		"""Тайтл."""
 
 		return self._title
@@ -227,7 +224,7 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 
 		self._source_operator = source_operator
 
-		self._title: BaseTitleController[BaseTitleData] | None = None
+		self._title: T | None = None
 
 		self._post_init()
 
@@ -283,7 +280,7 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 		return tuple(covers_results + persons_results)
 
 	@abstractmethod
-	def init_empty_title(self, slug: str) -> BaseTitleController:
+	def init_empty_title(self, slug: str) -> "BaseTitleController":
 		"""
 		Устанавливает пустой тайтл для парсера.
 
@@ -326,10 +323,10 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 		:rtype: SavingResult
 		"""
 
-		self._title = cast("BaseTitleController", self._title)
+		title = cast("BaseTitleController", self._title)
 
 		self._pre_saver()
-		result = self._title.save(sorting)
+		result = title.save(sorting)
 		self._title = None
 
 		return result
