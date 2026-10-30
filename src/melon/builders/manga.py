@@ -178,7 +178,7 @@ class MangaBuilder(BaseBuilder):
 		"""
 
 		ProgressString = self.__GetProgressString(progress)
-		self._SystemObjects.printer.emit(f"{ProgressString}Building chapter <b>{chapter.id}</b>…")
+		self._SystemObjects.printer.emit(f"{ProgressString}Building chapter [b]{chapter.id}[/b]…")
 
 		with TemporaryDirectory(dir = self._ParserTempDirectory) as TempDir:
 			TempDirPath = Path(TempDir)
@@ -236,7 +236,7 @@ class MangaBuilder(BaseBuilder):
 			TargetDirectory.mkdir(exist_ok = True)
 
 		ChapterPath = self.__FormatsBuilders[self.__OutputFormat]().build_chapter(ChapterName, temp_dir, TargetDirectory)
-		self._Printer.emit(f"Chapter <b>{chapter.id}</b> built in: <i>{ChapterPath}</i>.")
+		self._Printer.emit(f"Chapter [b]{chapter.id}[/] built in: [i]{ChapterPath}[/].")
 
 	#==========================================================================================#
 	# >>>>> OVERRIDABLE METHODS <<<<< #
@@ -306,7 +306,7 @@ class MangaBuilder(BaseBuilder):
 			self.__BuildChapter(CurrentChapter, Progress)
 
 		ProgressString = self.__GetProgressString(1.0)
-		self._Printer.emit(f"{ProgressString}In branch <b>{BranchToBuild.id}</b> built {BranchToBuild.chapters_count} chapters.")
+		self._Printer.emit(f"{ProgressString}In branch [b]{BranchToBuild.id}[/b] built {BranchToBuild.chapters_count} chapters.")
 
 	def select_output_format(self, output_format: MangaOutputFormats):
 		"""

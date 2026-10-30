@@ -127,7 +127,7 @@ class CommandProcessor(CommandProcessorTemplate[BaseParameters]):
 		:rtype: bool
 		"""
 
-		self.printer.emit("<i>Press [Ctrl + C] to cancel initialization.</i>")
+		self.printer.emit("[i]Press [Ctrl + C] to cancel initialization.[/]")
 		name: str | None = questionary.text("Parser name:").ask(kbi_msg = self.__kbi_msg)
 		if name is None: return False
 		domain: str | None = self.__ask_domain()

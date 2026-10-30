@@ -115,7 +115,7 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 		warnings: str = f"[yellow]{statistics.warnings}[/]" if statistics.warnings else "[green]0[/]"
 		skipped: str = f"[bright_cyan]{statistics.warnings}[/]" if statistics.skipped else "0"
 
-		self.printer.emit(f"Total <b>{statistics.total}</b>. Passed {passed}. Skipped: {skipped}. Errors: {errors}. Warnings: {warnings}.")
+		self.printer.emit(f"Total [b]{statistics.total}[/]. Passed {passed}. Skipped: {skipped}. Errors: {errors}. Warnings: {warnings}.")
 
 	#==========================================================================================#
 	# >>>>> OVERRIDABLE METHODS <<<<< #

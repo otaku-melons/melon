@@ -104,11 +104,11 @@ class Check(BaseCheck):
 
 		for name in extensions_names:
 			if name not in exported_names:
-				self._emit(CheckStatus.Error, f"Extension <b>{name}</b> not exported.")
+				self._emit(CheckStatus.Error, f"Extension [b]{name}[/] not exported.")
 
 		for name in exported_classes:
 			if name not in all_names:
-				self._emit(CheckStatus.Error, f"Extension class name <b>{name}</b> isn't present in <b>__all__</b> list.")
+				self._emit(CheckStatus.Error, f"Extension class name [b]{name}[/] isn't present in [b]__all__[/] list.")
 
 	def _post_init(self):
 		"""This method will be executed after instance initialization."""

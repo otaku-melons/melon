@@ -99,7 +99,7 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 			ParserSite: str = "https://" + SourceOperator.manifest.domain
 
 			TableData["NAME"].append(ParserName)
-			TableData["VERSION"].append(ParserVersion)
+			TableData["VERSION"].append(str(ParserVersion))
 			TableData["TYPES"].append(", ".join(ParserContentType))
 			TableData["DOMAIN"].append(ParserSite)
 			TableData["collect"].append(str(SourceOperator.is_collector_implemented))

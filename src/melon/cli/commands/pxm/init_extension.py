@@ -89,7 +89,7 @@ class CommandProcessor(CommandProcessorTemplate[T_SingleParserRequired]):
 		:rtype: bool
 		"""
 
-		self.printer.emit("<i>Press [Ctrl + C] to cancel initialization.</i>")
+		self.printer.emit("[i]Press [Ctrl + C] to cancel initialization.[/]")
 		name: str | None = questionary.text("Extension name:").ask(kbi_msg = self.__kbi_msg)
 		if name is None: return False
 		class_name: str | None = questionary.text("Class name (if empty will be used default):").ask(kbi_msg = self.__kbi_msg)
@@ -98,7 +98,7 @@ class CommandProcessor(CommandProcessorTemplate[T_SingleParserRequired]):
 			return False
 		elif class_name == "":
 			class_name = None
-			self.printer.emit("Used default class name <i>Extension.</i>")
+			self.printer.emit("Used default class name [i]Extension.[/]")
 
 		is_enable: bool | None = questionary.confirm("Enable extension?").ask(kbi_msg = self.__kbi_msg)
 		if is_enable is None: return False

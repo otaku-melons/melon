@@ -87,7 +87,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		repository_url: str = self.system_objects.manager.repositories.get(parameters.required_parser.name, exception = True)
 
-		self.printer.emit(f"Repository: <i>{repository_url}</i>.")
+		self.printer.emit(f"Repository: [i]{repository_url}[/].")
 		parameters.required_parser.install()
 		self.printer.emit("Parser installed.")
 

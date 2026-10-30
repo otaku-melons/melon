@@ -137,7 +137,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		if cut_templates_count:
 			self.printer.emit(f"Cut {cut_templates_count} templates from image.")
 
-			if parameters.output: self.printer.emit(f"Image path: <i>{parameters.output}</i>")
+			if parameters.output: self.printer.emit(f"Image path: [i]{parameters.output}[/]")
 			else: self.printer.emit("Original image overwritten.")
 
 		else:

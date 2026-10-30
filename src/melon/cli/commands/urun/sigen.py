@@ -61,7 +61,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		Signatures.append(signature)
 		ConfigData["filters"]["images"]["signatures"] = Signatures
 		json.write(Config, ConfigData)
-		self.printer.emit(f"Exported in <b>{required_parser.name}</b> config.")
+		self.printer.emit(f"Exported in [b]{required_parser.name}[/] config.")
 
 		return True
 
@@ -139,7 +139,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		Unstubber = utils.Unstubber()
 		Image = Unstubber.load_image(parameters.image)
 		Signature: str = Unstubber.generate_signature(Image, parameters.signature_version)
-		self.printer.emit(f"Signature: <i>{Signature}</i>")
+		self.printer.emit(f"Signature: [i]{Signature}[/]")
 
 		if parameters.required_parser:
 			return self.__export_signature(Signature, parameters.required_parser)

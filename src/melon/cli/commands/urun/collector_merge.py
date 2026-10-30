@@ -98,7 +98,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		target_collector.load()
 
 		unique_slugs_added: int = target_collector.add(origin_collector.slugs)
-		self.printer.emit(f"From <b>{parameters.origin}</b> added {unique_slugs_added} unique slugs to <b>{parameters.target}</b> collection.")
+		self.printer.emit(f"From [b]{parameters.origin}[/] added {unique_slugs_added} unique slugs to [b]{parameters.target}[/] collection.")
 
 		if parameters.clear_origin:
 			origin_collector.clear()

@@ -7,6 +7,7 @@ if TYPE_CHECKING:
 	from collections.abc import Sequence
 
 	from ....html.base_elements import BaseElement
+	from ...structs.image import ImageData
 
 class Chapter(BaseChapter):
 	"""Глава ранобэ."""
@@ -69,12 +70,12 @@ class Chapter(BaseChapter):
 	# >>>>> PUBLIC METHODS <<<<< #
 	#==========================================================================================#
 
-	def add_element(self, element: "BaseElement"):
+	def add_element(self, element: "BaseElement | ImageData"):
 		"""
 		Добавляет элемент в главу.
 
 		:param element: Элемент главы.
-		:type element: BaseElement
+		:type element: BaseElement | ImageData
 		:raise TypeError: Выбрасывается при передаче неподдерживаемого элемента.
 		"""
 

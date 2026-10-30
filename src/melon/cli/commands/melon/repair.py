@@ -113,12 +113,12 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		title = parser.init_empty_title(typing_result.slug)
 
 		if title.load(parameters.filename, By.Filename):
-			self.printer.emit(f"Loaded file: <i>{parameters.filename}</i>.")
+			self.printer.emit(f"Loaded file: [i]{parameters.filename}[/].")
 		else:
-			self.printer.error(f"Unable load file: <b>{parameters.filename}</b>.")
+			self.printer.error(f"Unable load file: [b]{parameters.filename}[/].")
 			return False
 
-		self.printer.emit(f"Repairing chapter <b>{parameters.target_id}</b>… ")
+		self.printer.emit(f"Repairing chapter [b]{parameters.target_id}[/]… ")
 
 		if not parser.repair(parameters.target_id):
 			self.printer.warning("Chapter is empty. Repairing failure?")

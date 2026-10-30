@@ -30,4 +30,4 @@ class Check(BaseCheck):
 				stem: str = file_path.stem
 
 				if stem not in allowed_scripts:
-					self._emit(CheckStatus.Warning, f"Script file <b>{stem}</b> should be in modules subdirectory.")
+					self._emit(CheckStatus.Warning, f"Script file [b]{stem}[/] should be in modules subdirectory.")

@@ -56,7 +56,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		IsTitleExists: bool | None = descriptor.extra.get("is_title_exists")
 
 		if IsTitleExists is False:
-			self.printer.emit(f"Title <i>{descriptor.full_filename}</i> marked to remove.")
+			self.printer.emit(f"Title [i]{descriptor.full_filename}[/] marked to remove.")
 
 	def __remove_files_form_directory(self, directory: Path, files: Sequence[str]) -> int:
 		"""

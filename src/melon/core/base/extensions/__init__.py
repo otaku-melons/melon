@@ -94,7 +94,7 @@ class BaseExtension[SO: "BaseSourceOperator", EO: BaseModel = BaseModel]:
 			for error in exception.errors():
 				error_type: str = error["type"].lower()
 				field: str = "/".join(str(key) for key in error["loc"])
-				self.portals.printer.error(f"Field <b>{field}</b> error: <i>{error_type}</i>.", origin = self._name)
+				self.portals.printer.error(f"Field [b]{field}[/] error: [i]{error_type}[/i].", origin = self._name)
 
 			self.portals.printer.critical("Unable parse extension options.", end_work = True)
 

@@ -52,4 +52,4 @@ class Check(BaseCheck):
 			self._emit(CheckStatus.Skipped, "Git repository not found.")
 
 		if not self.__is_pycache_ignored(operator):
-			self._emit(CheckStatus.Warning, "<b>__pycache__</b> should be ignored.")
+			self._emit(CheckStatus.Warning, "[b]__pycache__[/] should be ignored.")
