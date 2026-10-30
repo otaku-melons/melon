@@ -1,8 +1,8 @@
 from typing import Literal, override
 
-from ..base_elements import TextElement
+from ..base_elements import AlignableElement, TextElement
 
-class Header(TextElement):
+class Header(AlignableElement, TextElement):
 	"""Header."""
 
 	#==========================================================================================#
@@ -44,7 +44,12 @@ class Header(TextElement):
 
 		soup = self._parse("")
 		tag = soup.new_tag(self.element_tag)
-		tag.string = self._text
+		inner = self._parse(self._text)
+
+		if self._align:
+			tag["style"] = f"text-align: {self._align.value}"
+
+		tag.append(inner)
 		soup.append(tag)
 
 		return str(soup)

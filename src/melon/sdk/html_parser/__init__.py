@@ -5,9 +5,10 @@ from bs4 import BeautifulSoup, NavigableString, PageElement, Tag
 from dublib.functions.data import to_sequence
 from dublib.functions.data.string import remove_recurring_substrings
 
+from ...core.base.parsers.components.images_downloader import ImageResolution
 from ...core.exceptions.html import UnresolvedTagError
 from ...core.html.allowed_tags import ALLOWED_TAGS
-from ...core.html.elements import Paragraph
+from ...core.html.elements import Header, Image, Paragraph
 from ...core.html.enums import Align, TagCategory
 
 if TYPE_CHECKING:
@@ -85,7 +86,7 @@ class HyperTextParser:
 
 		removed: list[str] = []
 
-		targets: list[Tag] = [child for child in tag.contents if isinstance(child, Tag)]
+		targets: list[Tag] = tag.find_all()
 		targets.append(tag)
 
 		for target in targets:
@@ -100,7 +101,7 @@ class HyperTextParser:
 				if tag_data.is_support_data and attribute.startswith("data-"):
 					continue
 
-				if attribute == "style" and tag_data.styles:
+				if attribute == "style" and tag_data.is_alignable:
 					continue
 
 				if attribute not in tag_data.attributes:
@@ -108,57 +109,6 @@ class HyperTextParser:
 					removed.append(attribute)
 
 			target.attrs = attributes
-
-		return tuple(removed)
-
-	def clear_styles(self, tag: Tag) -> tuple[str, ...]:
-		"""
-		Clear unresolved styles for tag and inner tags.
-
-		Args:
-			tag (Tag): HTML tag.
-
-		Raises:
-			UnresolvedTagError: Unresolved tag.
-
-		Returns:
-			tuple[str, ...]: Removed styles names.
-		"""
-
-		removed: list[str] = []
-
-		targets: list[Tag] = [child for child in tag.contents if isinstance(child, Tag)]
-		targets.append(tag)
-
-		for target in targets:
-			tag_data = ALLOWED_TAGS.get_tag(target.name)
-
-			if not tag_data:
-				raise UnresolvedTagError(target.name)
-
-			style: AttributeValueList | str | None = target.attrs.get("style")
-
-			if not style:
-				continue
-
-			style = str(style)
-			styles: list[str] = style.split(";")
-			filtered_styles: dict[str, str] = {}
-
-			for current_style in styles:
-				name, value = current_style.split(":")
-				name: str = name.strip()
-				value: str = value.strip()
-
-				if name in tag_data.styles:
-					filtered_styles[name] = value
-				else:
-					removed.append(name)
-
-			if filtered_styles:
-				target["style"] = ";".join(f"{name}: {value}" for name, value in filtered_styles.items())
-			else:
-				del target["style"]
 
 		return tuple(removed)
 
@@ -207,9 +157,9 @@ class HyperTextParser:
 		"""
 		Normalize text.
 
-		- Strip.
 		- Replace no-break spaces with normal.
 		- Replace recurring spaces.
+		- Strip.
 
 		Args:
 			text (str): Normalizable text.
@@ -218,9 +168,9 @@ class HyperTextParser:
 			str: Normalized text.
 		"""
 
-		text = text.strip()
 		text = text.replace("\u00a0", " ")
 		text = remove_recurring_substrings(text, " ")
+		text = text.strip()
 
 		return text
 
@@ -332,6 +282,86 @@ class HyperTextParser:
 	# >>>>> PUBLIC ELEMENTS PARSING METHODS <<<<< #
 	#==========================================================================================#
 
+	def parse_header(self, tag: Tag, autolevel: bool = True) -> Header | None:
+		"""
+		Parse header from HTML tag.
+
+		Args:
+			tag (Tag): HTML tag.
+			autolevel (bool): If header level is 1 or 2, will be set as 3.
+
+		Raises:
+			ValueError: Image can be parsed only from headers tags.
+			UnresolvedTagError: Unresolved tag.
+
+		Returns:
+			Image | None: Image element or `None` if missing source.
+		"""
+
+		if len(tag.name) != 2 and tag.name[0] != "h" and int(tag.name[1]) not in range(1, 7):
+			raise ValueError("Image can be parsed only from headers tags.")
+
+		level: int = int(tag.name[1])
+
+		if level not in (3, 4, 5, 6):
+			if autolevel:
+				level = 3
+				tag.name = f"h{level}"
+			else:
+				raise UnresolvedTagError(tag.name)
+
+		self.unwrap_non_styling_childrens(tag)
+		self.clear_attributes(tag)
+
+		align: Align | None = self.parse_align(tag)
+		text: str = tag.decode_contents()
+
+		if self.pretty:
+			text = self.normalize_text(text)
+
+		if not text:
+			return
+
+		header = Header(text, level = level)
+		header.set_align(align)
+
+		return header
+
+	def parse_image(self, tag: Tag) -> Image | None:
+		"""
+		Parse image from HTML tag.
+
+		Args:
+			tag (Tag): HTML tag.
+
+		Raises:
+			ValueError: Image can be parsed only from \"img\" tag.
+
+		Returns:
+			Image | None: Image element or `None` if missing source.
+		"""
+
+		if tag.name != "img":
+			raise ValueError("Image can be parsed only from \"img\" tag.")
+
+		source = tag.attrs.get("src")
+
+		if not source:
+			return
+
+		image = Image(str(source))
+
+		width, height = tag.attrs.get("width"), tag.attrs.get("height")
+
+		if width and height:
+			resolution = ImageResolution(
+				width = int(str(width)),
+				height = int(str(height)),
+			)
+			image.set_resolution(resolution)
+
+		return image
+
 	def parse_paragraphs(self, tag: Tag) -> tuple[Paragraph, ...]:
 		"""
 		Parse paragraphs from HTML tag.
@@ -353,7 +383,6 @@ class HyperTextParser:
 
 			self.unwrap_non_styling_childrens(inner_paragraph)
 			self.clear_attributes(inner_paragraph)
-			self.clear_styles(inner_paragraph)
 
 			text: str = inner_paragraph.decode_contents()
 

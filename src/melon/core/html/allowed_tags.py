@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from pydantic.dataclasses import dataclass
 
 from .enums import TagCategory
 
@@ -6,13 +6,12 @@ __all__ = ["ALLOWED_TAGS"]
 
 @dataclass(frozen = True)
 class TagData:
-	"""Tag data."""
 
 	name: str
 	categories: tuple[TagCategory, ...] = ()
 	attributes: tuple[str, ...] = ()
-	styles: tuple[str, ...] = ()
 	is_support_data: bool = False
+	is_alignable: bool = False
 
 class AllowedTags:
 	"""Allowed tags."""
@@ -58,14 +57,14 @@ class AllowedTags:
 
 		data: list[TagData] = []
 
-		paragraph = TagData("p", styles = ("text-align",))
+		paragraph = TagData("p", is_alignable = True)
 		data.append(paragraph)
 
-		blockquote = TagData("blockquote", is_support_data = True)
+		blockquote = TagData("blockquote", is_support_data = True, is_alignable = True)
 		data.append(blockquote)
 
 		for level in (3, 4, 5, 6):
-			header = TagData(f"h{level}")
+			header = TagData(f"h{level}", is_alignable = True)
 			data.append(header)
 
 		for name in ("b", "strong", "i", "em", "s", "del", "u", "ins", "sup", "sub"):

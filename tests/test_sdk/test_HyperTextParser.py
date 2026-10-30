@@ -30,15 +30,13 @@ def test_clear_attributes():
 	assert parser.clear_attributes(tag) == ("data-color", "class")
 	assert str(tag) == "<blockquote data-custom=\"1\">text<b>bold</b></blockquote>"
 
-def test_clear_styles():
-
-	html: str = "<p style=\"text-align: center\"><b style=\"text-style: bold\"></b></p>"
+	html: str = "<p><b class=\"someclass1\"><i class=\"someclass2\">text</i></b></p>"
 	soup = BeautifulSoup(html, "html.parser")
 	tag = soup.find("p")
 	assert tag is not None
 
-	assert parser.clear_styles(tag) == ("text-style",)
-	assert str(tag) == "<p style=\"text-align: center\"><b></b></p>"
+	assert parser.clear_attributes(tag) == ("class", "class")
+	assert str(tag) == "<p><b><i>text</i></b></p>"
 
 def test_has_child_tag():
 
@@ -128,6 +126,69 @@ def test_unwrap_non_styling_childrens():
 
 	parser.unwrap_non_styling_childrens(tag)
 	assert str(tag) == "<p><sup>styled</sup> text wrapped or no</p>"
+
+def test_parse_header():
+
+	html: str = "<h3 style=\"text-align: center\"><b>header</b></h3>"
+	soup = BeautifulSoup(html, "html.parser")
+	tag = soup.find("h3")
+	assert tag is not None
+
+	header = parser.parse_header(tag)
+
+	assert header is not None
+	assert header.to_html() == html
+
+	html: str = "<h1 class=\"someclass\">header</h3>"
+	soup = BeautifulSoup(html, "html.parser")
+	tag = soup.find("h1")
+	assert tag is not None
+
+	header = parser.parse_header(tag, autolevel = True)
+
+	assert header is not None
+	assert header.to_html() == "<h3>header</h3>"
+
+	html: str = "<h6></h6>"
+	soup = BeautifulSoup(html, "html.parser")
+	tag = soup.find("h6")
+	assert tag is not None
+	assert parser.parse_header(tag) is None
+
+def test_parse_image():
+
+	html: str = "<img width=\"1280\" height=\"720\" src=\"https://example.com/image.png\">"
+	soup = BeautifulSoup(html, "html.parser")
+	tag = soup.find("img")
+	assert tag is not None
+
+	image = parser.parse_image(tag)
+
+	assert image is not None
+	assert image.source == "https://example.com/image.png"
+	assert image.resolution is not None
+	assert image.resolution.width == 1280
+	assert image.resolution.height == 720
+
+	paragraph = parser.make_tag("p", "some text")
+
+	is_error_raised: bool = False
+
+	try:
+		parser.parse_image(paragraph)
+	except ValueError:
+		is_error_raised = True
+
+	assert is_error_raised is True
+
+	html: str = "<img>"
+	soup = BeautifulSoup(html, "html.parser")
+	tag = soup.find("img")
+	assert tag is not None
+
+	image = parser.parse_image(tag)
+
+	assert image is None
 
 def test_parse_paragraphs():
 

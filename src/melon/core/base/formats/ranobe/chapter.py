@@ -16,12 +16,6 @@ class Chapter(BaseChapter):
 	#==========================================================================================#
 
 	@property
-	def footnotes(self) -> tuple[str, ...]:
-		"""Последовательность заметок."""
-
-		return tuple(self._data["footnotes"])
-
-	@property
 	def paragraphs(self) -> tuple[str, ...]:
 		"""Последовательность абзацев."""
 
@@ -42,7 +36,6 @@ class Chapter(BaseChapter):
 		"""Очищает контент главы."""
 
 		self._data["paragraphs"] = []
-		self._data["footnotes"] = []
 
 	@override
 	def _is_empty(self) -> bool:
@@ -71,7 +64,6 @@ class Chapter(BaseChapter):
 		"""Execute after instance initialization."""
 
 		self._data["paragraphs"] = []
-		self._data["footnotes"] = []
 
 	#==========================================================================================#
 	# >>>>> PUBLIC METHODS <<<<< #

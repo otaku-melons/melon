@@ -19,6 +19,28 @@ class Image(BaseElement):
 	"""Image."""
 
 	#==========================================================================================#
+	# >>>>> PROPERTIES <<<<< #
+	#==========================================================================================#
+
+	@property
+	def filename(self) -> str:
+		"""Image filename."""
+
+		return self._filename
+
+	@property
+	def resolution(self) -> "ImageResolution | None":
+		"""Image resolution."""
+
+		return self._resolution
+
+	@property
+	def source(self) -> str:
+		"""Image source."""
+
+		return self._link
+
+	#==========================================================================================#
 	# >>>>> OVERRIDDEN METHODS <<<<< #
 	#==========================================================================================#
 
@@ -76,7 +98,7 @@ class Image(BaseElement):
 
 		self._link: str = url
 
-		self._filename: str = Path(self._link).stem
+		self._filename: str = Path(self._link).name
 
 		self._resolution: ImageResolution | None = None
 		self._mount_path: Path | None = None
@@ -108,6 +130,7 @@ class Image(BaseElement):
 			url = self._link,
 			directory = source_operator.settings.directories.images / mount_path,
 			filename = self._filename,
+			is_full_filename = True,
 		)
 
 		future.result(result)
@@ -127,4 +150,14 @@ class Image(BaseElement):
 			filename (str): New image filename.
 		"""
 
-		self._filename = Path(filename).stem
+		self._filename = filename
+
+	def set_resolution(self, resolution: "ImageResolution"):
+		"""
+		Set image resolution.
+
+		Args:
+			resolution (ImageResolution): Image resolution.
+		"""
+
+		self._resolution = resolution
