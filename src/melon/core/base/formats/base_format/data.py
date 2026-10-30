@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 	from .controller import BaseTitleController
 
 class BaseTitleData[C: "BaseChapter"](ABC):
-	"""Бозовые данные тайтла."""
+	"""Base title data."""
 
 	#==========================================================================================#
 	# >>>>> PROPERTIES <<<<< #

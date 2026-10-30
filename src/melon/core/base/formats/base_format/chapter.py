@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, cast
 
 from dublib.functions.data import zerotify
@@ -7,12 +6,15 @@ from dublib.functions.data.dictionary import insert_dictionary_after_key
 from dublib.functions.data.string import remove_recurring_substrings
 
 if TYPE_CHECKING:
+	from collections.abc import Sequence
+
 	from ...parsers.base_parser import BaseParser
+	from ...structs.image import ImageData
 
 class ExtraData:
 	"""Дополнительные данные главы."""
 
-	def __init__(self, base_keys: Sequence[str]):
+	def __init__(self, base_keys: "Sequence[str]"):
 		"""
 		Дополнительные данные главы.
 
@@ -121,6 +123,12 @@ class BaseChapter(ABC):
 		return self._data["id"]
 
 	@property
+	def images(self) -> tuple["ImageData", ...]:
+		"""Chapter images."""
+
+		return tuple(self._get_chapter_images())
+
+	@property
 	def slug(self) -> str | None:
 		"""Алиас главы."""
 
@@ -197,6 +205,17 @@ class BaseChapter(ABC):
 	@abstractmethod
 	def _clear(self):
 		"""Очищает контент главы."""
+
+		pass
+
+	@abstractmethod
+	def _get_chapter_images(self) -> "Sequence[ImageData]":
+		"""
+		Get chapter-associated images.
+
+		Returns:
+			Sequence[ImageData]: Chapter images.
+		"""
 
 		pass
 
@@ -330,7 +349,7 @@ class BaseChapter(ABC):
 
 		self._data["number"] = self._PrettyNumber(number)
 
-	def set_workers(self, workers: Sequence[str]):
+	def set_workers(self, workers: "Sequence[str]"):
 		"""
 		Задаёт идентификаторы лиц, адаптировавших контент.
 

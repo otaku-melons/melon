@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, override
 
+from ...structs.image import ImageData
 from ..base_format.chapter import BaseChapter
 from .enums import ChapterType
 
@@ -7,7 +8,6 @@ if TYPE_CHECKING:
 	from collections.abc import Sequence
 
 	from ....html.base_elements import BaseElement
-	from ...structs.image import ImageData
 
 class Chapter(BaseChapter):
 	"""Глава ранобэ."""
@@ -39,6 +39,17 @@ class Chapter(BaseChapter):
 		self._data["paragraphs"] = []
 
 	@override
+	def _get_chapter_images(self) -> "Sequence[ImageData]":
+		"""
+		Get chapter-associated images.
+
+		Returns:
+			Sequence[ImageData]: Chapter images.
+		"""
+
+		return self.__images
+
+	@override
 	def _is_empty(self) -> bool:
 		"""
 		Проверяет, пустая ли глава.
@@ -66,6 +77,8 @@ class Chapter(BaseChapter):
 
 		self._data["paragraphs"] = []
 
+		self.__images: list[ImageData] = []
+
 	#==========================================================================================#
 	# >>>>> PUBLIC METHODS <<<<< #
 	#==========================================================================================#
@@ -79,6 +92,9 @@ class Chapter(BaseChapter):
 		:raise TypeError: Выбрасывается при передаче неподдерживаемого элемента.
 		"""
 
+		if isinstance(element, ImageData):
+			self.__images.append(element)
+
 		self._data["paragraphs"].append(element.to_html())
 
 	def set_elements(self, elements: "Sequence[BaseElement]"):
@@ -89,7 +105,8 @@ class Chapter(BaseChapter):
 		:type elements: Sequence[BaseElement]
 		"""
 
-		for Element in elements: self.add_element(Element)
+		for element in elements:
+			self.add_element(element)
 
 	def set_type(self, chapter_type: ChapterType | None):
 		"""

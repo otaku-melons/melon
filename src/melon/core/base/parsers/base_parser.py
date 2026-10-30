@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
-
-from dublib.functions.decorators import run_before_method
+from typing import TYPE_CHECKING, Any
 
 from ....core import exceptions
 from ..formats.base_format.branch import Branch
@@ -28,8 +26,8 @@ if TYPE_CHECKING:
 	from ..formats.base_format.controller import BaseTitleController
 	from ..source_operator import BaseSourceOperator
 
-class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleController"](ABC):
-	"""Базовый парсер."""
+class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleController[BaseTitleData[BaseChapter]]"](ABC):
+	"""Base parser."""
 
 	#==========================================================================================#
 	# >>>>> PROPERTIES <<<<< #
@@ -78,8 +76,16 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 		return self._source_operator
 
 	@property
-	def title(self) -> "T | None":
-		"""Тайтл."""
+	def title(self) -> T:
+		"""
+		Title controller.
+
+		Raises:
+			TitleNotSetError: Title required, but not set.
+		"""
+
+		if not self._title:
+			raise exceptions.parsers.TitleNotSetError()
 
 		return self._title
 
@@ -87,7 +93,6 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 	# >>>>> PROTECTED METHODS <<<<< #
 	#==========================================================================================#
 
-	@run_before_method("_require_title")
 	def _download_images(self, images_data: Sequence[ImageData], images_type: ImageType, force_mode: bool) -> list[ImageDownloadingResult]:
 		"""
 		Скачивает изображения тайтла определённого типа.
@@ -105,7 +110,7 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 		if not images_data:
 			return []
 
-		title = cast("BaseTitleController", self._title)
+		title = self.title
 
 		Results: list = []
 		ImagesCount: int = len(images_data)
@@ -130,16 +135,6 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 				continue
 
 		return Results
-
-	def _require_title(self):
-		"""
-		Проверяет, задан ли тайтл.
-
-		:raises exceptions.parsers.TitleNotSetError: Не задан тайтл.
-		"""
-
-		if not self._title:
-			raise exceptions.parsers.TitleNotSetError()
 
 	def _unstub_covers(self, title: "BaseTitleController[BaseTitleData]", results: list[ImageDownloadingResult]):
 		"""
@@ -179,7 +174,7 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 					if result.path: result.path.unlink(missing_ok = True)
 
 	#==========================================================================================#
-	# >>>>> ПЕРЕОПРЕДЕЛЯЕМЫЕМЕТОДЫ <<<<< #
+	# >>>>> OVVERRIDABLE METHODS <<<<< #
 	#==========================================================================================#
 
 	@abstractmethod
@@ -231,11 +226,10 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 
 		self._post_init()
 
-	@run_before_method("_require_title")
 	def amend(self):
 		"""Amend empty chapters with content."""
 
-		title = cast("BaseTitleController[BaseTitleData]", self._title)
+		title = self.title
 		empty_chapters: list[tuple[Branch, BaseChapter]] = []
 
 		for branch in title.data.branches:
@@ -257,7 +251,6 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 
 		self.portals.printer.templates.parsing.amending_end(amended_chapters_count)
 
-	@run_before_method("_require_title")
 	def download_images(self, force_mode: bool) -> "tuple[ImageDownloadingResult, ...]":
 		"""
 		Скачивает обложки и портреты персонажей.
@@ -268,17 +261,15 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 		:rtype: tuple[ImageDownloadingResult, ...]
 		"""
 
-		title = cast('BaseTitleController["BaseTitleData"]', self._title)
-
-		covers_results = self._download_images(title.data.covers, ImageType.Cover, force_mode)
-		self._unstub_covers(title, covers_results)
+		covers_results = self._download_images(self.title.data.covers, ImageType.Cover, force_mode)
+		self._unstub_covers(self.title, covers_results)
 
 		persons_images: list[ImageData] = []
-		for person in title.data.perons:
+		for person in self.title.data.perons:
 			persons_images += person.images
 
 		persons_results = self._download_images(persons_images, ImageType.Person, force_mode)
-		self._unstub_persons(title.data, persons_results)
+		self._unstub_persons(self.title.data, persons_results)
 
 		return tuple(covers_results + persons_results)
 
@@ -295,7 +286,6 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 
 		pass
 
-	@run_before_method("_require_title")
 	def parse(self):
 		"""Получает основные данные тайтла."""
 
@@ -315,7 +305,6 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 
 		pass
 
-	@run_before_method("_require_title")
 	def save(self, sorting: bool = False) -> "SavingResult":
 		"""
 		Сохраняет тайтл и выгружает его из парсера.
@@ -326,10 +315,8 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 		:rtype: SavingResult
 		"""
 
-		title = cast("BaseTitleController", self._title)
-
 		self._pre_saver()
-		result = title.save(sorting)
+		result = self.title.save(sorting)
 		self._title = None
 
 		return result

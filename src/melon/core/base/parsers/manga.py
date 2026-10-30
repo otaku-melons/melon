@@ -1,7 +1,5 @@
 from typing import TYPE_CHECKING, cast, override
 
-from dublib.functions.decorators import run_before_method
-
 from ....core import exceptions
 from ..formats.manga.controller import Manga
 from .base_parser import BaseParser
@@ -32,7 +30,6 @@ class BaseMangaParser[SO: "BaseSourceOperator", CSM: "BaseModel"](BaseParser[SO,
 		return self._title
 
 	@override
-	@run_before_method("_require_title")
 	def repair(self, chapter_id: int) -> bool:
 		"""
 		Восстанавливает содержимое главы, заново получая его из источника.
@@ -44,9 +41,7 @@ class BaseMangaParser[SO: "BaseSourceOperator", CSM: "BaseModel"](BaseParser[SO,
 		:rtype: bool
 		"""
 
-		title = cast("Manga", self._title)
-
-		search_result = title.data.find_chapter(chapter_id)
+		search_result = self.title.data.find_chapter(chapter_id)
 
 		if not search_result:
 			raise exceptions.parsing.ChapterNotFoundError(chapter_id)

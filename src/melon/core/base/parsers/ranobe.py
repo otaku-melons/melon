@@ -1,7 +1,5 @@
 from typing import TYPE_CHECKING, cast, override
 
-from dublib.functions.decorators import run_before_method
-
 from ....core import exceptions
 from ..formats import Ranobe
 from .base_parser import BaseParser
@@ -32,7 +30,6 @@ class BaseRanobeParser[SO: "BaseSourceOperator", CSM: "BaseModel"](BaseParser[SO
 		return self._title
 
 	@override
-	@run_before_method("_require_title")
 	def repair(self, chapter_id: int) -> bool:
 		"""
 		Восстанавливает содержимое главы, заново получая его из источника.
@@ -44,9 +41,7 @@ class BaseRanobeParser[SO: "BaseSourceOperator", CSM: "BaseModel"](BaseParser[SO
 		:rtype: bool
 		"""
 
-		Title = cast("Ranobe", self._title)
-
-		SearchResult = Title.data.find_chapter(chapter_id)
+		SearchResult = self.title.data.find_chapter(chapter_id)
 
 		if not SearchResult:
 			raise exceptions.parsing.ChapterNotFoundError(chapter_id)
