@@ -1,6 +1,6 @@
 import importlib
 import os
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, Literal, overload
 
 from dublib.functions.filesystem import json
 
@@ -139,23 +139,28 @@ class ExtensionsOperator:
 			self.__states[name] = is_enabled
 
 	@overload
-	def run[E: "BaseExtension"](self, source_operator: "BaseSourceOperator", extension: type[E]) -> E | None: ...
+	def run[E: "BaseExtension"](self, source_operator: "BaseSourceOperator", extension: type[E], force: Literal[False] = False) -> E | None: ...
 	@overload
-	def run(self, source_operator: "BaseSourceOperator", extension: str) -> "BaseExtension | None": ...
+	def run[E: "BaseExtension"](self, source_operator: "BaseSourceOperator", extension: type[E], force: Literal[True]) -> E: ...
+	@overload
+	def run(self, source_operator: "BaseSourceOperator", extension: str, force: Literal[False] = False) -> "BaseExtension | None": ...
+	@overload
+	def run(self, source_operator: "BaseSourceOperator", extension: str, force: Literal[True]) -> "BaseExtension": ...
 
-	def run[E: "BaseExtension"](self, source_operator: "BaseSourceOperator", extension: str | type[E]) -> "BaseExtension | E | None":
+	def run[E: "BaseExtension"](self, source_operator: "BaseSourceOperator", extension: str | type[E], force: bool = False) -> "BaseExtension | E | None":
 		"""
 		Run extension by class or name (in this case untyped).
 
 		Args:
 			source_operator (BaseSourceOperator): Source operator.
 			extension (str | type[E]): Extension class or name.
+			force (bool): Ignore extension state.
 
 		Returns:
 			BaseExtension | E | None: Extension or `None` if disabled.
 		"""
 
-		if not self.is_enabled(extension):
+		if not self.is_enabled(extension) and not force:
 			return
 
 		if not isinstance(extension, str):

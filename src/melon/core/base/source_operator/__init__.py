@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from os import PathLike
 from pathlib import Path
-from typing import TYPE_CHECKING, Self, overload
+from typing import TYPE_CHECKING, Literal, Self, overload
 
 from dublib.functions.filesystem import json
 from dublib.validators import types
@@ -440,22 +440,27 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		return self._extract_slug_from_string(string)
 
 	@overload
-	def run_extension[E: "BaseExtension"](self, extension: type[E]) -> E | None: ...
+	def run_extension[E: "BaseExtension"](self, extension: type[E], force: Literal[False] = False) -> E | None: ...
 	@overload
-	def run_extension(self, extension: str) -> "BaseExtension | None": ...
+	def run_extension[E: "BaseExtension"](self, extension: type[E], force: Literal[True]) -> E: ...
+	@overload
+	def run_extension(self, extension: str, force: Literal[False] = False) -> "BaseExtension | None": ...
+	@overload
+	def run_extension(self, extension: str, force: Literal[True]) -> "BaseExtension": ...
 
-	def run_extension[E: "BaseExtension"](self, extension: type[E] | str) -> "E | BaseExtension | None":
+	def run_extension[E: "BaseExtension"](self, extension: type[E] | str, force: bool = False) -> "E | BaseExtension | None":
 		"""
 		Run extension.
 
 		Args:
 			extension (str | type[E]): Extension class or name.
+			force (bool): Ignore extension state.
 
 		Returns:
 			E | BaseExtension | None: Extension or `None` if disabled.
 		"""
 
-		return self.extensions.run(self, extension)
+		return self.extensions.run(self, extension, force)
 
 	def set_mirror(self, mirror: str | None) -> bool:
 		"""

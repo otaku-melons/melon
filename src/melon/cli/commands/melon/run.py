@@ -109,7 +109,8 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			self.printer.error(f"Extension \"{parameters.extension_name}\" not found for parser \"{parameters.required_parser.name}\".")
 			return False
 
-		extension = source_operator.run_extension(parameters.extension_name)
+		# TODO: If extension disabled print info message instead force launch.
+		extension = source_operator.run_extension(parameters.extension_name, force = True)
 
 		if not extension.cli.is_provided:
 			self.printer.error("Extension doesn't provide CLI.")
