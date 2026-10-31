@@ -165,6 +165,7 @@ class ImageData:
 		if self._file:
 			attributes["data-file"] = self._file.as_posix()
 
-		attributes_string: str = " ".join(f"name=\"{value}\"" for name, value in attributes.items())
+		attributes_string: str = " ".join(f"{name}=\"{value}\"" for name, value in attributes.items())
+		if attributes_string: attributes_string = " " + attributes_string
 
 		return f"<img{attributes_string}>"

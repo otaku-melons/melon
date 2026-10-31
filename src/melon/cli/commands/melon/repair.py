@@ -5,6 +5,7 @@ from dublib.validators import ValidableType
 
 from ....core import exceptions
 from ....core.base.formats.base_format.enums import By
+from ....core.base.parser.enums import ImagesLevel
 from ...base.templates import T_SingleParserRequired
 from ._base import CommandProcessorTemplate
 
@@ -19,6 +20,7 @@ class Parameters(T_SingleParserRequired):
 
 	filename: str
 	target_id: int
+	images_level: ImagesLevel
 	is_target_chapter: bool
 
 class CommandProcessor(CommandProcessorTemplate[Parameters]):
@@ -48,6 +50,8 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		self._add_parser_position(key = "--use")
 		self._add_mirror_key()
+
+		model.base.add_key("--images-level", value_type = ValidableType.UnsignedInteger, description = "Images downloadnig level: 0 – no downloads, 1 – only for metainfo, 3 – all.")
 
 		return model
 
@@ -80,10 +84,14 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		if not filename.endswith(".json"):
 			filename += ".json"
 
+		image_level_value: int | None = entity.get_key_value("--images-level", expected_type = int, not_found_error = False)
+		image_level: ImagesLevel = ImagesLevel(image_level_value) if image_level_value else ImagesLevel.NO
+
 		return Parameters(
 			required_parser = prepared_data.required_parsers[0],
 			filename = filename,
 			target_id = entity.get_position_value("TARGET", expected_type = int, important = True),
+			images_level = image_level,
 			is_target_chapter = entity.check_key("--chapter"),
 		)
 
@@ -109,7 +117,8 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		if not typing_result.slug or not typing_result.content_type:
 			raise exceptions.parsing.ParsingError("Unprocessable title.")
 
-		parser = source_operator.launch_parser(typing_result.content_type)
+		# TODO: Support force mode.
+		parser = source_operator.launch_parser(typing_result.content_type, images_level = parameters.images_level)
 		title = parser.init_empty_title(typing_result.slug)
 
 		if title.load(parameters.filename, By.Filename):

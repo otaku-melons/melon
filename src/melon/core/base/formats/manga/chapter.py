@@ -43,11 +43,23 @@ class Chapter(BaseChapter):
 	#==========================================================================================#
 	# >>>>> OVERRIDABLE METHODS <<<<< #
 	#==========================================================================================#
+
 	@override
 	def _clear(self):
 		"""Очищает контент главы."""
 
 		self.__slides.clear()
+
+	@override
+	def _get_chapter_images(self) -> "Sequence[ImageData]":
+		"""
+		Get chapter-associated images.
+
+		Returns:
+			Sequence[ImageData]: Chapter images.
+		"""
+
+		return tuple(self.__slides.values())
 
 	@override
 	def _is_empty(self) -> bool:

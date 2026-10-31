@@ -175,14 +175,14 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 	@abstractmethod
 	def _amend(self, branch: Branch, chapter: Any) -> str | None:
 		"""
-		Amend chapter by content.
+		Amend chapter content.
 
-		:param branch: Title content branch.
-		:type branch: Branch
-		:param chapter: Chapter.
-		:type chapter: Any
-		:return: Optional additional message about amending result or `None`.
-		:rtype: str | None
+		Args:
+			branch (Branch): Branch.
+			chapter (Any): Chapter
+
+		Returns:
+			str | None: Optional additional message about amending result.
 		"""
 
 		pass
@@ -339,6 +339,9 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 		chapter.clear()
 
 		self._amend(search_result.branch, chapter)
+
+		if not chapter.is_empty and self._images_level is ImagesLevel.ALL:
+			self._download_images(chapter.images)
 
 		return not chapter.is_empty
 

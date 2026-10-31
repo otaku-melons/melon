@@ -97,12 +97,12 @@ class Chapter(BaseChapter):
 
 		self._data["paragraphs"].append(element.to_html())
 
-	def set_elements(self, elements: "Sequence[BaseElement]"):
+	def set_elements(self, elements: "Sequence[BaseElement | ImageData]"):
 		"""
 		Задаёт набор элементов главы.
 
 		:param elements: Набор элементов главы.
-		:type elements: Sequence[BaseElement]
+		:type elements: Sequence[BaseElement | ImageData]
 		"""
 
 		for element in elements:
