@@ -7,8 +7,8 @@ from dublib.engine.patcher import Patch
 from dublib.functions.filesystem import json
 
 from ...core import exceptions
-from ...core.base.parsers.components.manifest.enums import ContentType
-from ...core.base.parsers.components.manifest.models import ManifestModel
+from ...core.base.parser.components.manifest.models import ManifestModel
+from ...core.base.parser.enums import ContentType
 from .structs import ExtensionData, ParserData
 
 if TYPE_CHECKING:

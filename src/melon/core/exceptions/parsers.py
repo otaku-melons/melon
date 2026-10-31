@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-	from ..base.parsers.components.manifest import ContentType
+	from ..base.parser.enums import ContentType
 
 class ManifestError(Exception):
 	"""Исключение: неверное определение манифеста."""

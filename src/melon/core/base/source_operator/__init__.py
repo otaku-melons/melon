@@ -3,24 +3,26 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from os import PathLike
 from pathlib import Path
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, Self, overload
 
 from dublib.functions.filesystem import json
 from dublib.validators import types
 from dublib.web_requestor import WebConfig, WebLib, WebRequestor
 from dublib.web_requestor.exceptions import TokenExpiredError
 
-from ... import exceptions
-from ..parsers.components.images_downloader import (
+from ..parser.components.images_downloader import (
 	ImageDownloadingResult,
 	ImagesDownloader,
 )
-from ..parsers.components.manifest import ContentType, ParserManifest
-from ..parsers.components.settings import ParserSettings
+from ..parser.components.manifest import ParserManifest
+from ..parser.components.settings import ParserSettings
+from ..parser.enums import ContentType, ImagesLevel
 from ..structs.title import TitleDescriptor
 from .properties import SourceProperties
 
 if TYPE_CHECKING:
+	from types import ModuleType
+
 	from pydantic import BaseModel
 
 	from ...system_objects import SystemObjects
@@ -28,7 +30,8 @@ if TYPE_CHECKING:
 	from ...system_objects.printer import Portals
 	from ...system_objects.temper import SharedData
 	from ..extensions import BaseExtension
-	from ..parsers.base_parser import BaseParser
+	from ..formats.base_format.controller import BaseTitleController
+	from ..parser import BaseParser
 
 __all__ = ["BaseSourceOperator", "SourceProperties"]
 
@@ -294,7 +297,13 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 
 		return tuple(self._collect_slugs(period, filters, pages))
 
-	def download_image(self, url: str, directory: str | PathLike[str] | None = None, filename: str | None = None, is_full_filename: bool = False, force_mode: bool = False) -> ImageDownloadingResult:
+	def download_image(self,
+		url: str,
+		directory: str | PathLike[str] | None = None,
+		filename: str | None = None,
+		is_full_filename: bool = False,
+		force_mode: bool = False,
+	) -> ImageDownloadingResult:
 		"""
 		Скачивает изображение.
 
@@ -385,7 +394,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		:rtype: ContentType
 		"""
 
-		# To-Do: метод для определения типа контента по алиасу.
+		# TODO: метод для определения типа контента по алиасу.
 		return self._Manifest.content_types[0]
 
 	def is_title_exists(self, slug: str) -> bool | None:
@@ -400,26 +409,23 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 
 		return self._is_title_exists(slug)
 
-	def launch_parser(self, content_type: ContentType | None = None) -> "BaseParser":
+	def launch_parser(self, content_type: ContentType, force_mode: bool = False, images_level: ImagesLevel = ImagesLevel.NO) -> "BaseParser":
 		"""
-		Инициализирует парсер для контента определённого типа.
+		Launch parser.
 
-		:param content_type: Тип контента. По умолчанию берётся первый описанный.
-		:type content_type: ContentType | None
-		:raises UnsupportedContentError: Неподдерживаемый тип контента.
-		:return: Парсер.
-		:rtype: BaseParser
+		Args:
+			content_type (ContentType): Content type.
+			force_mode (bool): Condition: is file overwriting enabled.
+			images_level (ImagesLevel): Images downloading level.
+
+		Returns:
+			BaseParser: Parser.
 		"""
 
-		if not content_type:
-			content_type = self._Manifest.content_types[0]
-		elif content_type not in self._Manifest.content_types:
-			raise exceptions.parsers.UnsupportedContentError(content_type)
+		module: ModuleType = importlib.import_module(f"parsers.{self._Manifest.parser_name}.{content_type.value}")
+		parser_type: type[BaseParser[Self, BaseModel, BaseTitleController]] = module.Parser
 
-		Module = importlib.import_module(f"parsers.{self._Manifest.parser_name}.{content_type.value}")
-		Parser: BaseParser = Module.Parser(self)
-
-		return Parser
+		return parser_type(self, force_mode, images_level)
 
 	def parse_slug_from_string(self, string: str) -> str | None:
 		"""

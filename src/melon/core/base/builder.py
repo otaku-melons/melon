@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 	from .formats.base_format.chapter import BaseChapter
 	from .formats.base_format.controller import BaseTitleController
 	from .formats.base_format.data import BaseTitleData
-	from .parsers.base_parser import BaseParser
+	from .parser import BaseParser
 	from .source_operator import BaseSourceOperator
 
 #==========================================================================================#
@@ -32,7 +32,7 @@ class BaseBuilder:
 		"""
 
 		Replacements: dict[str, str] = {
-			# To-Do: Fully migrate to templates.
+			# TODO: Fully migrate to templates.
 			# "ch_word": self._WordsDictionary.chapter.title() if self._WordsDictionary and self._WordsDictionary.chapter else "",
 			# "vol_word": self._WordsDictionary.volume.title() if self._WordsDictionary and self._WordsDictionary.volume else "",
 			"id": str(chapter.id),

@@ -20,7 +20,7 @@ from .structs import SavingResult
 if TYPE_CHECKING:
 	from pydantic import BaseModel
 
-	from ...parsers.base_parser import BaseParser
+	from ...parser import BaseParser
 	from ...source_operator import BaseSourceOperator
 	from .data import BaseTitleData
 

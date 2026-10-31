@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
 	from collections.abc import Sequence
 
-	from ...core.base.parsers.components.manifest import ContentType
+	from ...core.base.parser.components.manifest import ContentType
 
 @dataclass(frozen = True)
 class ExtensionData:

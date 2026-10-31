@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, override
 
-from ....core.base.parsers.components.manifest import ContentType
+from ....core.base.parser.enums import ContentType
 from ...base import BaseCommandProcessor
 from ...base.structs import ProcessorOptions
 from ...base.templates import BaseParameters

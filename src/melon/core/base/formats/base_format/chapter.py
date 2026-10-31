@@ -8,7 +8,7 @@ from dublib.functions.data.string import remove_recurring_substrings
 if TYPE_CHECKING:
 	from collections.abc import Sequence
 
-	from ...parsers.base_parser import BaseParser
+	from ...parser import BaseParser
 	from ...structs.image import ImageData
 
 class ExtraData:

@@ -6,6 +6,7 @@ from dublib.validators import ValidableType
 from ....builders.manga import MangaBuilder, MangaOutputFormats
 from ....core import exceptions
 from ....core.base.formats.base_format.enums import By
+from ....core.base.parser.enums import ContentType
 from ...base.templates import T_SingleParserRequired
 from ._base import CommandProcessorTemplate
 
@@ -124,7 +125,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		if not typing_result.slug:
 			raise exceptions.builders.BuildingError("Undefined title slug.")
 
-		Parser = source_operator.launch_parser(typing_result.content_type)
+		Parser = source_operator.launch_parser(ContentType.Manga)
 		Title = Parser.init_empty_title(typing_result.slug)
 
 		if Title.load(parameters.filename, By.Filename):

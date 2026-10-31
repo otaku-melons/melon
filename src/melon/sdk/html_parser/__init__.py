@@ -5,8 +5,7 @@ from bs4 import BeautifulSoup, NavigableString, PageElement, Tag
 from dublib.functions.data import to_sequence
 from dublib.functions.data.string import remove_recurring_substrings
 
-from ...core.base.parsers.components.images_downloader import ImageResolution
-from ...core.base.structs.image import ImageData, ImageType
+from ...core.base.structs.image import ImageData, ImageResolution, ImageType
 from ...core.exceptions.html import UnresolvedTagError
 from ...core.html.allowed_tags import ALLOWED_TAGS
 from ...core.html.elements import Header, Paragraph

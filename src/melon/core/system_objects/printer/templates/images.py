@@ -1,5 +1,5 @@
 from .....utils.timer import Timer
-from ....base.parsers.components.images_downloader import (
+from ....base.parser.components.images_downloader import (
 	FilteredBy,
 	ImageDownloadingResult,
 )

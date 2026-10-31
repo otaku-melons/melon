@@ -8,8 +8,8 @@ from dublib.functions.decorators import run_before_method
 from dublib.functions.filesystem import json
 
 from .....core import exceptions
-from ....base.parsers.components.manifest import ParserManifest
-from ....base.parsers.components.settings import ParserSettings
+from ....base.parser.components.manifest import ParserManifest
+from ....base.parser.components.settings import ParserSettings
 from .enums import ExportResult, ExportStrategy
 from .extensions import ExtensionsOperator
 from .linter import CheckResult, Linter

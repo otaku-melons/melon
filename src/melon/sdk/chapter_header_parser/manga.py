@@ -8,7 +8,7 @@ from ..words_dictionary import PRESETS, WordsDictionaryTemplate
 if TYPE_CHECKING:
 	from collections.abc import Sequence
 
-	from ...core.base.parsers.base_parser import BaseParser, BaseTitleController
+	from ...core.base.parser import BaseParser, BaseTitleController
 
 class MangaChapterHeaderParser:
 	"""Парсер заголовка главы."""
@@ -164,7 +164,7 @@ class MangaChapterHeaderParser:
 		self._Parser = parser
 		self._Header = header
 
-		# To-Do: resolve this shit!
+		# TODO: resolve this shit!
 		self._WordsDictionary = cast("WordsDictionaryTemplate", PRESETS.get(cast("BaseTitleController", self._Parser.title).data.content_language))
 
 		self._Volume = None

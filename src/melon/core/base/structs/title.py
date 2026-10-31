@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-	from ..parsers.components.manifest import ContentType
+	from ..parser.components.manifest import ContentType
 	from ..source_operator import BaseSourceOperator
 
 class TitleDescriptor:

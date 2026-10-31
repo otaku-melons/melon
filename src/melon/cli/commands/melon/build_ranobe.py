@@ -6,6 +6,7 @@ from dublib.validators import ValidableType
 from ....builders.ranobe import RanobeBuilder
 from ....core import exceptions
 from ....core.base.formats.base_format.enums import By
+from ....core.base.parser.enums import ContentType
 from ...base.templates import T_SingleParserRequired
 from ._base import CommandProcessorTemplate
 
@@ -92,12 +93,10 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		source_operator = self._launch_source_operator(parameters.required_parser)
 		typing_result = source_operator.get_content_type_by_file(parameters.filename)
 
-		typing_result = source_operator.get_content_type_by_file(parameters.filename)
-
 		if not typing_result.slug:
 			raise exceptions.builders.BuildingError("Undefined title slug.")
 
-		Parser = source_operator.launch_parser(typing_result.content_type)
+		Parser = source_operator.launch_parser(ContentType.Ranobe)
 
 		Title = Parser.init_empty_title(typing_result.slug)
 

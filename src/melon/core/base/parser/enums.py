@@ -5,3 +5,10 @@ class ContentType(Enum):
 
 	Manga = "manga"
 	Ranobe = "ranobe"
+
+class ImagesLevel(Enum):
+	"""Images downloading level."""
+
+	NO = 0
+	METAINFO = 1
+	ALL = 2

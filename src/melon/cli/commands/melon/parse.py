@@ -10,6 +10,7 @@ from dublib.validators import ValidableType
 
 from .... import utils
 from ....core import exceptions
+from ....core.base.parser.enums import ContentType, ImagesLevel
 from ...base.templates import T_ForceModeRequired, T_SingleParserRequired
 from ._base import CommandProcessorTemplate
 
@@ -17,8 +18,7 @@ if TYPE_CHECKING:
 	from dublib.cli.terminalyzer import CommandEntity, CommandModel
 
 	from ....core.base.formats.base_format.controller import BaseTitleController
-	from ....core.base.parsers.base_parser import BaseParser
-	from ....core.base.parsers.components.manifest import ContentType
+	from ....core.base.parser import BaseParser
 	from ....core.base.source_operator import BaseSourceOperator
 	from ...base.structs import PreparedData
 
@@ -299,7 +299,7 @@ class Parameters(T_ForceModeRequired, T_SingleParserRequired):
 
 	is_sorting_enabled: bool
 	is_amending_enabled: bool
-	is_download_images: bool
+	images_level: ImagesLevel
 	is_cold_saving: bool
 
 class ParsingSignal(Enum):
@@ -365,27 +365,28 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:rtype: ParsingStatistics
 		"""
 
+		# TODO: Use ParsingStatistics instead variables.
+
 		ParsedCount: int = 0
 		NotFoundCount: int = 0
 		ErrorsCount: int = 0
 		TotalCount: int = len(slugs)
 
-		CurrentContentType: ContentType | None = None
-		Parser = source_operator.launch_parser()
+		parser: BaseParser | None = None
 
-		for Index in range(start_index, TotalCount):
-			Slug = slugs[Index]
-			source_operator.shared_data.set_last_parsed_slug(Slug)
+		for index in range(start_index, TotalCount):
+			slug: str = slugs[index]
+			source_operator.shared_data.set_last_parsed_slug(slug)
 
-			content_type = source_operator.get_content_type_by_slug(Slug)
-			if content_type is not CurrentContentType:
-				CurrentContentType = content_type
-				Parser = source_operator.launch_parser(content_type)
+			current_content_type: ContentType = source_operator.get_content_type_by_slug(slug)
 
-			Title = Parser.init_empty_title(Slug)
-			self.printer.templates.parsing.start(Title.data, Index, TotalCount)
+			if not parser or parser.content_type is not current_content_type:
+				parser = source_operator.launch_parser(current_content_type, parameters.force_mode, parameters.images_level)
 
-			match self.__parse_safely(parameters, Parser, Title):
+			title = parser.init_empty_title(slug)
+			self.printer.templates.parsing.start(title.data, index, TotalCount)
+
+			match self.__parse_safely(parameters, parser, title):
 
 				case ParsingSignal.Break:
 					break
@@ -398,13 +399,15 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 					ErrorsCount += 1
 					continue
 
-			if parameters.is_download_images: Parser.download_images(parameters.force_mode)
-			else: self.printer.emit("Images downloading skipped by flag.")
+			if parameters.images_level is ImagesLevel.NO:
+				self.printer.emit("Metainfo images downloading skipped.")
+			else:
+				parser.download_metainfo_images()
 
-			if not Title.is_local_file_loaded and not parameters.is_cold_saving:
+			if not title.is_local_file_loaded and not parameters.is_cold_saving:
 				self.printer.emit("Cold saving disabled by flag. Skipped.")
 			else:
-				result = Parser.save(parameters.is_sorting_enabled)
+				result = parser.save(parameters.is_sorting_enabled)
 				self.printer.templates.parsing.saving_result(result)
 
 			ParsedCount += 1
@@ -501,18 +504,17 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		position.add_key("--collection", description = "Name of collection file. Put . to default [i]collection[/].")
 		position.add_key("--id", value_type = ValidableType.UnsignedInteger, description = "Title ID.")
 		position.add_key("--updates", value_type = ValidableType.UnsignedInteger, description = "Parse updates for period in hours.")
-
 		self._add_parser_position(key = "--use")
 		self._add_force_mode_flag()
 
 		model.base.add_flag("-no-amend", description = "Disable chapters content amending.")
-		model.base.add_flag("-no-images", description = "Disable covers and persons portraits downloading.")
 		model.base.add_flag("-sort", description = "Enable chapters sorting after parsing.")
 		model.base.add_flag("-no-cold-save", description = "Disable saving if local file does't exists.")
 
 		self._add_mirror_key()
 
 		model.base.add_key("--from", description = "Skip titles before this slug.")
+		model.base.add_key("--images-level", value_type = ValidableType.UnsignedInteger, description = "Images downloadnig level: 0 – no downloads, 1 – only for metainfo, 3 – all.")
 
 		return model
 
@@ -540,6 +542,9 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:rtype: Parameters
 		"""
 
+		image_level_value: int | None = entity.get_key_value("--images-level", expected_type = int, not_found_error = False)
+		image_level: ImagesLevel = ImagesLevel(image_level_value) if image_level_value else ImagesLevel.NO
+
 		return Parameters(
 			required_parser = prepared_data.required_parsers[0],
 			target = self.__get_parsing_targets(entity, prepared_data),
@@ -548,7 +553,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			force_mode = prepared_data.force_mode,
 			is_sorting_enabled = entity.check_flag("-sort"),
 			is_amending_enabled = not entity.check_flag("-no-amend"),
-			is_download_images = not entity.check_flag("-no-images"),
+			images_level = image_level,
 			is_cold_saving = not entity.check_flag("-no-cold-save"),
 		)
 
@@ -576,7 +581,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		source_operator = self._launch_source_operator(parameters.required_parser)
 		statistics = self.__parse_slugs(parameters, source_operator, slugs, start_index)
-		# To-Do: передавать статистику.
+		# TODO: передавать статистику.
 		self.printer.templates.parsing.summary(statistics.parsed, statistics.not_found, statistics.errors)
 
 		return True

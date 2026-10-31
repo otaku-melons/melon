@@ -4,7 +4,7 @@ import questionary
 
 from dublib.validators import types
 
-from ....core.base.parsers.components.manifest.enums import ContentType
+from ....core.base.parser.enums import ContentType
 from ....utils.assistant import Assistant
 from ....utils.assistant.structs import ParserData
 from ...base.structs import PreparedData, ProcessorOptions

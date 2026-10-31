@@ -7,7 +7,7 @@ from pydantic import TypeAdapter
 
 from dublib.functions.filesystem import json
 
-from .enums import ContentType
+from ...enums import ContentType
 from .models import ManifestModel
 
 if TYPE_CHECKING:

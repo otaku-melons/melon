@@ -732,7 +732,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		else:
 			self._data[key] = data
 
-	# To-Do: реализовать set_branches().
+	# TODO: реализовать set_branches().
 
 	#==========================================================================================#
 	# >>>>> PUBLIC METHODS УСТАНОВКИ СВОЙСТВ <<<<< #
