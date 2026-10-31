@@ -100,12 +100,13 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 	# >>>>> PROTECTED METHODS <<<<< #
 	#==========================================================================================#
 
-	def _download_images(self, images_data: Sequence["ImageData"]) -> list[ImageDownloadingResult]:
+	def _download_images(self, images_data: Sequence["ImageData"], subdir: str | None = None) -> list[ImageDownloadingResult]:
 		"""
 		Download images sequence.
 
 		Args:
 			images_data (Sequence[ImageData]): Images data.
+			subdir (str | None): Subdirectory name to storage files. Required for chapters images.
 
 		Returns:
 			list[ImageDownloadingResult]: Images downloadings results.
@@ -124,6 +125,7 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 			result = self._source_operator.images_downloader.download_image_from_data(
 				data = image_data,
 				title = self.title,
+				subdir = subdir,
 				force_mode = self._force_mode,
 			)
 			results.append(result)
@@ -270,7 +272,7 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 				amended_chapters_count += 1
 
 				if self._images_level is ImagesLevel.ALL:
-					self._download_images(chapter.images)
+					self._download_images(chapter.images, subdir = str(chapter.id))
 
 		self.portals.printer.templates.parsing.amending_end(amended_chapters_count)
 
