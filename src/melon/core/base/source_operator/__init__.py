@@ -440,22 +440,22 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		return self._extract_slug_from_string(string)
 
 	@overload
-	def run_extension[T: "BaseExtension"](self, extension: type[T]) -> T: ...
+	def run_extension[E: "BaseExtension"](self, extension: type[E]) -> E | None: ...
 	@overload
-	def run_extension(self, extension: str) -> "BaseExtension": ...
+	def run_extension(self, extension: str) -> "BaseExtension | None": ...
 
-	def run_extension[T: "BaseExtension"](self, extension: type[T] | str) -> "T | BaseExtension":
+	def run_extension[E: "BaseExtension"](self, extension: type[E] | str) -> "E | BaseExtension | None":
 		"""
-		Run extension by it class or name. If ran by name return untyped base extension for external using.
+		Run extension.
 
-		:return: Extension.
-		:rtype: BaseExtension
+		Args:
+			extension (str | type[E]): Extension class or name.
+
+		Returns:
+			E | BaseExtension | None: Extension or `None` if disabled.
 		"""
 
-		if isinstance(extension, str):
-			return self.extensions.run_by_name(self, extension)
-		else:
-			return self.extensions.run(self, extension)
+		return self.extensions.run(self, extension)
 
 	def set_mirror(self, mirror: str | None) -> bool:
 		"""
