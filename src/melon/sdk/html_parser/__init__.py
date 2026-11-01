@@ -200,7 +200,7 @@ class HyperTextParser:
 
 		Args:
 			tag (Tag): HTML tag.
-			paragraphs_tags (Sequence[str]): Tags names from wich paragraphs will be parsed.
+			paragraphs_tags (Sequence[str]): Tags names from which paragraphs will be parsed.
 			from_strings (bool): Allow parse paragraphs from `NavigableString`.
 
 		Returns:

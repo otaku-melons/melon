@@ -11,6 +11,7 @@ from dublib.validators import ValidableType
 from .... import utils
 from ....core import exceptions
 from ....core.base.parser.enums import ContentType, ImagesLevel
+from ....core.system_objects.printer.templates.parsing import ParsingStatistics
 from ...base.templates import T_ForceModeRequired, T_SingleParserRequired
 from ._base import CommandProcessorTemplate
 
@@ -283,14 +284,6 @@ class PassingTarget_Updates(_BaseParserTarget):
 #==========================================================================================#
 
 @dataclass(frozen = True)
-class ParsingStatistics:
-	"""Статистика парсинга."""
-
-	parsed: int
-	not_found: int
-	errors: int
-
-@dataclass(frozen = True)
 class Parameters(T_ForceModeRequired, T_SingleParserRequired):
 	"""Required by command processor parameters."""
 
@@ -365,16 +358,10 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:rtype: ParsingStatistics
 		"""
 
-		# TODO: Use ParsingStatistics instead variables.
-
-		ParsedCount: int = 0
-		NotFoundCount: int = 0
-		ErrorsCount: int = 0
-		TotalCount: int = len(slugs)
-
+		statistics: ParsingStatistics = ParsingStatistics(len(slugs))
 		parser: BaseParser | None = None
 
-		for index in range(start_index, TotalCount):
+		for index in range(start_index, statistics.total):
 			slug: str = slugs[index]
 			source_operator.shared_data.set_last_parsed_slug(slug)
 
@@ -384,7 +371,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 				parser = source_operator.launch_parser(current_content_type, parameters.force_mode, parameters.images_level)
 
 			title = parser.init_empty_title(slug)
-			self.printer.templates.parsing.start(title.data, index, TotalCount)
+			self.printer.templates.parsing.start(title.data, index, statistics.total)
 
 			match self.__parse_safely(parameters, parser, title):
 
@@ -392,11 +379,11 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 					break
 
 				case ParsingSignal.NotFound:
-					NotFoundCount += 1
+					statistics.not_found += 1
 					continue
 
 				case ParsingSignal.Error:
-					ErrorsCount += 1
+					statistics.errors += 1
 					continue
 
 			if parameters.images_level is ImagesLevel.NO:
@@ -410,9 +397,9 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 				result = parser.save(parameters.is_sorting_enabled)
 				self.printer.templates.parsing.saving_result(result)
 
-			ParsedCount += 1
+			statistics.parsed += 1
 
-		return ParsingStatistics(ParsedCount, NotFoundCount, ErrorsCount)
+		return statistics
 
 	def __parse_safely(self, parameters: Parameters, parser: "BaseParser", title: "BaseTitleController") -> ParsingSignal:
 		"""
@@ -581,7 +568,6 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		source_operator = self._launch_source_operator(parameters.required_parser)
 		statistics = self.__parse_slugs(parameters, source_operator, slugs, start_index)
-		# TODO: передавать статистику.
-		self.printer.templates.parsing.summary(statistics.parsed, statistics.not_found, statistics.errors)
+		self.printer.templates.parsing.summary(statistics)
 
 		return True
