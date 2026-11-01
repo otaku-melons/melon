@@ -322,11 +322,16 @@ class HyperTextParser:
 
 					elements.extend(self.parse_paragraphs(child))
 
+		flush_strings()
+
 		return tuple(elements)
 
 	def parse_footnotes(self, tag: Tag) -> tuple[Footnote, ...]:
 		"""
 		Parse footnotes data and edit footnote anchor.
+
+		Footnotes parsed from `<a data-footnote>…</a>` anchor with paragraphs or images content.
+		After parsing set ID in `data-footnote` attribute and replace inner elements with `*` character.
 
 		Args:
 			tag (Tag): HTML tag..
@@ -374,6 +379,7 @@ class HyperTextParser:
 			raise ValueError("Image can be parsed only from headers tags.")
 
 		level: int = int(tag.name[1])
+		align: Align | None = self.parse_align(tag)
 
 		if level not in (3, 4, 5, 6):
 			if autolevel:
@@ -385,7 +391,6 @@ class HyperTextParser:
 		self.unwrap_non_styling_childrens(tag)
 		self.clear_attributes(tag)
 
-		align: Align | None = self.parse_align(tag)
 		text: str = tag.decode_contents()
 
 		if self.pretty:
@@ -396,6 +401,8 @@ class HyperTextParser:
 
 		header = Header(text, level = level)
 		header.set_align(align)
+		footnotes: tuple[Footnote, ...] = self.parse_footnotes(tag)
+		header.set_footnotes(footnotes)
 
 		return header
 
@@ -449,6 +456,7 @@ class HyperTextParser:
 		paragraphs: list[Paragraph] = []
 
 		for inner_paragraph in inner_paragraphs:
+			footnotes: tuple[Footnote, ...] = self.parse_footnotes(inner_paragraph)
 
 			if not inner_paragraph.get_text().strip():
 				continue
@@ -464,6 +472,7 @@ class HyperTextParser:
 			paragraph = Paragraph(text)
 			align: Align | None = self.parse_align(inner_paragraph)
 			paragraph.set_align(align)
+			paragraph.set_footnotes(footnotes)
 			paragraphs.append(paragraph)
 
 		return tuple(paragraphs)

@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, override
 
+from ....html.base_elements import BaseElement, TextElement
 from ...structs.image import ImageData
 from ..base_format.chapter import BaseChapter
 from .enums import ChapterType
@@ -7,7 +8,7 @@ from .enums import ChapterType
 if TYPE_CHECKING:
 	from collections.abc import Sequence
 
-	from ....html.base_elements import BaseElement
+	from ....html.footnote import Footnote
 
 class Chapter(BaseChapter):
 	"""Ranobe chapter."""
@@ -23,6 +24,11 @@ class Chapter(BaseChapter):
 
 		if isinstance(element, ImageData):
 			self.__images.append(element)
+
+		elif isinstance(element, TextElement):
+			for footnote in element.footnotes:
+				self.__footnotes.append(footnote)
+				self.__images.extend(footnote.images)
 
 		self._data["paragraphs"].append(element.to_html())
 
@@ -105,4 +111,17 @@ class Chapter(BaseChapter):
 		self._data["paragraphs"] = []
 		self._data["footnotes"] = {}
 
+		self.__footnotes: list[Footnote] = []
 		self.__images: list[ImageData] = []
+
+	@override
+	def _pre_formatter(self):
+		"""Execute before chapter data conversion into dictionary."""
+
+		footnotes: dict[str, list[str]] = {}
+
+		for footnote in self.__footnotes:
+			html_elements: list[str] = [element.to_html() for element in footnote.elements]
+			footnotes[footnote.id] = html_elements
+
+		self._data["footnotes"] = footnotes

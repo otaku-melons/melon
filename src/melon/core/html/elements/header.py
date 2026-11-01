@@ -14,9 +14,9 @@ class Header(AlignableElement, TextElement):
 			level (Literal[3, 4, 5, 6]): Header level.
 		"""
 
-		super().__init__(text)
-
 		self._level: Literal[3, 4, 5, 6] = level
+
+		super().__init__(text)
 
 	@property
 	def level(self) -> Literal[3, 4, 5, 6]:

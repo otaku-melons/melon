@@ -105,7 +105,7 @@ class Chapter(BaseChapter):
 
 	@override
 	def _pre_formatter(self):
-		"""Метод, запускающийся перед генерацией словарного представления объекта."""
+		"""Execute before chapter data conversion into dictionary."""
 
 		SlidesData: list[dict] = []
 

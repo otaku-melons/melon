@@ -247,7 +247,7 @@ class BaseChapter(ABC):
 		pass
 
 	def _pre_formatter(self):
-		"""Метод, запускающийся перед генерацией словарного представления объекта."""
+		"""Execute before chapter data conversion into dictionary."""
 
 		pass
 

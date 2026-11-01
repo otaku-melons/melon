@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup, NavigableString, Tag
 
+from melon.core.html.elements import Paragraph
 from melon.core.html.enums import Align
 from melon.sdk.html_parser import HyperTextParser
 
@@ -113,6 +114,29 @@ def test_parse_blockquote():
 	assert blockquote.elements[3].to_html() == "<p>para4</p>"
 	assert blockquote.elements[4].to_html() == "<img src=\"https://example.com/image.png\">"
 
+def test_parse_elements():
+
+	html: str = """
+	<div>
+		<h1 align=\"center\">Header</h1>
+		<blockquote style=\"text-align: right\"><p>sometext</p>in blockquote</blockquote>
+		<p>sometext with footnote<a data-footnote>this is note<img src=\"https://example.com/image.png\"></a></p>
+	</div>
+	"""
+	soup = BeautifulSoup(html, "html.parser")
+	tag = soup.find("div")
+	assert tag is not None
+
+	elements = parser.parse_elements(tag)
+
+	assert len(elements) == 3
+	assert elements[0].to_html() == "<h3 style=\"text-align: center\">Header</h3>"
+	assert elements[1].to_html() == "<blockquote style=\"text-align: right\"><p>sometext</p><p>in blockquote</p></blockquote>"
+	assert isinstance(elements[2], Paragraph)
+	assert len(elements[2].footnotes) == 1
+	assert elements[2].footnotes[0].elements[0].to_html() == "<p>this is note</p>"
+	assert elements[2].footnotes[0].elements[1].to_html() == "<img src=\"https://example.com/image.png\">"
+
 def test_parse_footnotes():
 
 	html: str = "<p>sometext<a data-footnote><p>note <b>bold</b></p><img src=\"https://example.com/image.png\"></a></p>"
@@ -126,10 +150,6 @@ def test_parse_footnotes():
 	assert len(footnotes[0].images) == 1
 	assert len(footnotes[0].elements) == 2
 	assert footnotes[0].elements[0].to_html() == "<p>note <b>bold</b></p>"
-
-	paragraphs = parser.parse_paragraphs(tag)
-	assert len(paragraphs) == 1
-	input(paragraphs[0].to_html())
 
 def test_parse_header():
 
@@ -213,6 +233,14 @@ def test_parse_paragraphs():
 
 	for index in range(3):
 		assert paragraphs[index].to_html() == results_strings[index]
+
+	html: str = "<p>sometext<a data-footnote>note</a></p>"
+	soup = BeautifulSoup(html, "html.parser")
+	tag = soup.find("p")
+	assert tag is not None
+
+	paragraphs = parser.parse_paragraphs(tag)
+	assert len(paragraphs[0].footnotes) == 1
 
 def test_split():
 
