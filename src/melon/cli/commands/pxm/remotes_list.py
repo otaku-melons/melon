@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, override
 
-from prettytable import PLAIN_COLUMNS, PrettyTable
+from prettytable import PrettyTable, TableStyle
 
 from ...base import BaseCommandProcessor
 from ...base.structs import ProcessorOptions
@@ -92,7 +92,7 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 			TableData["REPOSITORY"].append(f"[i]{RepositoryURL}[/]")
 
 		TableObject = PrettyTable()
-		TableObject.set_style(PLAIN_COLUMNS)
+		TableObject.set_style(TableStyle.PLAIN_COLUMNS)
 
 		for ColumnName in TableData.keys():
 			Buffer = f"[b]{ColumnName}[/]"

@@ -1,4 +1,4 @@
-from prettytable import PLAIN_COLUMNS, PrettyTable
+from prettytable import PrettyTable, TableStyle
 
 from ...manager.parser.enums import ExportResult
 from ._base import _BaseTemplatesSection
@@ -30,7 +30,7 @@ class ManagerTemplates(_BaseTemplatesSection):
 		"""
 
 		TableObject = PrettyTable()
-		TableObject.set_style(PLAIN_COLUMNS)
+		TableObject.set_style(TableStyle.PLAIN_COLUMNS)
 		Implementations = ("collect",)
 		ImplementationStatuses = {
 			"True": "[green]true[/]",
