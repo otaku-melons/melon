@@ -10,27 +10,54 @@ if TYPE_CHECKING:
 	from ....html.base_elements import BaseElement
 
 class Chapter(BaseChapter):
-	"""Глава ранобэ."""
+	"""Ranobe chapter."""
 
-	#==========================================================================================#
-	# >>>>> PROPERTIES <<<<< #
-	#==========================================================================================#
+	def add_element(self, element: "BaseElement | ImageData"):
+		"""
+		Добавляет элемент в главу.
+
+		:param element: Элемент главы.
+		:type element: BaseElement | ImageData
+		:raise TypeError: Выбрасывается при передаче неподдерживаемого элемента.
+		"""
+
+		if isinstance(element, ImageData):
+			self.__images.append(element)
+
+		self._data["paragraphs"].append(element.to_html())
+
+	def set_elements(self, elements: "Sequence[BaseElement | ImageData]"):
+		"""
+		Задаёт набор элементов главы.
+
+		:param elements: Набор элементов главы.
+		:type elements: Sequence[BaseElement | ImageData]
+		"""
+
+		for element in elements:
+			self.add_element(element)
+
+	def set_type(self, chapter_type: ChapterType | None):
+		"""
+		Задаёт тип главы.
+
+		:param chapter_type: Тип главы.
+		:type chapter_type: ChapterType | None
+		"""
+
+		self._data["type"] = chapter_type.value if chapter_type else None
 
 	@property
 	def paragraphs(self) -> tuple[str, ...]:
-		"""Последовательность абзацев."""
+		"""Paragraphs."""
 
 		return tuple(self._data["paragraphs"])
 
 	@property
 	def type(self) -> ChapterType | None:
-		"""Тип главы."""
+		"""Chapter type."""
 
 		return ChapterType[self._data["type"]]
-
-	#==========================================================================================#
-	# >>>>> OVERRIDABLE METHODS <<<<< #
-	#==========================================================================================#
 
 	@override
 	def _clear(self):
@@ -76,44 +103,6 @@ class Chapter(BaseChapter):
 		"""Execute after instance initialization."""
 
 		self._data["paragraphs"] = []
+		self._data["footnotes"] = {}
 
 		self.__images: list[ImageData] = []
-
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS <<<<< #
-	#==========================================================================================#
-
-	def add_element(self, element: "BaseElement | ImageData"):
-		"""
-		Добавляет элемент в главу.
-
-		:param element: Элемент главы.
-		:type element: BaseElement | ImageData
-		:raise TypeError: Выбрасывается при передаче неподдерживаемого элемента.
-		"""
-
-		if isinstance(element, ImageData):
-			self.__images.append(element)
-
-		self._data["paragraphs"].append(element.to_html())
-
-	def set_elements(self, elements: "Sequence[BaseElement | ImageData]"):
-		"""
-		Задаёт набор элементов главы.
-
-		:param elements: Набор элементов главы.
-		:type elements: Sequence[BaseElement | ImageData]
-		"""
-
-		for element in elements:
-			self.add_element(element)
-
-	def set_type(self, chapter_type: ChapterType | None):
-		"""
-		Задаёт тип главы.
-
-		:param chapter_type: Тип главы.
-		:type chapter_type: ChapterType | None
-		"""
-
-		self._data["type"] = chapter_type.value if chapter_type else None

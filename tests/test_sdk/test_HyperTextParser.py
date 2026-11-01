@@ -96,7 +96,6 @@ def test_parse_align():
 
 	assert parser.parse_align(tag) is None
 
-
 def test_parse_blockquote():
 
 	html: str = "<blockquote style=\"text-align: center\">para1<b>bold</b><p>para2</p><p>para3<br/>para4</p><img src=\"https://example.com/image.png\"></blockquote>"
@@ -113,6 +112,24 @@ def test_parse_blockquote():
 	assert blockquote.elements[2].to_html() == "<p>para3</p>"
 	assert blockquote.elements[3].to_html() == "<p>para4</p>"
 	assert blockquote.elements[4].to_html() == "<img src=\"https://example.com/image.png\">"
+
+def test_parse_footnotes():
+
+	html: str = "<p>sometext<a data-footnote><p>note <b>bold</b></p><img src=\"https://example.com/image.png\"></a></p>"
+	soup = BeautifulSoup(html, "html.parser")
+	tag = soup.find("p")
+	assert tag is not None
+
+	footnotes = parser.parse_footnotes(tag)
+
+	assert len(footnotes) == 1
+	assert len(footnotes[0].images) == 1
+	assert len(footnotes[0].elements) == 2
+	assert footnotes[0].elements[0].to_html() == "<p>note <b>bold</b></p>"
+
+	paragraphs = parser.parse_paragraphs(tag)
+	assert len(paragraphs) == 1
+	input(paragraphs[0].to_html())
 
 def test_parse_header():
 

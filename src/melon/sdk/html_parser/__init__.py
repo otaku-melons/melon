@@ -6,15 +6,18 @@ from dublib.functions.data import to_sequence
 from dublib.functions.data.string import remove_recurring_substrings
 
 from ...core.base.structs.image import ImageData, ImageResolution, ImageType
-from ...core.exceptions.html import UnresolvedTagError
+from ...core.exceptions.html import UnresolvedElementError, UnresolvedTagError
 from ...core.html.allowed_tags import ALLOWED_TAGS
 from ...core.html.elements import Blockquote, Header, Paragraph
 from ...core.html.enums import Align, TagCategory
+from ...core.html.footnote import Footnote
 
 if TYPE_CHECKING:
 	from collections.abc import Sequence
 
 	from bs4._typing import AttributeValueList
+
+	from ...core.html.base_elements import BaseElement
 
 class HyperTextParser:
 	"""HTML elements parser."""
@@ -47,6 +50,9 @@ class HyperTextParser:
 		unresolved_tags: list[str] = []
 
 		for child in tag.find_all():
+
+			if child.name == "a" and child.has_attr("data-footnote") and tag.name in ALLOWED_TAGS.get_category_tags_names(TagCategory.Footnotable):
+				continue
 
 			if child.name not in ALLOWED_TAGS.get_category_tags_names(TagCategory.Styling):
 				if raise_error:
@@ -84,10 +90,13 @@ class HyperTextParser:
 
 			for attribute in target.attrs:
 
+				if target.name == "a" and attribute == "data-footnote" and tag.name in ALLOWED_TAGS.get_category_tags_names(TagCategory.Footnotable):
+					continue
+
 				if tag_data.is_support_data and attribute.startswith("data-"):
 					continue
 
-				if attribute == "style" and tag_data.is_alignable:
+				if tag_data.is_alignable and attribute == "style":
 					continue
 
 				if attribute not in tag_data.attributes:
@@ -97,6 +106,38 @@ class HyperTextParser:
 			target.attrs = attributes
 
 		return tuple(removed)
+
+	def filter_elements[T: "BaseElement | ImageData"](
+		self,
+		elements: "Sequence[BaseElement | ImageData]",
+		target_types: "type[T] | Sequence[type[T]]",
+		raise_error: bool = True,
+		) -> tuple[T, ...]:
+		"""
+		Filter elements sequence.
+
+		Args:
+			elements (Sequence[BaseElement | ImageData]): Element for filtering.
+			target_types (type[T] | Sequence[type[T]]): Target types.
+			raise_error (bool): Raise exception if found unresolved element.
+
+		Returns:
+			tuple[T, ...]: Filtered elements.
+
+		Raises:
+			UnresolvedElementError: Unresolved element found.
+		"""
+
+		filtered_elements: list[T] = []
+		target_types = to_sequence(target_types)
+
+		for element in elements:
+			if isinstance(element, target_types):
+				filtered_elements.append(element)
+			elif raise_error:
+				raise UnresolvedElementError(element)
+
+		return tuple(filtered_elements)
 
 	def has_child_tag(self, tag: Tag, child: str) -> bool:
 		"""
@@ -194,7 +235,7 @@ class HyperTextParser:
 		except ValueError:
 			pass
 
-	def parse_blockquote(self, tag: Tag, paragraphs_tags: "Sequence[str]" = ("p"), from_strings: bool = True) -> Blockquote | None:
+	def parse_blockquote(self, tag: Tag, paragraphs_tags: "Sequence[str]" = ("p", "pre"), from_strings: bool = True) -> Blockquote | None:
 		"""
 		Parse blockquote.
 
@@ -204,7 +245,7 @@ class HyperTextParser:
 			from_strings (bool): Allow parse paragraphs from `NavigableString`.
 
 		Returns:
-			Blockquote | None: Blockquote element..
+			Blockquote | None: Blockquote element.
 
 		Raises:
 			ValueError: Blockquote can be parsed only from same tag.
@@ -213,7 +254,30 @@ class HyperTextParser:
 		if tag.name != "blockquote":
 			raise ValueError("Blockquote can be parsed only from same tag.")
 
-		elements: list[Header | ImageData | Paragraph] = []
+		inner_elements: tuple[BaseElement | ImageData, ...] = self.parse_elements(tag, paragraphs_tags, from_strings)
+		elements: tuple[Header | ImageData | Paragraph, ...] = self.filter_elements(inner_elements, (Header, ImageData, Paragraph))
+
+		blockquote = Blockquote()
+		align: Align | None = self.parse_align(tag)
+		blockquote.set_align(align)
+		blockquote.set_elements(elements)
+
+		return blockquote
+
+	def parse_elements(self, tag: Tag, paragraphs_tags: "Sequence[str]" = ("p", "pre"), from_strings: bool = True) -> tuple["BaseElement | ImageData", ...]:
+		"""
+		Parse elements from tag childrens.
+
+		Args:
+			tag (Tag): HTML tag..
+			paragraphs_tags (Sequence[str]): Tags names from which paragraphs will be parsed.
+			from_strings (bool):  Allow parse paragraphs from `NavigableString`.
+
+		Returns:
+			tuple["BaseElement | ImageData", ...]: Inner elements.
+		"""
+
+		elements: list[BaseElement | ImageData] = []
 		strings: list[NavigableString | Tag] = []
 
 		def flush_strings():
@@ -239,6 +303,10 @@ class HyperTextParser:
 
 			match child.name:
 
+				case "blockquote":
+					blockquote: Blockquote | None = self.parse_blockquote(child)
+					if blockquote: elements.append(blockquote)
+
 				case "h1"| "h2" | "h3" | "h4" | "h5" | "h6":
 					header: Header | None = self.parse_header(child)
 					if header: elements.append(header)
@@ -254,15 +322,37 @@ class HyperTextParser:
 
 					elements.extend(self.parse_paragraphs(child))
 
-		flush_strings()
+		return tuple(elements)
 
-		if elements:
-			blockquote = Blockquote()
-			align: Align | None = self.parse_align(tag)
-			blockquote.set_align(align)
-			blockquote.set_elements(elements)
+	def parse_footnotes(self, tag: Tag) -> tuple[Footnote, ...]:
+		"""
+		Parse footnotes data and edit footnote anchor.
 
-			return blockquote
+		Args:
+			tag (Tag): HTML tag..
+
+		Returns:
+			tuple[Footnote, ...]: Footnotes data.
+		"""
+
+		footnotes: list[Footnote] = []
+
+		for anchor in tag.find_all("a", recursive = False):
+
+			if not anchor.has_attr("data-footnote"):
+				continue
+
+			inner_elements: tuple[BaseElement | ImageData, ...] = self.parse_elements(anchor)
+			elements: tuple[ImageData | Paragraph, ...] = self.filter_elements(inner_elements, (ImageData, Paragraph))
+
+			if elements:
+				footnote = Footnote(tuple(elements))
+				footnotes.append(footnote)
+
+				anchor.string = "*"
+				anchor["data-footnote"] = footnote.id
+
+		return tuple(footnotes)
 
 	def parse_header(self, tag: Tag, autolevel: bool = True) -> Header | None:
 		"""
@@ -397,7 +487,8 @@ class HyperTextParser:
 		align: Align | None = self.parse_align(tag)
 		attrs: dict[str, AttributeValueList | str] | None = {"style": f"text-align: {align.value}"} if align else None
 
-		def __add_paragraph():
+		def add_paragraph():
+			if not current_content: return
 			new_tag = self.make_tag("p", current_content, attrs)
 			result.append(new_tag)
 			current_content.clear()
@@ -405,9 +496,7 @@ class HyperTextParser:
 		for child in tuple(tag.contents):
 
 			if isinstance(child, Tag) and child.name == "br":
-
-				if current_content:
-					__add_paragraph()
+				add_paragraph()
 
 			elif isinstance(child, NavigableString) and "\n" in child:
 				parts: list[str] = child.split("\n")
@@ -418,13 +507,12 @@ class HyperTextParser:
 					current_content.append(NavigableString(parts[index]))
 
 					if index != last_index:
-						__add_paragraph()
+						add_paragraph()
 
 			else:
 				current_content.append(child)
 
-		if current_content:
-			__add_paragraph()
+		add_paragraph()
 
 		return tuple(result)
 
@@ -440,10 +528,13 @@ class HyperTextParser:
 		"""
 
 		unwrapped_tags: list[str] = []
-		styling_tags_names: tuple[str, ...] = ALLOWED_TAGS.get_category_tags_names(TagCategory.Styling)
 
 		for child in tag.find_all():
-			if child.name not in styling_tags_names:
+
+			if child.name == "a" and child.has_attr("data-footnote") and tag.name in ALLOWED_TAGS.get_category_tags_names(TagCategory.Footnotable):
+				continue
+
+			if child.name not in ALLOWED_TAGS.get_category_tags_names(TagCategory.Styling):
 				child.unwrap()
 
 		return tuple(unwrapped_tags)

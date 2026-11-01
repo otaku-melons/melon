@@ -57,14 +57,14 @@ class AllowedTags:
 
 		data: list[TagData] = []
 
-		paragraph = TagData("p", is_alignable = True)
+		paragraph = TagData("p", categories = (TagCategory.Footnotable,), is_alignable = True)
 		data.append(paragraph)
 
 		blockquote = TagData("blockquote", is_support_data = True, is_alignable = True)
 		data.append(blockquote)
 
 		for level in (3, 4, 5, 6):
-			header = TagData(f"h{level}", is_alignable = True)
+			header = TagData(f"h{level}", categories = (TagCategory.Footnotable,), is_alignable = True)
 			data.append(header)
 
 		for name in ("b", "strong", "i", "em", "s", "del", "u", "ins", "sup", "sub"):

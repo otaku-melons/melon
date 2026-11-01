@@ -9,5 +9,5 @@ class Align(Enum):
 class TagCategory(Enum):
 	"""Tag category."""
 
+	Footnotable = "footnotable"
 	Styling = "styling"
-	Wrapper = "wrapper"

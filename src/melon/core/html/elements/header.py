@@ -5,19 +5,24 @@ from ..base_elements import AlignableElement, TextElement
 class Header(AlignableElement, TextElement):
 	"""Header."""
 
-	#==========================================================================================#
-	# >>>>> PROPERTIES <<<<< #
-	#==========================================================================================#
+	def __init__(self, text: str, level: Literal[3, 4, 5, 6]):
+		"""
+		Header.
+
+		Args:
+			text (str): Header text.
+			level (Literal[3, 4, 5, 6]): Header level.
+		"""
+
+		super().__init__(text)
+
+		self._level: Literal[3, 4, 5, 6] = level
 
 	@property
 	def level(self) -> Literal[3, 4, 5, 6]:
 		"""Header level."""
 
 		return self._level
-
-	#==========================================================================================#
-	# >>>>> OVERRIDDEN METHODS <<<<< #
-	#==========================================================================================#
 
 	@override
 	def _export_element_tag(self) -> str:
@@ -53,20 +58,3 @@ class Header(AlignableElement, TextElement):
 		soup.append(tag)
 
 		return str(soup)
-
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS <<<<< #
-	#==========================================================================================#
-
-	def __init__(self, text: str, level: Literal[3, 4, 5, 6]):
-		"""
-		Header.
-
-		Args:
-			text (str): Header text.
-			level (Literal[3, 4, 5, 6]): Header level.
-		"""
-
-		super().__init__(text)
-
-		self._level: Literal[3, 4, 5, 6] = level
