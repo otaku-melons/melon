@@ -160,7 +160,7 @@ class ExtensionsOperator:
 			BaseExtension | E | None: Extension or `None` if disabled.
 		"""
 
-		if not self.is_enabled(extension) and not force:
+		if not force and not self.is_enabled(extension) :
 			return
 
 		if not isinstance(extension, str):

@@ -3,25 +3,46 @@ from typing import TYPE_CHECKING, override
 from ..base_elements import AlignableElement
 
 if TYPE_CHECKING:
+	from collections.abc import Sequence
+
+	from ...base.structs.image import ImageData
 	from .header import Header
 	from .paragraph import Paragraph
 
 class Blockquote(AlignableElement):
 	"""Blockquote."""
 
-	#==========================================================================================#
-	# >>>>> PROPERTIES <<<<< #
-	#==========================================================================================#
+	def append_element(self, element: "Header | ImageData | Paragraph"):
+		"""
+		Append element.
+
+		Args:
+			element (Header | ImageData | Paragraph): New element.
+		"""
+
+		self._elements.append(element)
+
+	def clear(self):
+		"""Remove all elements."""
+
+		self._elements.clear()
+
+	def set_elements(self, elements: "Sequence[Header | ImageData | Paragraph]"):
+		"""
+		Set elements. All exists elements will be removed!
+
+		Args:
+			elements (Sequence[Header | ImageData | Paragraph]): New elements.
+		"""
+
+		self._elements.clear()
+		self._elements.extend(elements)
 
 	@property
-	def elements(self) -> tuple["Header | Paragraph", ...]:
+	def elements(self) -> tuple["Header | ImageData | Paragraph", ...]:
 		"""Blockquote elements."""
 
 		return tuple(self._elements)
-
-	#==========================================================================================#
-	# >>>>> OVERRIDDEN METHODS <<<<< #
-	#==========================================================================================#
 
 	@override
 	def _export_element_tag(self) -> str:
@@ -40,7 +61,7 @@ class Blockquote(AlignableElement):
 
 		super()._post_init()
 
-		self._elements: list[Header | Paragraph] = []
+		self._elements: list[Header | ImageData | Paragraph] = []
 
 	@override
 	def _to_html(self) -> str:
@@ -58,22 +79,3 @@ class Blockquote(AlignableElement):
 		align: str = f" style=\"text-align: {self._align.value}\"" if self._align else ""
 
 		return f"<{self.element_tag}{align}>{content}</{self.element_tag}>"
-
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS <<<<< #
-	#==========================================================================================#
-
-	def append_element(self, element: "Header | Paragraph"):
-		"""
-		Append element.
-
-		Args:
-			element (Header | Paragraph): New element.
-		"""
-
-		self._elements.append(element)
-
-	def clear(self):
-		"""Remove all elements."""
-
-		self._elements.clear()

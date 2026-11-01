@@ -343,7 +343,7 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 		self._amend(search_result.branch, chapter)
 
 		if not chapter.is_empty and self._images_level is ImagesLevel.ALL:
-			self._download_images(chapter.images)
+			self._download_images(chapter.images, str(chapter_id))
 
 		return not chapter.is_empty
 

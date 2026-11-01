@@ -8,7 +8,7 @@ from dublib.functions.data.string import remove_recurring_substrings
 from ...core.base.structs.image import ImageData, ImageResolution, ImageType
 from ...core.exceptions.html import UnresolvedTagError
 from ...core.html.allowed_tags import ALLOWED_TAGS
-from ...core.html.elements import Header, Paragraph
+from ...core.html.elements import Blockquote, Header, Paragraph
 from ...core.html.enums import Align, TagCategory
 
 if TYPE_CHECKING:
@@ -18,20 +18,6 @@ if TYPE_CHECKING:
 
 class HyperTextParser:
 	"""HTML elements parser."""
-
-	#==========================================================================================#
-	# >>>>> PROPERTIES <<<<< #
-	#==========================================================================================#
-
-	@property
-	def pretty(self) -> bool:
-		"""Condition: is pretty content processing enabled."""
-
-		return self._pretty
-
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS <<<<< #
-	#==========================================================================================#
 
 	def __init__(self, pretty: bool = False):
 		"""
@@ -208,79 +194,75 @@ class HyperTextParser:
 		except ValueError:
 			pass
 
-	def split(self, tag: Tag) -> tuple[Tag, ...]:
+	def parse_blockquote(self, tag: Tag, paragraphs_tags: "Sequence[str]" = ("p"), from_strings: bool = True) -> Blockquote | None:
 		"""
-		Split tag childrens into paragraphs by `<br>` and `\n`.
-
-		If tag doesn't contain splitters, in fact it will be replaced by `p`. If tag has align, all new tags also will be have same align.
+		Parse blockquote.
 
 		Args:
 			tag (Tag): HTML tag.
+			paragraphs_tags (Sequence[str]): Tags names from wich paragraphs will be parsed.
+			from_strings (bool): Allow parse paragraphs from `NavigableString`.
 
 		Returns:
-			tuple[Tag, ...]: Paragraphs tags. Doesn't affined with builder!
+			Blockquote | None: Blockquote element..
+
+		Raises:
+			ValueError: Blockquote can be parsed only from same tag.
 		"""
 
-		result: list[Tag] = []
-		current_content: list[PageElement] = []
+		if tag.name != "blockquote":
+			raise ValueError("Blockquote can be parsed only from same tag.")
 
-		align: Align | None = self.parse_align(tag)
-		attrs: dict[str, AttributeValueList | str] | None = {"style": f"text-align: {align.value}"} if align else None
+		elements: list[Header | ImageData | Paragraph] = []
+		strings: list[NavigableString | Tag] = []
 
-		def __add_paragraph():
-			new_tag = self.make_tag("p", current_content, attrs)
-			result.append(new_tag)
-			current_content.clear()
+		def flush_strings():
+			if not strings: return
+			new_paragraph: Tag = self.make_tag("p", tuple(strings))
+			elements.extend(self.parse_paragraphs(new_paragraph))
+			strings.clear()
 
 		for child in tuple(tag.contents):
 
-			if isinstance(child, Tag) and child.name == "br":
+			if from_strings and isinstance(child, NavigableString):
+				strings.append(child)
+				continue
 
-				if current_content:
-					__add_paragraph()
+			if not isinstance(child, Tag):
+				continue
 
-			elif isinstance(child, NavigableString) and "\n" in child:
-				parts: list[str] = child.split("\n")
-				parts_count: int = len(parts)
-				last_index: int = parts_count - 1
+			if from_strings and child.name in ALLOWED_TAGS.get_category_tags_names(TagCategory.Styling):
+				strings.append(child)
+				continue
 
-				for index in range(parts_count):
-					current_content.append(NavigableString(parts[index]))
+			flush_strings()
 
-					if index != last_index:
-						__add_paragraph()
+			match child.name:
 
-			else:
-				current_content.append(child)
+				case "h1"| "h2" | "h3" | "h4" | "h5" | "h6":
+					header: Header | None = self.parse_header(child)
+					if header: elements.append(header)
 
-		if current_content:
-			__add_paragraph()
+				case "img":
+					image: ImageData | None = self.parse_image(child)
+					if image: elements.append(image)
 
-		return tuple(result)
+				case _:
 
-	def unwrap_non_styling_childrens(self, tag: Tag) -> tuple[str, ...]:
-		"""
-		Unwrap non-styling childrens.
+					if child.name not in paragraphs_tags:
+						continue
 
-		Args:
-			tag (Tag): HTML tag.
+					elements.extend(self.parse_paragraphs(child))
 
-		Returns:
-			tuple[str, ...]: Unwrapped tags names.
-		"""
+		flush_strings()
 
-		unwrapped_tags: list[str] = []
-		styling_tags_names: tuple[str, ...] = ALLOWED_TAGS.get_category_tags_names(TagCategory.Styling)
+		if elements:
+			blockquote = Blockquote()
+			align: Align | None = self.parse_align(tag)
+			blockquote.set_align(align)
+			blockquote.set_elements(elements)
 
-		for child in tag.find_all():
-			if child.name not in styling_tags_names:
-				child.unwrap()
-
-		return tuple(unwrapped_tags)
-
-	#==========================================================================================#
-	# >>>>> PUBLIC ELEMENTS PARSING METHODS <<<<< #
-	#==========================================================================================#
+			return blockquote
 
 	def parse_header(self, tag: Tag, autolevel: bool = True) -> Header | None:
 		"""
@@ -395,3 +377,79 @@ class HyperTextParser:
 			paragraphs.append(paragraph)
 
 		return tuple(paragraphs)
+
+	def split(self, tag: Tag) -> tuple[Tag, ...]:
+		"""
+		Split tag childrens into paragraphs by `<br>` and `\n`.
+
+		If tag doesn't contain splitters, in fact it will be replaced by `p`. If tag has align, all new tags also will be have same align.
+
+		Args:
+			tag (Tag): HTML tag.
+
+		Returns:
+			tuple[Tag, ...]: Paragraphs tags. Doesn't affined with builder!
+		"""
+
+		result: list[Tag] = []
+		current_content: list[PageElement] = []
+
+		align: Align | None = self.parse_align(tag)
+		attrs: dict[str, AttributeValueList | str] | None = {"style": f"text-align: {align.value}"} if align else None
+
+		def __add_paragraph():
+			new_tag = self.make_tag("p", current_content, attrs)
+			result.append(new_tag)
+			current_content.clear()
+
+		for child in tuple(tag.contents):
+
+			if isinstance(child, Tag) and child.name == "br":
+
+				if current_content:
+					__add_paragraph()
+
+			elif isinstance(child, NavigableString) and "\n" in child:
+				parts: list[str] = child.split("\n")
+				parts_count: int = len(parts)
+				last_index: int = parts_count - 1
+
+				for index in range(parts_count):
+					current_content.append(NavigableString(parts[index]))
+
+					if index != last_index:
+						__add_paragraph()
+
+			else:
+				current_content.append(child)
+
+		if current_content:
+			__add_paragraph()
+
+		return tuple(result)
+
+	def unwrap_non_styling_childrens(self, tag: Tag) -> tuple[str, ...]:
+		"""
+		Unwrap non-styling childrens.
+
+		Args:
+			tag (Tag): HTML tag.
+
+		Returns:
+			tuple[str, ...]: Unwrapped tags names.
+		"""
+
+		unwrapped_tags: list[str] = []
+		styling_tags_names: tuple[str, ...] = ALLOWED_TAGS.get_category_tags_names(TagCategory.Styling)
+
+		for child in tag.find_all():
+			if child.name not in styling_tags_names:
+				child.unwrap()
+
+		return tuple(unwrapped_tags)
+
+	@property
+	def pretty(self) -> bool:
+		"""Condition: is pretty content processing enabled."""
+
+		return self._pretty

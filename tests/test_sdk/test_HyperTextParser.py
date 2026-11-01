@@ -96,36 +96,23 @@ def test_parse_align():
 
 	assert parser.parse_align(tag) is None
 
-def test_split():
 
-	html: str = "<div align=\"center\">text\ncan <i class=\"someclass\">be</i> split<br>in parts<br/>with parser</div>"
+def test_parse_blockquote():
+
+	html: str = "<blockquote style=\"text-align: center\">para1<b>bold</b><p>para2</p><p>para3<br/>para4</p><img src=\"https://example.com/image.png\"></blockquote>"
 	soup = BeautifulSoup(html, "html.parser")
-	tag = soup.find("div")
+	tag = soup.find("blockquote")
 	assert tag is not None
 
-	parts: tuple[Tag, ...] = parser.split(tag)
+	blockquote = parser.parse_blockquote(tag)
+	assert blockquote is not None
+	assert len(blockquote.elements) == 5
 
-	assert len(parts) == 4
-
-	results_strings: tuple[str, ...] = (
-		"<p style=\"text-align: center\">text</p>",
-		"<p style=\"text-align: center\">can <i class=\"someclass\">be</i> split</p>",
-		"<p style=\"text-align: center\">in parts</p>",
-		"<p style=\"text-align: center\">with parser</p>",
-	)
-
-	for index in range(4):
-		assert str(parts[index]) == results_strings[index]
-
-def test_unwrap_non_styling_childrens():
-
-	html: str = "<p><sup>styled</sup> text <a href=\"somelink\">wrapped</a> or <span>no</span></p>"
-	soup = BeautifulSoup(html, "html.parser")
-	tag = soup.find("p")
-	assert tag is not None
-
-	parser.unwrap_non_styling_childrens(tag)
-	assert str(tag) == "<p><sup>styled</sup> text wrapped or no</p>"
+	assert blockquote.elements[0].to_html() == "<p>para1<b>bold</b></p>"
+	assert blockquote.elements[1].to_html() == "<p>para2</p>"
+	assert blockquote.elements[2].to_html() == "<p>para3</p>"
+	assert blockquote.elements[3].to_html() == "<p>para4</p>"
+	assert blockquote.elements[4].to_html() == "<img src=\"https://example.com/image.png\">"
 
 def test_parse_header():
 
@@ -209,3 +196,34 @@ def test_parse_paragraphs():
 
 	for index in range(3):
 		assert paragraphs[index].to_html() == results_strings[index]
+
+def test_split():
+
+	html: str = "<div align=\"center\">text\ncan <i class=\"someclass\">be</i> split<br>in parts<br/>with parser</div>"
+	soup = BeautifulSoup(html, "html.parser")
+	tag = soup.find("div")
+	assert tag is not None
+
+	parts: tuple[Tag, ...] = parser.split(tag)
+
+	assert len(parts) == 4
+
+	results_strings: tuple[str, ...] = (
+		"<p style=\"text-align: center\">text</p>",
+		"<p style=\"text-align: center\">can <i class=\"someclass\">be</i> split</p>",
+		"<p style=\"text-align: center\">in parts</p>",
+		"<p style=\"text-align: center\">with parser</p>",
+	)
+
+	for index in range(4):
+		assert str(parts[index]) == results_strings[index]
+
+def test_unwrap_non_styling_childrens():
+
+	html: str = "<p><sup>styled</sup> text <a href=\"somelink\">wrapped</a> or <span>no</span></p>"
+	soup = BeautifulSoup(html, "html.parser")
+	tag = soup.find("p")
+	assert tag is not None
+
+	parser.unwrap_non_styling_childrens(tag)
+	assert str(tag) == "<p><sup>styled</sup> text wrapped or no</p>"
