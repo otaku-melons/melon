@@ -33,13 +33,13 @@ class ManagerTemplates(_BaseTemplatesSection):
 		TableObject.set_style(TableStyle.PLAIN_COLUMNS)
 		Implementations = ("collect",)
 		ImplementationStatuses = {
-			"True": "[green]true[/]",
-			"False": "[yellow]false[/]",
-			"None": "[red]error[/]",
+			"True": "[green]true[/green]",
+			"False": "[yellow]false[/yellow]",
+			"None": "[red]error[/red]",
 		}
 
 		for DomainIndex in range(len(columns["DOMAIN"])):
-			columns["DOMAIN"][DomainIndex] = f"[i]{columns["DOMAIN"][DomainIndex]}[/]"
+			columns["DOMAIN"][DomainIndex] = f"[i]{columns["DOMAIN"][DomainIndex]}[/i]"
 
 		for ColumnName in Implementations:
 
@@ -47,11 +47,11 @@ class ManagerTemplates(_BaseTemplatesSection):
 				columns[ColumnName][StatusIndex] = ImplementationStatuses[columns[ColumnName][StatusIndex]]
 
 		for ColumnName in columns.keys():
-			Buffer = f"[b]{ColumnName}[/]"
+			Buffer = f"[b]{ColumnName}[/b]"
 			TableObject.add_column(Buffer, columns[ColumnName])
 
 		TableObject.align = "l"
-		TableObject.sortby = "[b]{NAME}[/]"
+		TableObject.sortby = "[b]NAME[/b]"
 		TableString = str(TableObject).strip()
 		self.printer.emit(TableString if TableString else "Parsers not installed.")
 
