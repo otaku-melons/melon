@@ -85,7 +85,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			filename += ".json"
 
 		image_level_value: int | None = entity.get_key_value("--images-level", expected_type = int, not_found_error = False)
-		image_level: ImagesLevel = ImagesLevel(image_level_value) if image_level_value else ImagesLevel.NO
+		image_level: ImagesLevel = ImagesLevel(image_level_value) if image_level_value else ImagesLevel.METAINFO
 
 		return Parameters(
 			required_parser = prepared_data.required_parsers[0],
