@@ -15,6 +15,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Extended extensions run options (force and statement check).
 - Images downloading levels.
 - Method for images downloading from data structs.
+- Title data now has method for many branches set. 
 
 ### 🎨 Changed
 - Manifest now parsed with [pydantic](https://github.com/pydantic/PYDANTIC) model and [dublib](https://github.com/dub1401/dublib) validators

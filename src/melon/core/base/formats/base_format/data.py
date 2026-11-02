@@ -22,349 +22,6 @@ if TYPE_CHECKING:
 class BaseTitleData[C: "BaseChapter"](ABC):
 	"""Base title data."""
 
-	#==========================================================================================#
-	# >>>>> PROPERTIES <<<<< #
-	#==========================================================================================#
-
-	@property
-	def format(self) -> Literal["melon-manga", "melon-ranobe"]:
-		"""Формат данных."""
-
-		return self._data["format"]
-
-	@property
-	def domain(self) -> str | None:
-		"""Домен источника."""
-
-		return self._data["domain"]
-
-	@property
-	def id(self) -> int | None:
-		"""Целочисленный уникальный идентификатор тайтла."""
-
-		return self._data["id"]
-
-	@property
-	def slug(self) -> str:
-		"""Алиас."""
-
-		return self._data["slug"]
-
-	@property
-	def content_language(self) -> str | None:
-		"""Код языка контента по стандарту ISO 639-3."""
-
-		return self._data["content_language"]
-
-	@property
-	def localized_name(self) -> str | None:
-		"""Локализованное название."""
-
-		return self._data["localized_name"]
-
-	@property
-	def eng_name(self) -> str | None:
-		"""Название на английском."""
-
-		return self._data["eng_name"]
-
-	@property
-	def another_names(self) -> tuple[str, ...]:
-		"""Последовательность альтернативных названий."""
-
-		return tuple(self._data["another_names"])
-
-	@property
-	def covers(self) -> tuple[ImageData, ...]:
-		"""Последовательность данных обложек."""
-
-		return tuple(self._covers)
-
-	@property
-	def authors(self) -> tuple[str, ...]:
-		"""Последовательность авторов."""
-
-		return tuple(self._data["authors"])
-
-	@property
-	def publication_year(self) -> int | None:
-		"""Год публикации."""
-
-		return self._data["publication_year"]
-
-	@property
-	def description(self) -> tuple["Paragraph", ...]:
-		"""Description elements."""
-
-		return self._description
-
-	@property
-	def age_limit(self) -> int | None:
-		"""Возрастное ограничение."""
-
-		return self._data["age_limit"]
-
-	@property
-	def genres(self) -> tuple[str, ...]:
-		"""Последовательность жанров."""
-
-		return tuple(self._data["genres"])
-
-	@property
-	def tags(self) -> tuple[str, ...]:
-		"""Последовательность тегов."""
-
-		return tuple(self._data["tags"])
-
-	@property
-	def franchises(self) -> tuple[str, ...]:
-		"""Последовательность франшиз."""
-
-		return tuple(self._data["franchises"])
-
-	@property
-	def perons(self) -> tuple[Person, ...]:
-		"""Последовательность персонажей."""
-
-		return tuple(self._persons)
-
-	@property
-	def status(self) -> Status | None:
-		"""Статус тайтла."""
-
-		return self._data["status"]
-
-	@property
-	def is_licensed(self) -> bool | None:
-		"""Состояние: лицензирован ли тайтл на данном ресурсе."""
-
-		return self._data["is_licensed"]
-
-	@property
-	def branches(self) -> tuple[Branch, ...]:
-		"""Последовательность ветвей тайтла."""
-
-		return tuple(self._branches.values())
-
-	#==========================================================================================#
-	# >>>>> PROTECTED METHODS ПРЕОБРАЗОВАНИЯ КОНТЕЙНЕРОВ ДАННЫХ <<<<< #
-	#==========================================================================================#
-
-	def _parse_content(self):
-		"""Парсит контент в объектные представления."""
-
-		content: dict[str, list] = self._data["content"]
-
-		for branch_id_string in content.keys():
-			branch_data: list[dict] = content[branch_id_string]
-			branch_id: int = int(branch_id_string)
-			branch_buffer = Branch(branch_id)
-
-			for chapter_data in branch_data:
-				chapter_id: int = chapter_data["id"]
-				chapter_buffer = self._chapter_type(self._title_controller.parser, chapter_id)
-				chapter_buffer.from_dict(chapter_data)
-				branch_buffer.add_chapter(chapter_buffer)
-
-			self.add_branch(branch_buffer)
-
-	def _parse_covers(self):
-		"""Парсит обложки в объектные представления."""
-
-		self._covers.clear()
-
-		for CoverData in self._data["covers"]:
-			CoverData: dict
-			Buffer = ImageData(CoverData["link"], ImageType.Cover)
-			Buffer.create_resolution(CoverData.get("width"), CoverData.get("height"))
-			self._covers.append(Buffer)
-
-	def _parse_persons(self):
-		"""Парсит персонажей в объектные представления."""
-
-		self._persons.clear()
-
-		for PersonData in self._data["persons"]:
-			PersonData: dict
-			Buffer = Person(PersonData["name"])
-
-			AnotherNames = PersonData.get("another_names") or ()
-			Images = PersonData.get("images") or ()
-			Description = PersonData.get("description")
-
-			for AnotherName in AnotherNames:
-				Buffer.add_another_name(AnotherName)
-
-			for CurrentImageData in Images:
-				CurrentImageData: dict
-				Image = ImageData(CurrentImageData["link"], ImageType.Person)
-				Image.create_resolution(CurrentImageData.get("width"), CurrentImageData.get("height"))
-				Buffer.add_image(Image)
-
-			if Description:
-				Buffer.set_description(Description)
-
-			self._persons.append(Buffer)
-
-	def _update_branches_info(self):
-		"""Обновляет информацию о ветвях во внутреннем словарном хранилище тайтла."""
-
-		Branches = []
-
-		for CurrentBranch in self._branches.values():
-			Branches.append({"id": CurrentBranch.id, "chapters_count": CurrentBranch.chapters_count})
-
-		self._data["branches"] = sorted(Branches, key = lambda Value: Value["chapters_count"], reverse = True)
-
-	def _build_content(self, branch_id: int | None = None, sorting: bool = True):
-		"""
-		Обновляет контент во внутреннем словарном хранилище данных тайтла.
-
-		:param branch_id: Если указать ID ветви, будет обновлена только одна ветвь.
-		:type branch_id: int | None
-		:param sorting: Указывает, нужно ли провести сортировку глав на основе их нумерации.
-		:type sorting: bool
-		"""
-
-		for branch in self._branches.values():
-			if branch_id and branch_id == branch.id or not branch_id:
-				if sorting: branch.sort()
-				self._data["content"][str(branch.id)] = branch.to_list()
-				if branch_id: break
-
-	def _build_covers(self):
-		"""Обновляет данные обложек во внутреннем словарном хранилище данных тайтла."""
-
-		self._data["covers"] = []
-
-		for CurrentCover in self._covers:
-			self._data["covers"].append(CurrentCover.to_dict())
-
-	def _build_description(self):
-		"""Build title description from elements."""
-
-		self._data["description"] = [element.to_html() for element in self._description]
-
-	def _build_persons(self):
-		"""Обновляет данные персонажей во внутреннем словарном хранилище данных тайтла."""
-
-		self._data["persons"] = []
-
-		for CurrentPerson in self._persons:
-			self._data["persons"].append(CurrentPerson.to_dict(self._title_controller.parser.settings.common.sizing_images))
-
-	#==========================================================================================#
-	# >>>>> PROTECTED METHODS <<<<< #
-	#==========================================================================================#
-
-	def _generate_data_struct(self) -> dict[str, Any]:
-		"""
-		Генерирует базовое словарное представление тайтла.
-
-		:return: Базовое словарное представление тайтла.
-		:rtype: dict[str, Any]
-		"""
-
-		data: dict[str, Any] = {
-			"format": None,
-			"domain": None,
-			"id": None,
-			"slug": None,
-			"content_language": None,
-
-			"localized_name": None,
-			"eng_name": None,
-			"another_names": [],
-			"covers": [],
-
-			"authors": [],
-			"publication_year": None,
-			"description": [],
-			"age_limit": None,
-			"status": None,
-			"is_licensed": None,
-
-			"genres": [],
-			"tags": [],
-			"franchises": [],
-			"persons": [],
-
-			"branches": [],
-			"content": {},
-		}
-
-		for extra_field in self._export_extra_fields():
-			data = insert_item(data, extra_field.after_key, (extra_field.name, extra_field.value))
-
-		return data
-
-	def _merge_branch(self, branch: Branch) -> int:
-		"""
-		Выполняет слияние переданной ветви с ветвью, имеющей такой же ID.
-
-		:param branch: Ветвь.
-		:type branch: Branch
-		:return: Количество добавленных глав.
-		:rtype: int
-		"""
-
-		CurrentBranch = self._branches[branch.id]
-		AddedCount = 0
-
-		for NewChapter in branch.chapters:
-			if not CurrentBranch.has_chapter(NewChapter.id):
-				CurrentBranch.add_chapter(NewChapter)
-				AddedCount += 1
-
-		return AddedCount
-
-	def _remove_cover(self, link: str):
-		"""
-		Удаляет обложку по ссылке.
-
-		:param link: Ссылка.
-		:type link: str
-		"""
-
-		result = self.find_cover(link)
-
-		if result:
-			self._covers.remove(result)
-
-	#==========================================================================================#
-	# >>>>> OVERRIDABLE METHODS <<<<< #
-	#==========================================================================================#
-
-	@abstractmethod
-	def _export_chapter_type(self) -> type[C]:
-		"""
-		Экспортирует тип главы.
-
-		:return: Тип главы.
-		:rtype: type[BaseChapter]
-		"""
-
-		pass
-
-	def _export_extra_fields(self) -> "Sequence[ExtraField]":
-		"""
-		Экспортирует последовательность дополнительных корневых полей данных.
-
-		:return: Последовательность дополнительных корневых полей данных.
-		:rtype: Sequence[ExtraField]
-		"""
-
-		return ()
-
-	def _post_init(self):
-		"""Execute after instance initialization."""
-
-		pass
-
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS <<<<< #
-	#==========================================================================================#
-
 	def __init__(self, title_controller: "BaseTitleController[BaseTitleData]", title_format: str):
 		"""
 		Базовые данные тайтла.
@@ -387,142 +44,6 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		self._branches: dict[int, Branch] = {}
 
 		self._post_init()
-
-	def from_dict(self, data: dict):
-		"""
-		Заполняет данные тайтла из переданного словаря.
-
-		:param data: Словарь данных.
-		:type data: dict
-		"""
-
-		self._data = self._data | data
-
-		self._parse_covers()
-		self._parse_persons()
-		self._parse_content()
-
-	def to_dict(self, sorting: bool = True) -> dict[str, Any]:
-		"""
-		Возвращает словарное представление объекта.
-		:param sorting: Указывает, нужно ли провести сортировку глав на основе их нумерации.
-		:type sorting: bool
-
-		:return: Словарное представление объекта.
-		:rtype: dict[str, Any]
-		"""
-
-		self._build_description()
-		self._build_covers()
-		self._build_persons()
-		self._update_branches_info()
-		self._build_content(sorting = sorting)
-
-		return self._data.copy()
-
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS ПОИСКА ДАННЫХ <<<<< #
-	#==========================================================================================#
-
-	def find_branch(self, branch_id: int) -> Branch | None:
-		"""
-		Ищет ветвь по её ID.
-
-		:param branch_id: ID dtndb.
-		:type branch_id: int
-		:return: Результат поиска.
-		:rtype: Branch | None
-		"""
-
-		return self._branches.get(branch_id)
-
-	def find_cover(self, link: str) -> ImageData | None:
-		"""
-		Производит поиск обложки по ссылке.
-
-		:param link: Ссылка на обложку.
-		:type link: str
-		:return: Обложка или `None` при отсутствии оной.
-		:rtype: ImageData | None
-		"""
-
-		for CurrentCover in self._covers:
-			if CurrentCover.link == link:
-				return CurrentCover
-
-		return None
-
-	def find_chapter(self, chapter_id: int) -> ChapterSearchResult | None:
-		"""
-		Ищет главу по её ID.
-
-		:param chapter_id: ID главы.
-		:type chapter_id: int
-		:return: Результат поиска.
-		:rtype: ChapterSearchResult | None
-		"""
-
-		BranchResult = None
-		ChapterResult = None
-
-		for CurrentBranch in self._branches.values():
-			for CurrentChapter in CurrentBranch.chapters:
-				if CurrentChapter.id == chapter_id:
-					BranchResult = CurrentBranch
-					ChapterResult = CurrentChapter
-					break
-
-		if BranchResult and ChapterResult:
-			return ChapterSearchResult(BranchResult, ChapterResult) if ChapterResult else None
-
-		return None
-
-	def find_person(self, name: str) -> Person | None:
-		"""
-		Производит поиск персонажа по имени.
-
-		:param name: Имя персонажа.
-		:type name: str
-		:return: Обложка или `None` при отсутствии оной.
-		:rtype: ImageData | None
-		"""
-
-		for CurrentPerson in self._persons:
-			if CurrentPerson.name == name:
-				return CurrentPerson
-
-		return None
-
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS УДАЛЕНИЯ ДАННЫХ <<<<< #
-	#==========================================================================================#
-
-	def clear_covers(self):
-		"""Удаляет данные обо всех обложках."""
-
-		self._covers.clear()
-
-	def remove_cover(self, link: str) -> bool:
-		"""
-		Удаляет обложку.
-
-		:param link: Ссылка на обложку.
-		:type link: str
-		:return: Возвращает `True`, если обложка найдена и удалена.
-		:rtype: bool
-		"""
-
-		cover = self.find_cover(link)
-
-		if cover:
-			self._covers.remove(cover)
-			return True
-
-		return False
-
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS ДОБАВЛЕНИЯ ДАННЫХ В КОНТЕЙНЕРЫ <<<<< #
-	#==========================================================================================#
 
 	def add_another_name(self, another_name: str):
 		"""
@@ -640,9 +161,111 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 		return AddedCount
 
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS УСТАНОВКИ КОНТЕЙНЕРОВ <<<<< #
-	#==========================================================================================#
+	def clear_covers(self):
+		"""Удаляет данные обо всех обложках."""
+
+		self._covers.clear()
+
+	def find_branch(self, branch_id: int) -> Branch | None:
+		"""
+		Ищет ветвь по её ID.
+
+		:param branch_id: ID dtndb.
+		:type branch_id: int
+		:return: Результат поиска.
+		:rtype: Branch | None
+		"""
+
+		return self._branches.get(branch_id)
+
+	def find_cover(self, link: str) -> ImageData | None:
+		"""
+		Производит поиск обложки по ссылке.
+
+		:param link: Ссылка на обложку.
+		:type link: str
+		:return: Обложка или `None` при отсутствии оной.
+		:rtype: ImageData | None
+		"""
+
+		for CurrentCover in self._covers:
+			if CurrentCover.link == link:
+				return CurrentCover
+
+		return None
+
+	def find_chapter(self, chapter_id: int) -> ChapterSearchResult | None:
+		"""
+		Ищет главу по её ID.
+
+		:param chapter_id: ID главы.
+		:type chapter_id: int
+		:return: Результат поиска.
+		:rtype: ChapterSearchResult | None
+		"""
+
+		BranchResult = None
+		ChapterResult = None
+
+		for CurrentBranch in self._branches.values():
+			for CurrentChapter in CurrentBranch.chapters:
+				if CurrentChapter.id == chapter_id:
+					BranchResult = CurrentBranch
+					ChapterResult = CurrentChapter
+					break
+
+		if BranchResult and ChapterResult:
+			return ChapterSearchResult(BranchResult, ChapterResult) if ChapterResult else None
+
+		return None
+
+	def find_person(self, name: str) -> Person | None:
+		"""
+		Производит поиск персонажа по имени.
+
+		:param name: Имя персонажа.
+		:type name: str
+		:return: Обложка или `None` при отсутствии оной.
+		:rtype: ImageData | None
+		"""
+
+		for CurrentPerson in self._persons:
+			if CurrentPerson.name == name:
+				return CurrentPerson
+
+		return None
+
+	def from_dict(self, data: dict):
+		"""
+		Заполняет данные тайтла из переданного словаря.
+
+		:param data: Словарь данных.
+		:type data: dict
+		"""
+
+		self._data = self._data | data
+
+		self._parse_covers()
+		self._parse_persons()
+		self._parse_content()
+
+	def remove_cover(self, link: str) -> bool:
+		"""
+		Удаляет обложку.
+
+		:param link: Ссылка на обложку.
+		:type link: str
+		:return: Возвращает `True`, если обложка найдена и удалена.
+		:rtype: bool
+		"""
+
+		cover = self.find_cover(link)
+
+		if cover:
+			self._covers.remove(cover)
+			return True
+
+		return False
 
 	def set_another_names(self, another_names: "Sequence[str]"):
 		"""
@@ -742,11 +365,18 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		else:
 			self._data[key] = data
 
-	# TODO: реализовать set_branches().
+	def set_branches(self, branches: "Sequence[Branch]"):
+		"""
+		Set new branches and clear all exists.
 
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS УСТАНОВКИ СВОЙСТВ <<<<< #
-	#==========================================================================================#
+		Args:
+			branches (Sequence[Branch]): Branches.
+		"""
+
+		self._branches.clear()
+
+		for branch in branches:
+			self.add_branch(branch)
 
 	def set_domain(self, domain: str | None):
 		"""
@@ -870,3 +500,344 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		"""
 
 		self._data["is_licensed"] = is_licensed
+
+	def to_dict(self, sorting: bool = True) -> dict[str, Any]:
+		"""
+		Возвращает словарное представление объекта.
+		:param sorting: Указывает, нужно ли провести сортировку глав на основе их нумерации.
+		:type sorting: bool
+
+		:return: Словарное представление объекта.
+		:rtype: dict[str, Any]
+		"""
+
+		self._build_description()
+		self._build_covers()
+		self._build_persons()
+		self._update_branches_info()
+		self._build_content(sorting = sorting)
+
+		return self._data.copy()
+
+	@property
+	def format(self) -> Literal["melon-manga", "melon-ranobe"]:
+		"""Формат данных."""
+
+		return self._data["format"]
+
+	@property
+	def domain(self) -> str | None:
+		"""Домен источника."""
+
+		return self._data["domain"]
+
+	@property
+	def id(self) -> int | None:
+		"""Целочисленный уникальный идентификатор тайтла."""
+
+		return self._data["id"]
+
+	@property
+	def slug(self) -> str:
+		"""Алиас."""
+
+		return self._data["slug"]
+
+	@property
+	def content_language(self) -> str | None:
+		"""Код языка контента по стандарту ISO 639-3."""
+
+		return self._data["content_language"]
+
+	@property
+	def localized_name(self) -> str | None:
+		"""Локализованное название."""
+
+		return self._data["localized_name"]
+
+	@property
+	def eng_name(self) -> str | None:
+		"""Название на английском."""
+
+		return self._data["eng_name"]
+
+	@property
+	def another_names(self) -> tuple[str, ...]:
+		"""Последовательность альтернативных названий."""
+
+		return tuple(self._data["another_names"])
+
+	@property
+	def covers(self) -> tuple[ImageData, ...]:
+		"""Последовательность данных обложек."""
+
+		return tuple(self._covers)
+
+	@property
+	def authors(self) -> tuple[str, ...]:
+		"""Последовательность авторов."""
+
+		return tuple(self._data["authors"])
+
+	@property
+	def publication_year(self) -> int | None:
+		"""Год публикации."""
+
+		return self._data["publication_year"]
+
+	@property
+	def description(self) -> tuple["Paragraph", ...]:
+		"""Description elements."""
+
+		return self._description
+
+	@property
+	def age_limit(self) -> int | None:
+		"""Возрастное ограничение."""
+
+		return self._data["age_limit"]
+
+	@property
+	def genres(self) -> tuple[str, ...]:
+		"""Последовательность жанров."""
+
+		return tuple(self._data["genres"])
+
+	@property
+	def tags(self) -> tuple[str, ...]:
+		"""Последовательность тегов."""
+
+		return tuple(self._data["tags"])
+
+	@property
+	def franchises(self) -> tuple[str, ...]:
+		"""Последовательность франшиз."""
+
+		return tuple(self._data["franchises"])
+
+	@property
+	def perons(self) -> tuple[Person, ...]:
+		"""Последовательность персонажей."""
+
+		return tuple(self._persons)
+
+	@property
+	def status(self) -> Status | None:
+		"""Статус тайтла."""
+
+		return self._data["status"]
+
+	@property
+	def is_licensed(self) -> bool | None:
+		"""Состояние: лицензирован ли тайтл на данном ресурсе."""
+
+		return self._data["is_licensed"]
+
+	@property
+	def branches(self) -> tuple[Branch, ...]:
+		"""Последовательность ветвей тайтла."""
+
+		return tuple(self._branches.values())
+
+	def _build_content(self, branch_id: int | None = None, sorting: bool = True):
+		"""
+		Обновляет контент во внутреннем словарном хранилище данных тайтла.
+
+		:param branch_id: Если указать ID ветви, будет обновлена только одна ветвь.
+		:type branch_id: int | None
+		:param sorting: Указывает, нужно ли провести сортировку глав на основе их нумерации.
+		:type sorting: bool
+		"""
+
+		for branch in self._branches.values():
+			if branch_id and branch_id == branch.id or not branch_id:
+				if sorting: branch.sort()
+				self._data["content"][str(branch.id)] = branch.to_list()
+				if branch_id: break
+
+	def _build_covers(self):
+		"""Обновляет данные обложек во внутреннем словарном хранилище данных тайтла."""
+
+		self._data["covers"] = []
+
+		for CurrentCover in self._covers:
+			self._data["covers"].append(CurrentCover.to_dict())
+
+	def _build_description(self):
+		"""Build title description from elements."""
+
+		self._data["description"] = [element.to_html() for element in self._description]
+
+	def _build_persons(self):
+		"""Обновляет данные персонажей во внутреннем словарном хранилище данных тайтла."""
+
+		self._data["persons"] = []
+
+		for CurrentPerson in self._persons:
+			self._data["persons"].append(CurrentPerson.to_dict(self._title_controller.parser.settings.common.sizing_images))
+
+	@abstractmethod
+	def _export_chapter_type(self) -> type[C]:
+		"""
+		Экспортирует тип главы.
+
+		:return: Тип главы.
+		:rtype: type[BaseChapter]
+		"""
+
+		pass
+
+	def _export_extra_fields(self) -> "Sequence[ExtraField]":
+		"""
+		Экспортирует последовательность дополнительных корневых полей данных.
+
+		:return: Последовательность дополнительных корневых полей данных.
+		:rtype: Sequence[ExtraField]
+		"""
+
+		return ()
+
+	def _generate_data_struct(self) -> dict[str, Any]:
+		"""
+		Генерирует базовое словарное представление тайтла.
+
+		:return: Базовое словарное представление тайтла.
+		:rtype: dict[str, Any]
+		"""
+
+		data: dict[str, Any] = {
+			"format": None,
+			"domain": None,
+			"id": None,
+			"slug": None,
+			"content_language": None,
+
+			"localized_name": None,
+			"eng_name": None,
+			"another_names": [],
+			"covers": [],
+
+			"authors": [],
+			"publication_year": None,
+			"description": [],
+			"age_limit": None,
+			"status": None,
+			"is_licensed": None,
+
+			"genres": [],
+			"tags": [],
+			"franchises": [],
+			"persons": [],
+
+			"branches": [],
+			"content": {},
+		}
+
+		for extra_field in self._export_extra_fields():
+			data = insert_item(data, extra_field.after_key, (extra_field.name, extra_field.value))
+
+		return data
+
+	def _merge_branch(self, branch: Branch) -> int:
+		"""
+		Выполняет слияние переданной ветви с ветвью, имеющей такой же ID.
+
+		:param branch: Ветвь.
+		:type branch: Branch
+		:return: Количество добавленных глав.
+		:rtype: int
+		"""
+
+		CurrentBranch = self._branches[branch.id]
+		AddedCount = 0
+
+		for NewChapter in branch.chapters:
+			if not CurrentBranch.has_chapter(NewChapter.id):
+				CurrentBranch.add_chapter(NewChapter)
+				AddedCount += 1
+
+		return AddedCount
+
+	def _parse_content(self):
+		"""Парсит контент в объектные представления."""
+
+		content: dict[str, list] = self._data["content"]
+
+		for branch_id_string in content.keys():
+			branch_data: list[dict] = content[branch_id_string]
+			branch_id: int = int(branch_id_string)
+			branch_buffer = Branch(branch_id)
+
+			for chapter_data in branch_data:
+				chapter_id: int = chapter_data["id"]
+				chapter_buffer = self._chapter_type(self._title_controller.parser, chapter_id)
+				chapter_buffer.from_dict(chapter_data)
+				branch_buffer.add_chapter(chapter_buffer)
+
+			self.add_branch(branch_buffer)
+
+	def _parse_covers(self):
+		"""Парсит обложки в объектные представления."""
+
+		self._covers.clear()
+
+		for CoverData in self._data["covers"]:
+			CoverData: dict
+			Buffer = ImageData(CoverData["link"], ImageType.Cover)
+			Buffer.create_resolution(CoverData.get("width"), CoverData.get("height"))
+			self._covers.append(Buffer)
+
+	def _parse_persons(self):
+		"""Парсит персонажей в объектные представления."""
+
+		self._persons.clear()
+
+		for PersonData in self._data["persons"]:
+			PersonData: dict
+			Buffer = Person(PersonData["name"])
+
+			AnotherNames = PersonData.get("another_names") or ()
+			Images = PersonData.get("images") or ()
+			Description = PersonData.get("description")
+
+			for AnotherName in AnotherNames:
+				Buffer.add_another_name(AnotherName)
+
+			for CurrentImageData in Images:
+				CurrentImageData: dict
+				Image = ImageData(CurrentImageData["link"], ImageType.Person)
+				Image.create_resolution(CurrentImageData.get("width"), CurrentImageData.get("height"))
+				Buffer.add_image(Image)
+
+			if Description:
+				Buffer.set_description(Description)
+
+			self._persons.append(Buffer)
+
+	def _post_init(self):
+		"""Execute after instance initialization."""
+
+		pass
+
+	def _remove_cover(self, link: str):
+		"""
+		Удаляет обложку по ссылке.
+
+		:param link: Ссылка.
+		:type link: str
+		"""
+
+		result = self.find_cover(link)
+
+		if result:
+			self._covers.remove(result)
+
+	def _update_branches_info(self):
+		"""Обновляет информацию о ветвях во внутреннем словарном хранилище тайтла."""
+
+		Branches = []
+
+		for CurrentBranch in self._branches.values():
+			Branches.append({"id": CurrentBranch.id, "chapters_count": CurrentBranch.chapters_count})
+
+		self._data["branches"] = sorted(Branches, key = lambda Value: Value["chapters_count"], reverse = True)
