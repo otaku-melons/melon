@@ -102,8 +102,8 @@ class RanobeBuilder(BaseBuilder):
 			BranchToBuild = cast("Branch", SearchResult)
 
 		Book = epub.EpubBook()
-		Book.set_title(self._Title.data.localized_name)
-		Book.set_language(self._Title.data.content_language)
+		if self._Title.data.localized_name: Book.set_title(self._Title.data.localized_name)
+		if self._Title.data.content_language: Book.set_language(self._Title.data.content_language)
 		for Author in self._Title.data.authors: Book.add_author(Author)
 
 		Chapters = []
