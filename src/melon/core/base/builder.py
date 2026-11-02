@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 	from .formats.base_format.chapter import BaseChapter
 	from .formats.base_format.controller import BaseTitleController
 	from .formats.base_format.data import BaseTitleData
-	from .parsers.base_parser import BaseParser
+	from .parser import BaseParser
 	from .source_operator import BaseSourceOperator
 
 #==========================================================================================#
@@ -32,8 +32,9 @@ class BaseBuilder:
 		"""
 
 		Replacements: dict[str, str] = {
-			"ch_word": self._WordsDictionary.chapter.title() if self._WordsDictionary and self._WordsDictionary.chapter else "",
-			"vol_word": self._WordsDictionary.volume.title() if self._WordsDictionary and self._WordsDictionary.volume else "",
+			# TODO: Fully migrate to templates.
+			# "ch_word": self._WordsDictionary.chapter.title() if self._WordsDictionary and self._WordsDictionary.chapter else "",
+			# "vol_word": self._WordsDictionary.volume.title() if self._WordsDictionary and self._WordsDictionary.volume else "",
 			"id": str(chapter.id),
 			"name": chapter.name or "",
 			"ch_number": chapter.number or "",
@@ -66,7 +67,7 @@ class BaseBuilder:
 	# >>>>> PUBLIC METHODS <<<<< #
 	#==========================================================================================#
 
-	def __init__(self, parser: "BaseParser[BaseSourceOperator, BaseModel]", title: "BaseTitleController[BaseTitleData]"):
+	def __init__(self, parser: "BaseParser[BaseSourceOperator, BaseModel, BaseTitleController]", title: "BaseTitleController[BaseTitleData]"):
 		"""
 		Базовый сборщик.
 
@@ -86,7 +87,6 @@ class BaseBuilder:
 
 		self._Portals = parser.source_operator.portals
 		self._ParserTempDirectory = self._Temper.get_parser_temp_directory(self._Parser.manifest.parser_name)
-		self._WordsDictionary = self._Parser.load_words_dictionary_preset(self._Title.data.content_language) if self._Title.data.content_language else None
 
 		self._BuildSystem: str | None = None
 		self._ChapterNameTemplate: str = "{ch_word} {ch_number}{if:name:. } {name}"

@@ -40,7 +40,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		self._add_parser_position(key = "--use")
 
-		model.base.add_key("--collection", description = "Collection name. By default <i>collection</i>.")
+		model.base.add_key("--collection", description = "Collection name. By default [i]collection[/].")
 
 		return model
 
@@ -92,7 +92,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		if parameters.slug not in collector.slugs:
 			collector.add(parameters.slug)
-			self.printer.emit(f"Slug added in <b>{collector.name}</b> collection.")
+			self.printer.emit(f"Slug added in [b]{collector.name}[/] collection.")
 
 		else:
 			self.printer.emit("Slug already in collection.")

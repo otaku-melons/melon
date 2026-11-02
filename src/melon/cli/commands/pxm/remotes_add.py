@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, override
 
-from dublib.validators import ValidableTypes
+from dublib.validators import ValidableType
 
 from ...base import BaseCommandProcessor
 from ...base.templates import BaseParameters
@@ -36,7 +36,7 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 		"""
 
 		position = model.create_position("REPOSITORY", "Repository URL.")
-		position.set_argument(ValidableTypes.URL)
+		position.set_argument(ValidableType.URL)
 
 		return model
 

@@ -1,6 +1,6 @@
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from dublib.cli.text_styler import FastStyler
 from dublib.functions.data import stringify_float
 
 from ._base import _BaseTemplatesSection
@@ -10,30 +10,36 @@ if TYPE_CHECKING:
 	from .....core.base.formats.base_format.data import BaseTitleData
 	from .....core.base.formats.base_format.structs import SavingResult
 
+@dataclass
+class ParsingStatistics:
+	"""Parsing statistics."""
+
+	total: int
+	parsed: int = 0
+	not_found: int = 0
+	errors: int = 0
+
 class ParsingTemplates(_BaseTemplatesSection):
-	"""Расширенные шаблоны вывода: процесс парсинга."""
+	"""Extended output templates: parsing."""
 
-	def amending_end(self, amended_chapter_count: int):
+	def amending_end(self, count: int):
 		"""
-		Шаблон сообщения: дополнение глав завершено.
+		Emit message: chapters amending end.
 
-		:param amended_chapter_count: Количество дополненных глав.
-		:type amended_chapter_count: int
+		Args:
+			count (int): Amended chapters count.
 		"""
 
-		Text = f"Amended chapters count: {amended_chapter_count}."
-		self.printer.emit(Text)
+		self.printer.emit(f"Amended chapters count: {count}.")
 
 	def chapter_amended(self, chapter: "BaseChapter", progress: tuple[int, int], message: str | None = None):
 		"""
-		Message template: chapter amending result (warning if chapter is empty).
+		Emit message: chapter amended (warning if chapter empty).
 
-		:param chapter: Chapter.
-		:type chapter: BaseChapter
-		:param progress: Progress tuple: processed chapter index (numeration from 1) and total empty chapters count.
-		:type progress: tuple[int, int]
-		:param message: Optional message about chapter amending.
-		:type message: str | None
+		Args:
+			chapter (BaseChapter): Chapter.
+			progress (tuple[int, int]): Progress tuple: processed chapter index (numeration from 1) and total empty chapters count.
+			message (str | None): Optional message about chapter amending.
 		"""
 
 		progress_string: str = f"[{progress[0]}/{progress[1]}]"
@@ -48,41 +54,39 @@ class ParsingTemplates(_BaseTemplatesSection):
 
 	def chapter_repaired(self, chapter: "BaseChapter"):
 		"""
-		Шаблон сообщения: глава восстановлена.
+		Emit message: chapter repaired.
 
-		:param chapter: Данные главы.
-		:type chapter: BaseChapter
+		Args:
+			chapter (BaseChapter): Chapter..
 		"""
 
-		ChapterNote = "Paid chapter" if chapter.is_paid else "Chapter"
-		Text = f"{ChapterNote} {chapter.id} repaired."
-		self.printer.emit(Text)
+		note: str = "Paid chapter" if chapter.is_paid else "Chapter"
+		self.printer.emit(f"{note} {chapter.id} repaired.")
 
 	def progress(self, index: int, count: int):
 		"""
-		Шаблон вывода: прогресс парсинга тайтлов.
+		Emit message: parsing progress.
 
-		:param index: Индекс обрабатываемого тайтла.
-		:type index: int
-		:param count: Количество тайтлов.
-		:type count: int
+		Args:
+			index (int): Processed title index.
+			count (int): All titles count.
 		"""
 
-		Number = index + 1
-		Progress = round(Number / count * 100, 2)
-		NumberString = FastStyler(str(Number)).colorize.magenta
-		ProgressString = stringify_float(Progress)
-		ProgressString = FastStyler(ProgressString + "%").colorize.cyan
+		number: int = index + 1
+		progress: float = round(number / count * 100, 2)
+		number_string: str = f"[magenta]{number}[/magenta]"
+		progress_string: str = stringify_float(progress)
+		progress_styled_string = f"[cyan]{progress_string}%[/cyan]"
 
-		self.printer.progress_indicator.set_progress(Progress)
-		self.printer.emit(f"[{NumberString} / {count} | {ProgressString}] ", end_line = False, flush = True)
+		self.printer.progress_indicator.set_progress(progress)
+		self.printer.emit(f"[{number_string} / {count} | {progress_styled_string}] ", end_line = False, flush = True)
 
 	def saving_result(self, result: "SavingResult"):
 		"""
-		Шаблон сообщения: выполнено сохранение тайтла.
+		Emit message: title saving result.
 
-		:param result: Результат сохранения тайтла.
-		:type result: SavingResult
+		Args:
+			result (SavingResult): Title saving result.
 		"""
 
 		if result.is_slug_changed:
@@ -99,39 +103,33 @@ class ParsingTemplates(_BaseTemplatesSection):
 
 	def start(self, title_data: "BaseTitleData", index: int, titles_count: int):
 		"""
-		Шаблон сообщения: парсинг начат.
+		Emit message: parsing started.
 
-		:param title_data: Данные тайтла.
-		:type title_data: BaseTitle
-		:param index: Индекс текущей операции парсинга.
-		:type index: int
-		:param titles_count: Количество тайтлов.
-		:type titles_count: int
+		Args:
+			title_data (BaseTitleData): Title data.
+			index (int): Title index.
+			titles_count (int): All titles count.
 		"""
 
-		NoteID = f" (ID: {title_data.id})" if title_data.id else ""
+		note_id: str = f" (ID: {title_data.id})" if title_data.id else ""
 
 		if titles_count > 1:
 			self.progress(index, titles_count)
 
-		self.printer.emit(f"Parsing <b>{title_data.slug}</b>{NoteID}…")
+		self.printer.emit(f"Parsing [b]{title_data.slug}[/b]{note_id}…")
 
-	def summary(self, parsed: int, not_found: int, errors: int):
+	def summary(self, statistics: ParsingStatistics):
 		"""
-		Шаблон вывода: результат парсинга.
+		Emit message: parsing ummary.
 
-		:param parsed: Количество успешно собранных тайтлов.
-		:type parsed: int
-		:param not_found: Количество не найденных в источнике тайтлов.
-		:type not_found: int
-		:param errors: Количество ошибок.
-		:type errors: int
+		Args:
+			statistics (ParsingStatistics): Parsing statistics.
 		"""
 
 		self.printer.emit("===== SUMMARY =====")
-		Parsed = FastStyler(str(parsed)).colorize.green if parsed else FastStyler(str(parsed)).colorize.red
-		NotFound = FastStyler(str(not_found)).colorize.yellow if not_found else FastStyler(str(not_found)).colorize.green
-		Errors = FastStyler(str(errors)).colorize.red if errors else FastStyler(str(errors)).colorize.green
+		Parsed = f"[green]{statistics.parsed}[/green]" if statistics.parsed else f"[red]{statistics.parsed}[/red]"
+		NotFound = f"[yellow]{statistics.not_found}[/yellow]" if statistics.not_found else f"[green]{statistics.not_found}[/green]"
+		Errors = f"[red]{statistics.errors}[/red]" if statistics.errors else f"[green]{statistics.errors}[/green]"
 
 		self.printer.progress_indicator.end()
 		self.printer.emit(f"Parsed: {Parsed}. Not found: {NotFound}. Errors: {Errors}.")

@@ -1,47 +1,86 @@
-from typing import TYPE_CHECKING, cast, override
+from typing import TYPE_CHECKING, override
 
+from ....html.base_elements import BaseElement, TextElement
+from ...structs.image import ImageData
 from ..base_format.chapter import BaseChapter
-from .elements import Blockquote, Header, Image, Paragraph
-from .enums import ChaptersTypes
+from .enums import ChapterType
 
 if TYPE_CHECKING:
 	from collections.abc import Sequence
 
+	from ....html.footnote import Footnote
+
 class Chapter(BaseChapter):
-	"""Глава ранобэ."""
+	"""Ranobe chapter."""
 
-	#==========================================================================================#
-	# >>>>> СВОЙСТВА <<<<< #
-	#==========================================================================================#
+	def add_element(self, element: "BaseElement | ImageData"):
+		"""
+		Добавляет элемент в главу.
 
-	@property
-	def footnotes(self) -> tuple[str, ...]:
-		"""Последовательность заметок."""
+		:param element: Элемент главы.
+		:type element: BaseElement | ImageData
+		:raise TypeError: Выбрасывается при передаче неподдерживаемого элемента.
+		"""
 
-		return tuple(self._data["footnotes"])
+		if isinstance(element, ImageData):
+			self.__images.append(element)
+
+		elif isinstance(element, TextElement):
+			for footnote in element.footnotes:
+				self.__footnotes.append(footnote)
+				self.__images.extend(footnote.images)
+
+		self._data["paragraphs"].append(element.to_html())
+
+	def set_elements(self, elements: "Sequence[BaseElement | ImageData]"):
+		"""
+		Задаёт набор элементов главы.
+
+		:param elements: Набор элементов главы.
+		:type elements: Sequence[BaseElement | ImageData]
+		"""
+
+		for element in elements:
+			self.add_element(element)
+
+	def set_type(self, chapter_type: ChapterType | None):
+		"""
+		Задаёт тип главы.
+
+		:param chapter_type: Тип главы.
+		:type chapter_type: ChapterType | None
+		"""
+
+		self._data["type"] = chapter_type.value if chapter_type else None
 
 	@property
 	def paragraphs(self) -> tuple[str, ...]:
-		"""Последовательность абзацев."""
+		"""Paragraphs."""
 
 		return tuple(self._data["paragraphs"])
 
 	@property
-	def type(self) -> ChaptersTypes | None:
-		"""Тип главы."""
+	def type(self) -> ChapterType | None:
+		"""Chapter type."""
 
-		return ChaptersTypes[self._data["type"]]
-
-	#==========================================================================================#
-	# >>>>> OVERRIDABLE METHODS <<<<< #
-	#==========================================================================================#
+		return ChapterType[self._data["type"]]
 
 	@override
 	def _clear(self):
 		"""Очищает контент главы."""
 
 		self._data["paragraphs"] = []
-		self._data["footnotes"] = []
+
+	@override
+	def _get_chapter_images(self) -> "Sequence[ImageData]":
+		"""
+		Get chapter-associated images.
+
+		Returns:
+			Sequence[ImageData]: Chapter images.
+		"""
+
+		return self.__images
 
 	@override
 	def _is_empty(self) -> bool:
@@ -70,49 +109,19 @@ class Chapter(BaseChapter):
 		"""Execute after instance initialization."""
 
 		self._data["paragraphs"] = []
-		self._data["footnotes"] = []
+		self._data["footnotes"] = {}
 
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS <<<<< #
-	#==========================================================================================#
+		self.__footnotes: list[Footnote] = []
+		self.__images: list[ImageData] = []
 
-	def add_element(self, element: "Paragraph | Image | Header | Blockquote"):
-		"""
-		Добавляет элемент в главу.
+	@override
+	def _pre_formatter(self):
+		"""Execute before chapter data conversion into dictionary."""
 
-		:param element: Элемент главы.
-		:type element: Paragraph | Image | Header | Blockquote
-		:raise TypeError: Выбрасывается при передаче неподдерживаемого элемента.
-		"""
+		footnotes: dict[str, list[str]] = {}
 
-		if type(element) not in (Paragraph, Image, Header, Blockquote):
-			raise TypeError("Unsupported element.")
+		for footnote in self.__footnotes:
+			html_elements: list[str] = [element.to_html() for element in footnote.elements]
+			footnotes[footnote.id] = html_elements
 
-		if type(element) in (Paragraph, Blockquote, Header):
-			element = cast("Paragraph | Blockquote | Header", element)
-			self._data["paragraphs"].append(element.to_html(footnotes_offset = len(self.footnotes)))
-			for CurrentNote in element.footnotes:
-				self._data["footnotes"].append(CurrentNote.to_html())
-
-		else:
-			self._data["paragraphs"].append(element.to_html())
-
-	def set_elements(self, elements: "Sequence[Paragraph | Image | Header | Blockquote]"):
-		"""
-		Задаёт набор элементов главы.
-
-		:param elements: Набор элементов главы.
-		:type elements: Sequence[Paragraph | Image | Header | Blockquote]
-		"""
-
-		for Element in elements: self.add_element(Element)
-
-	def set_type(self, chapter_type: ChaptersTypes | None):
-		"""
-		Задаёт тип главы.
-
-		:param chapter_type: Тип главы.
-		:type chapter_type: ChaptersTypes | None
-		"""
-
-		self._data["type"] = chapter_type.value if chapter_type else None
+		self._data["footnotes"] = footnotes

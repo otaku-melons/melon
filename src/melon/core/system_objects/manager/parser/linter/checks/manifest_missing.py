@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, override
 
 from ..base import BaseCheck
-from ..enums import ChecksStatuses
+from ..enums import CheckStatus
 
 if TYPE_CHECKING:
 	from pathlib import Path
@@ -25,4 +25,4 @@ class Check(BaseCheck):
 		manifest_path: Path = operator.path / "manifest.json"
 
 		if not manifest_path.exists():
-			self._emit(ChecksStatuses.Error, "Parser must provides manifest.")
+			self._emit(CheckStatus.Error, "Parser must provides manifest.")

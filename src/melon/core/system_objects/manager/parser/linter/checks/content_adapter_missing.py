@@ -2,7 +2,7 @@ import os
 from typing import TYPE_CHECKING, override
 
 from ..base import BaseCheck
-from ..enums import ChecksStatuses
+from ..enums import CheckStatus
 
 if TYPE_CHECKING:
 	from ...operator import ParserOperator
@@ -28,4 +28,4 @@ class Check(BaseCheck):
 			if f"{adapter}.py" in files:
 				self._ok()
 
-		self._emit(ChecksStatuses.Error, "Parser submodules for manga or ranobe not provided.")
+		self._emit(CheckStatus.Error, "Parser submodules for manga or ranobe not provided.")

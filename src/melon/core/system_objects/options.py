@@ -18,5 +18,5 @@ class Options(BaseSettings):
 	DEFAULT_OUTPUT_DIR: Path = Path("output")
 	REPOS: AnyHttpUrl = AnyHttpUrl("https://github.com/otaku-melons/melon")
 	TEMP_DIR: Path = Path("temp")
-	TEMPLATE_REPOS: AnyHttpUrl = AnyHttpUrl("ttps://github.com/otaku-melons/.parser-template")
+	TEMPLATE_REPOS: AnyHttpUrl = AnyHttpUrl("https://github.com/otaku-melons/.parser-template")
 	USE_CACHE: bool = True

@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, cast
 
 from dublib.functions.data import zerotify
@@ -7,12 +6,15 @@ from dublib.functions.data.dictionary import insert_dictionary_after_key
 from dublib.functions.data.string import remove_recurring_substrings
 
 if TYPE_CHECKING:
-	from ...parsers.base_parser import BaseParser
+	from collections.abc import Sequence
+
+	from ...parser import BaseParser
+	from ...structs.image import ImageData
 
 class ExtraData:
 	"""Дополнительные данные главы."""
 
-	def __init__(self, base_keys: Sequence[str]):
+	def __init__(self, base_keys: "Sequence[str]"):
 		"""
 		Дополнительные данные главы.
 
@@ -111,7 +113,7 @@ class BaseChapter(ABC):
 	"""Базовая глава."""
 
 	#==========================================================================================#
-	# >>>>> СВОЙСТВА <<<<< #
+	# >>>>> PROPERTIES <<<<< #
 	#==========================================================================================#
 
 	@property
@@ -119,6 +121,12 @@ class BaseChapter(ABC):
 		"""Уникальный идентификатор главы."""
 
 		return self._data["id"]
+
+	@property
+	def images(self) -> tuple["ImageData", ...]:
+		"""Chapter images."""
+
+		return tuple(self._get_chapter_images())
 
 	@property
 	def slug(self) -> str | None:
@@ -201,6 +209,17 @@ class BaseChapter(ABC):
 		pass
 
 	@abstractmethod
+	def _get_chapter_images(self) -> "Sequence[ImageData]":
+		"""
+		Get chapter-associated images.
+
+		Returns:
+			Sequence[ImageData]: Chapter images.
+		"""
+
+		pass
+
+	@abstractmethod
 	def _from_dict(self, data: dict):
 		"""
 		Заполняет данные главы из словаря.
@@ -228,7 +247,7 @@ class BaseChapter(ABC):
 		pass
 
 	def _pre_formatter(self):
-		"""Метод, запускающийся перед генерацией словарного представления объекта."""
+		"""Execute before chapter data conversion into dictionary."""
 
 		pass
 
@@ -330,7 +349,7 @@ class BaseChapter(ABC):
 
 		self._data["number"] = self._PrettyNumber(number)
 
-	def set_workers(self, workers: Sequence[str]):
+	def set_workers(self, workers: "Sequence[str]"):
 		"""
 		Задаёт идентификаторы лиц, адаптировавших контент.
 

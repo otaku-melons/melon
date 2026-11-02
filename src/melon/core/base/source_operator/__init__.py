@@ -3,24 +3,26 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from os import PathLike
 from pathlib import Path
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, Literal, Self, overload
 
-from dublib.exceptions.web_requestor import TokenExpiredError
 from dublib.functions.filesystem import json
 from dublib.validators import types
-from dublib.web_requestor import WebConfig, WebLibs, WebRequestor
+from dublib.web_requestor import WebConfig, WebLib, WebRequestor
+from dublib.web_requestor.exceptions import TokenExpiredError
 
-from ... import exceptions
-from ..parsers.components.images_downloader import (
+from ..parser.components.images_downloader import (
 	ImageDownloadingResult,
 	ImagesDownloader,
 )
-from ..parsers.components.manifest import ContentTypes, ParserManifest
-from ..parsers.components.settings import ParserSettings
+from ..parser.components.manifest import ParserManifest
+from ..parser.components.settings import ParserSettings
+from ..parser.enums import ContentType, ImagesLevel
 from ..structs.title import TitleDescriptor
 from .properties import SourceProperties
 
 if TYPE_CHECKING:
+	from types import ModuleType
+
 	from pydantic import BaseModel
 
 	from ...system_objects import SystemObjects
@@ -28,7 +30,8 @@ if TYPE_CHECKING:
 	from ...system_objects.printer import Portals
 	from ...system_objects.temper import SharedData
 	from ..extensions import BaseExtension
-	from ..parsers.base_parser import BaseParser
+	from ..formats.base_format.controller import BaseTitleController
+	from ..parser import BaseParser
 
 __all__ = ["BaseSourceOperator", "SourceProperties"]
 
@@ -36,7 +39,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 	"""Базовый оператор источника."""
 
 	#==========================================================================================#
-	# >>>>> СВОЙСТВА <<<<< #
+	# >>>>> PROPERTIES <<<<< #
 	#==========================================================================================#
 
 	@property
@@ -184,7 +187,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		"""
 
 		Config = WebConfig()
-		Config.select_lib(WebLibs.requests)
+		Config.select_lib(WebLib.requests)
 		Config.set_retries_count(self.settings.network.retries)
 		Config.set_delay(self.settings.network.delay)
 		Config.enable_proxy_protocol_switching(True)
@@ -294,7 +297,13 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 
 		return tuple(self._collect_slugs(period, filters, pages))
 
-	def download_image(self, url: str, directory: str | PathLike[str] | None = None, filename: str | None = None, is_full_filename: bool = False, force_mode: bool = False) -> ImageDownloadingResult:
+	def download_image(self,
+		url: str,
+		directory: str | PathLike[str] | None = None,
+		filename: str | None = None,
+		is_full_filename: bool = False,
+		force_mode: bool = False,
+	) -> ImageDownloadingResult:
 		"""
 		Скачивает изображение.
 
@@ -371,21 +380,21 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 
 		descriptor = TitleDescriptor(self)
 		descriptor.set_slug(title_data["slug"])
-		descriptor.set_content_type(ContentTypes(type_name))
+		descriptor.set_content_type(ContentType(type_name))
 
 		return descriptor
 
-	def get_content_type_by_slug(self, slug: str) -> ContentTypes:  # noqa: ARG002
+	def get_content_type_by_slug(self, slug: str) -> ContentType:  # noqa: ARG002
 		"""
 		Определяет тип контента по алиасу тайтла.
 
 		:param slug: Алиас тайтла.
 		:type slug: str
 		:return: Тип контента.
-		:rtype: ContentTypes
+		:rtype: ContentType
 		"""
 
-		# To-Do: метод для определения типа контента по алиасу.
+		# TODO: метод для определения типа контента по алиасу.
 		return self._Manifest.content_types[0]
 
 	def is_title_exists(self, slug: str) -> bool | None:
@@ -400,26 +409,23 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 
 		return self._is_title_exists(slug)
 
-	def launch_parser(self, content_type: ContentTypes | None = None) -> "BaseParser":
+	def launch_parser(self, content_type: ContentType, force_mode: bool = False, images_level: ImagesLevel = ImagesLevel.NO) -> "BaseParser":
 		"""
-		Инициализирует парсер для контента определённого типа.
+		Launch parser.
 
-		:param content_type: Тип контента. По умолчанию берётся первый описанный.
-		:type content_type: ContentTypes | None
-		:raises UnsupportedContentError: Неподдерживаемый тип контента.
-		:return: Парсер.
-		:rtype: BaseParser
+		Args:
+			content_type (ContentType): Content type.
+			force_mode (bool): Condition: is file overwriting enabled.
+			images_level (ImagesLevel): Images downloading level.
+
+		Returns:
+			BaseParser: Parser.
 		"""
 
-		if not content_type:
-			content_type = self._Manifest.content_types[0]
-		elif content_type not in self._Manifest.content_types:
-			raise exceptions.parsers.UnsupportedContentError(content_type)
+		module: ModuleType = importlib.import_module(f"parsers.{self._Manifest.parser_name}.{content_type.value}")
+		parser_type: type[BaseParser[Self, BaseModel, BaseTitleController]] = module.Parser
 
-		Module = importlib.import_module(f"parsers.{self._Manifest.parser_name}.{content_type.value}")
-		Parser: BaseParser = Module.Parser(self)
-
-		return Parser
+		return parser_type(self, force_mode, images_level)
 
 	def parse_slug_from_string(self, string: str) -> str | None:
 		"""
@@ -434,22 +440,27 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		return self._extract_slug_from_string(string)
 
 	@overload
-	def run_extension[T: "BaseExtension"](self, extension: type[T]) -> T: ...
+	def run_extension[E: "BaseExtension"](self, extension: type[E], force: Literal[False] = False) -> E | None: ...
 	@overload
-	def run_extension(self, extension: str) -> "BaseExtension": ...
+	def run_extension[E: "BaseExtension"](self, extension: type[E], force: Literal[True]) -> E: ...
+	@overload
+	def run_extension(self, extension: str, force: Literal[False] = False) -> "BaseExtension | None": ...
+	@overload
+	def run_extension(self, extension: str, force: Literal[True]) -> "BaseExtension": ...
 
-	def run_extension[T: "BaseExtension"](self, extension: type[T] | str) -> "T | BaseExtension":
+	def run_extension[E: "BaseExtension"](self, extension: type[E] | str, force: bool = False) -> "E | BaseExtension | None":
 		"""
-		Run extension by it class or name. If ran by name return untyped base extension for external using.
+		Run extension.
 
-		:return: Extension.
-		:rtype: BaseExtension
+		Args:
+			extension (str | type[E]): Extension class or name.
+			force (bool): Ignore extension state.
+
+		Returns:
+			E | BaseExtension | None: Extension or `None` if disabled.
 		"""
 
-		if isinstance(extension, str):
-			return self.extensions.run_by_name(self, extension)
-		else:
-			return self.extensions.run(self, extension)
+		return self.extensions.run(self, extension, force)
 
 	def set_mirror(self, mirror: str | None) -> bool:
 		"""

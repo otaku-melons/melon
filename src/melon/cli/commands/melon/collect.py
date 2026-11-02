@@ -2,8 +2,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, override
 
-from dublib.cli.text_styler import get_styled_text_from_html
-from dublib.validators import ValidableTypes
+from dublib.validators import ValidableType
 
 from .... import utils
 from ...base.templates import T_ForceModeRequired, T_SingleParserRequired
@@ -18,7 +17,7 @@ if TYPE_CHECKING:
 # >>>>> ВСПОМОГАТЕЛЬНЫЕ СТРУКТУРЫ ДАННЫХ <<<<< #
 #==========================================================================================#
 
-class CollectingTargets(Enum):
+class CollectingTarget(Enum):
 	"""Альтернативный цели для сборки коллекции."""
 
 	FromServer = None
@@ -30,7 +29,7 @@ class Parameters(T_ForceModeRequired, T_SingleParserRequired):
 	"""Required by command processor parameters."""
 
 	file: str | None
-	collecting_target: CollectingTargets
+	collecting_target: CollectingTarget
 
 	period: int | None
 	filters: str | None
@@ -113,12 +112,12 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		self._add_parser_position(key = "--use")
 
 		position = model.create_position("TARGETS", "Alternative targets to collecting.")
-		position.add_flag(CollectingTargets.Local.value, description = "Scan local titles and put slugs into collection.")
-		position.add_flag(CollectingTargets.NotFound.value, description = "Check titles existing on server and collect not found slugs.")
+		position.add_flag(CollectingTarget.Local.value, description = "Scan local titles and put slugs into collection.")
+		position.add_flag(CollectingTarget.NotFound.value, description = "Check titles existing on server and collect not found slugs.")
 
 		position = model.create_position(
 			name = "FILE",
-			description = get_styled_text_from_html("Collection filename without filetype. By default <i>collection</i>."),
+			description = "Collection filename without filetype. By default [i]collection[/].",
 		)
 		position.add_key("--file")
 
@@ -126,8 +125,8 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		self._add_mirror_key()
 
 		model.base.add_key("--filters", description = "Query string for filtering titles.")
-		model.base.add_key("--pages", value_type = ValidableTypes.UnsignedInteger, description = "Count of pages to collecting.")
-		model.base.add_key("--period", value_type = ValidableTypes.UnsignedInteger, description = "Period in hours for parsing updates.")
+		model.base.add_key("--pages", value_type = ValidableType.UnsignedInteger, description = "Count of pages to collecting.")
+		model.base.add_key("--period", value_type = ValidableType.UnsignedInteger, description = "Period in hours for parsing updates.")
 
 		return model
 
@@ -159,7 +158,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			required_parser = prepared_data.required_parsers[0],
 			force_mode = prepared_data.force_mode,
 			file = entity.get_position_value("FILE", expected_type = str),
-			collecting_target = CollectingTargets(entity.get_position_value("TARGETS", expected_type = str)),
+			collecting_target = CollectingTarget(entity.get_position_value("TARGETS", expected_type = str)),
 			period = entity.get_key_value("--period", expected_type = int),
 			filters = entity.get_key_value("--filters", expected_type = str),
 			pages = entity.get_key_value("--pages", expected_type = int),
@@ -186,7 +185,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		match parameters.collecting_target:
 
-			case CollectingTargets.FromServer:
+			case CollectingTarget.FromServer:
 
 				if not source_operator.is_collector_implemented:
 					self.printer.critical("Collector method not implemented.")
@@ -194,8 +193,8 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 				added_slugs_count = self.__collect_from_source(collector, parameters)
 
-			case CollectingTargets.Local: added_slugs_count = self.__collect_local(collector)
-			case CollectingTargets.NotFound: added_slugs_count = self.__collect_not_found(collector)
+			case CollectingTarget.Local: added_slugs_count = self.__collect_local(collector)
+			case CollectingTarget.NotFound: added_slugs_count = self.__collect_not_found(collector)
 
 		collector.save()
 

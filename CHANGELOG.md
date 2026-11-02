@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 For visual categorization of changes emojis are used in accordance with [gitmoji](https://gitmoji.dev).
 
+## [1.0.0-rc.7]
+
+### ✨ Added
+- Module `sdk` to improve parsers developers experience.
+- New abstract HTML parser with **HTML to Melon elements** features.
+- Extended extensions run options (force and statement check).
+- Images downloading levels.
+- Method for images downloading from data structs.
+
+### 🎨 Changed
+- Manifest now parsed with [pydantic](https://github.com/pydantic/PYDANTIC) model and [dublib](https://github.com/dub1401/dublib) validators
+- Modules `words_dictionary` and `chapter_header_parser` separated into own module `sdk`.
+- Reworked all HTML elements. There are separated into `core.html` module.
+- Use [Rich](https://github.com/textualize/rich) as ANSI styles render backend.
+- Footnotes reworked as unnumerated elements.
+- Big refactoring of base parser and presets.
+
+### 🔥 Removed
+- Directives, version and content types in manifest.
+- Function `ChackLanguageCode()` replaced by `dublib.validators`.
+
+### 🐛 Fixed
+- Parser always required for `sigen` command.
+- Compatibility with `EbookLib>=0.21`.
+- Deprecated tables style for `prettytable`.
+
 ## [1.0.0-rc.6] - 2026-10-23
 
 ### ✨ Added

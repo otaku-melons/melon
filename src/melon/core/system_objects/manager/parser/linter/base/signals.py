@@ -1,4 +1,4 @@
-from ..enums import ChecksStatuses
+from ..enums import CheckStatus
 
 class CheckStopSignalError(Exception):
 	"""Checking stop signal."""
@@ -10,20 +10,20 @@ class CheckStopSignalError(Exception):
 		return self._message
 
 	@property
-	def status(self) -> ChecksStatuses:
+	def status(self) -> CheckStatus:
 		"""Check status."""
 
 		return self._status
 
-	def __init__(self, status: ChecksStatuses, message: str | None):
+	def __init__(self, status: CheckStatus, message: str | None):
 		"""
 		Checking stop signal.
 
 		:param status: Check status.
-		:type status: ChecksStatuses
+		:type status: CheckStatus
 		:param message: Check message.
 		:type message: str | None
 		"""
 
-		self._status: ChecksStatuses = status
+		self._status: CheckStatus = status
 		self._message: str | None = message

@@ -6,7 +6,7 @@ from typing import cast
 from dublib.functions.filesystem import text
 
 from ...core import exceptions
-from .enums import Cases, ClassificatorsTypes, Directives
+from .enums import Case, ClassificatorType, Directive
 from .structs import (
 	ClassificationResult,
 	ExecutableLine,
@@ -43,32 +43,32 @@ class Classificator:
 
 		Name = DirectiveElements[0][1:].rstrip()
 
-		if Name not in tuple(Element.name for Element in Directives):
+		if Name not in tuple(Element.name for Element in Directive):
 			ERRORS.append(ScriptValidationError(line, f"Unknown directive: \"@{Name}\"."))
 			return ERRORS
 
-		Directive: Directives | None = None
+		directive: Directive | None = None
 
-		for Element in Directives:
+		for Element in Directive:
 			if Element.name == Name:
-				Directive = Element
+				directive = Element
 				break
 
-		Directive = cast("Directives", Directive)
+		directive = cast("Directive", directive)
 
-		ValidationData = Directive.value
+		ValidationData = directive.value
 		Values = self.__extract_directive_values(line)
 
 		if not Values and not ValidationData.allow_empty:
-			ERRORS.append(ScriptValidationError(line, f"Directive \"@{Directive.name}\" must have values."))
+			ERRORS.append(ScriptValidationError(line, f"Directive \"@{directive.name}\" must have values."))
 
 		if len(Values) > 1 and not ValidationData.allow_list:
-			ERRORS.append(ScriptValidationError(line, f"Directive \"@{Directive.name}\" must have only one value."))
+			ERRORS.append(ScriptValidationError(line, f"Directive \"@{directive.name}\" must have only one value."))
 
 		if ValidationData.values:
 			for Value in Values:
 				if Value not in ValidationData.values:
-					ERRORS.append(ScriptValidationError(line, f"Unknown value \"{Value}\" for directive \"@{Directive.name}\"."))
+					ERRORS.append(ScriptValidationError(line, f"Unknown value \"{Value}\" for directive \"@{directive.name}\"."))
 
 		return ERRORS
 
@@ -121,7 +121,7 @@ class Classificator:
 		value = self.__extract_directive_values(line)[0]
 
 		try:
-			work_data.current_case = Cases(value)
+			work_data.current_case = Case(value)
 		except ValueError:
 			raise exceptions.utils.classificator.ScriptRuntimeError(line, f"Unknown case value: \"{value}\".")
 
@@ -175,7 +175,7 @@ class Classificator:
 		value = self.__extract_directive_values(line)[0]
 
 		try:
-			work_data.current_type = ClassificatorsTypes(value)
+			work_data.current_type = ClassificatorType(value)
 		except ValueError:
 			raise exceptions.utils.classificator.ScriptRuntimeError(line, f"Unknown type: \"{value}\".")
 
@@ -255,7 +255,7 @@ class Classificator:
 			if line.startswith("#"):
 				continue
 
-			if line.startswith(f"@{Directives.INCLUDE.name}"):
+			if line.startswith(f"@{Directive.INCLUDE.name}"):
 
 				if not include:
 					raise exceptions.utils.classificator.IncludeDirectiveDeniedError(script_file, line_number)
@@ -339,11 +339,11 @@ class Classificator:
 		operations: list[Operation] = []
 		work_data = WorkData()
 
-		directive_processors: dict[Directives, Callable] = {
-			Directives.DROP: self.__process_directive_drop,
-			Directives.CASE: self.__process_directive_case,
-			Directives.DELETE: self.__process_directive_delete,
-			Directives.TYPE: self.__process_directive_type,
+		directive_processors: dict[Directive, Callable] = {
+			Directive.DROP: self.__process_directive_drop,
+			Directive.CASE: self.__process_directive_case,
+			Directive.DELETE: self.__process_directive_delete,
+			Directive.TYPE: self.__process_directive_type,
 		}
 
 		for line in script_lines:
@@ -366,7 +366,7 @@ class Classificator:
 
 				continue
 
-			for directive in Directives:
+			for directive in Directive:
 				if line.is_directive(directive):
 					directive_processors[directive](work_data, line)
 

@@ -1,9 +1,9 @@
 from .....utils.timer import Timer
-from ....base.formats.base_format.enums import ImagesTypes
-from ....base.parsers.components.images_downloader import (
+from ....base.parser.components.images_downloader import (
 	FilteredBy,
 	ImageDownloadingResult,
 )
+from ....base.structs.image import ImageType
 from ._base import _BaseTemplatesSection
 
 #==========================================================================================#
@@ -55,7 +55,7 @@ class ImagesTemplates(_BaseTemplatesSection):
 	def start_downloading(
 		self,
 		filename: str,
-		image_type: ImagesTypes | None = None,
+		image_type: ImageType | None = None,
 	) -> ImageDownloadingFuture:
 		"""
 		Шаблон вывода: скачивание изображения начато.
@@ -63,7 +63,7 @@ class ImagesTemplates(_BaseTemplatesSection):
 		:param filename: Имя файла.
 		:type filename: str
 		:param image_type: Тип изображения.
-		:type image_type: ImagesTypes | None
+		:type image_type: ImageType | None
 		:return: Футура вывода для результата скачивания изображения.
 		:rtype: ImageDownloadingFuture
 		"""

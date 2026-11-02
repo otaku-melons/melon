@@ -3,11 +3,10 @@ from typing import TYPE_CHECKING, override
 
 from prettytable import PrettyTable
 
-from dublib.cli.text_styler import FastStyler
 from dublib.functions.data import stringify_float
 
 from ....core.system_objects.manager.parser.linter.base.structs import CheckResult
-from ....core.system_objects.manager.parser.linter.enums import ChecksStatuses
+from ....core.system_objects.manager.parser.linter.enums import CheckStatus
 from ...base import BaseCommandProcessor
 from ...base.templates import T_SingleParserRequired
 
@@ -38,12 +37,12 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 	# >>>>> PRIVATE METHODS <<<<< #
 	#==========================================================================================#
 
-	def __colorize_text(self, status: ChecksStatuses, text: str) -> str:
+	def __colorize_text(self, status: CheckStatus, text: str) -> str:
 		"""
 		Colorize text according check status.
 
 		:param status: Checks statuses enumeration.
-		:type status: ChecksStatuses
+		:type status: CheckStatus
 		:param text: Text for colorization.
 		:type text: str
 		:return: Colorized text.
@@ -51,10 +50,10 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 		"""
 
 		match status:
-			case ChecksStatuses.OK: return FastStyler(text).colorize.green
-			case ChecksStatuses.Skipped: return FastStyler(text).colorize.bright_cyan
-			case ChecksStatuses.Error: return FastStyler(text).colorize.red
-			case ChecksStatuses.Warning: return FastStyler(text).colorize.yellow
+			case CheckStatus.OK: return f"[green]{text}[/]"
+			case CheckStatus.Skipped: return f"[bright_cyan]{text}[/]"
+			case CheckStatus.Error: return f"[red]{text}[/]"
+			case CheckStatus.Warning: return f"[yellow]{text}[/]"
 
 		return text
 
@@ -69,7 +68,7 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 		results_count: int = len(results)
 
 		headers: tuple[str, ...] = ("Progress", "Status", "Name", "Message")
-		headers = tuple(FastStyler(string).decorate.bold for string in headers)
+		headers = tuple(f"[b]{string}[/]" for string in headers)
 
 		table = PrettyTable(headers)
 		table.border = False
@@ -86,7 +85,7 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 			progress_string: str = stringify_float(progress, round_factor = 1) + "%"
 			progress_string = progress_string.rjust(5)
 			progress_string = f"[{number}/{results_count} {progress_string}]"
-			status: str = "passed" if result.status is ChecksStatuses.OK else result.status.name.lower()
+			status: str = "passed" if result.status is CheckStatus.OK else result.status.name.lower()
 			name: str = result.name
 			message: str = result.message or ""
 
@@ -105,18 +104,18 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 		:type statistics: Statistics
 		"""
 
-		passed: str = FastStyler(str(statistics.passed)).colorize.green
+		passed: str = f"[green]{statistics.passed}[/]"
 
 		if statistics.errors:
-			passed = FastStyler(str(statistics.passed)).colorize.red
+			passed = f"[red]{statistics.passed}[/]"
 		elif statistics.warnings:
-			passed = FastStyler(str(statistics.passed)).colorize.yellow
+			passed = f"[yellow]{statistics.passed}[/]"
 
-		errors: str = FastStyler(str(statistics.errors)).colorize.red if statistics.errors else FastStyler("0").colorize.green
-		warnings: str = FastStyler(str(statistics.warnings)).colorize.yellow if statistics.warnings else FastStyler("0").colorize.green
-		skipped: str = FastStyler(str(statistics.skipped)).colorize.bright_cyan if statistics.skipped else "0"
+		errors: str = f"[red]{statistics.errors}[/]" if statistics.errors else "[green]0[/]"
+		warnings: str = f"[yellow]{statistics.warnings}[/]" if statistics.warnings else "[green]0[/]"
+		skipped: str = f"[bright_cyan]{statistics.warnings}[/]" if statistics.skipped else "0"
 
-		self.printer.emit(f"Total <b>{statistics.total}</b>. Passed {passed}. Skipped: {skipped}. Errors: {errors}. Warnings: {warnings}.")
+		self.printer.emit(f"Total [b]{statistics.total}[/]. Passed {passed}. Skipped: {skipped}. Errors: {errors}. Warnings: {warnings}.")
 
 	#==========================================================================================#
 	# >>>>> OVERRIDABLE METHODS <<<<< #
@@ -182,9 +181,9 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 
 		for result in linting_results:
 			match result.status:
-				case ChecksStatuses.Skipped: statistics.skipped += 1
-				case ChecksStatuses.Error: statistics.errors += 1
-				case ChecksStatuses.Warning: statistics.warnings += 1
+				case CheckStatus.Skipped: statistics.skipped += 1
+				case CheckStatus.Error: statistics.errors += 1
+				case CheckStatus.Warning: statistics.warnings += 1
 
 		self.__print_results(linting_results)
 		self.__print_statistics(statistics)

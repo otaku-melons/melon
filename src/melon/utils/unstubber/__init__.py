@@ -9,7 +9,7 @@ from PIL.ImageFile import ImageFile
 
 from dublib.functions.data import to_sequence
 
-from .enums import SignaturesVersions
+from .enums import SignatureVersion
 
 class Unstubber:
 	"""Фильтр заглушек."""
@@ -32,24 +32,24 @@ class Unstubber:
 
 		return hashlib.sha256(PixelBytes).hexdigest()
 
-	def __GetUsedSignaturesVersions(self, signatures: Sequence[str]) -> tuple[SignaturesVersions, ...]:
+	def __GetUsedSignatureVersion(self, signatures: Sequence[str]) -> tuple[SignatureVersion, ...]:
 		"""
 		Получает список используемых в последовательности сигнатур версий.
 
 		:param signatures: Последовательность сигнатур.
 		:type signatures: Sequence[str]
 		:return: Последовательность использованных версий сигнатур.
-		:rtype: tuple[SignaturesVersions, ...]
+		:rtype: tuple[SignatureVersion, ...]
 		"""
 
-		UsedVersions: list[SignaturesVersions] = []
+		UsedVersions: list[SignatureVersion] = []
 
 		for Signature in signatures:
 			Version = self.get_siqnature_version(Signature)
 
 			if Version not in UsedVersions:
 				UsedVersions.append(Version)
-				if len(UsedVersions) == len(SignaturesVersions): break
+				if len(UsedVersions) == len(SignatureVersion): break
 
 		return tuple(UsedVersions)
 
@@ -69,14 +69,14 @@ class Unstubber:
 
 		return open_image(io.BytesIO(image))
 
-	def generate_signature(self, image: ImageFile, signature_version: SignaturesVersions) -> str:
+	def generate_signature(self, image: ImageFile, signature_version: SignatureVersion) -> str:
 		"""
 		Генерирует сигнатуру изображения определённой версии.
 
 		:param image: Изображение.
 		:type image: ImageFile
 		:param signature_version: Версия сигнатуры.
-		:type signature_version: SignaturesVersions
+		:type signature_version: SignatureVersion
 		:return: Сигнатура изображения.
 		:rtype: str
 		"""
@@ -94,32 +94,32 @@ class Unstubber:
 
 		match signature_version:
 
-			case SignaturesVersions.v1:
+			case SignatureVersion.v1:
 				Resolution: tuple[int, int] = image.size
 				Data["width"] = str(Resolution[0])
 				Data["height"] = str(Resolution[1])
 				Data["sha256"] = self.__GetImagePixelHashSHA256(image)
 
-			case SignaturesVersions.v2:
+			case SignatureVersion.v2:
 				Data["phash"] = str(imagehash.phash(image))
 
 		Template: str = "{version}." + signature_version.value
 
 		return Template.format(**Data)
 
-	def get_siqnature_version(self, signatrue: str) -> SignaturesVersions:
+	def get_siqnature_version(self, signatrue: str) -> SignatureVersion:
 		"""
 		Определяет версию сигнатуры.
 
 		:param signatrue: Сигнатура.
 		:type signatrue: str
 		:return: Версия сигнатуры.
-		:rtype: SignaturesVersions
+		:rtype: SignatureVersion
 		"""
 
 		VersionPart: str = signatrue.split(".")[0]
 
-		return SignaturesVersions[VersionPart]
+		return SignatureVersion[VersionPart]
 
 	def filter_image(self, image: ImageFile, signatures: str | Sequence[str]) -> bool:
 		"""
@@ -136,7 +136,7 @@ class Unstubber:
 		Signatures: tuple[str, ...] = to_sequence(signatures)
 		TargetSignatures: list[str] = []
 
-		for Version in self.__GetUsedSignaturesVersions(Signatures):
+		for Version in self.__GetUsedSignatureVersion(Signatures):
 			TargetSignatures.append(self.generate_signature(image, Version))
 
 		for TargetSignature in TargetSignatures:

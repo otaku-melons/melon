@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 
 from dublib.functions.filesystem import json
 
-from ...base.parsers.components.images_downloader import FilteredBy
+from ...base.parser.components.images_downloader import FilteredBy
 
 if TYPE_CHECKING:
 	from .shared_data import SharedData

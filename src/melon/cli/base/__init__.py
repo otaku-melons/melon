@@ -24,7 +24,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 	_timer: Timer | None
 
 	#==========================================================================================#
-	# >>>>> СВОЙСТВА <<<<< #
+	# >>>>> PROPERTIES <<<<< #
 	#==========================================================================================#
 
 	@property
@@ -184,16 +184,16 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 			return self._process(parameters)
 
 		except exceptions.extensions.ExtensionNotFoundError as exception:
-			self.printer.error(f"Extension <b>{exception}</b> not found.")
+			self.printer.error(f"Extension [b]{exception}[/b] not found.")
 
 		except exceptions.parsers.ParserAlreadyExistsError as exception:
-			self.printer.error(f"Parser <b>{exception}</b> already exists.")
+			self.printer.error(f"Parser [b]{exception}[/b] already exists.")
 
 		except exceptions.parsers.ParserNotFoundError as exception:
-			self.printer.error(f"Parser <b>{exception}</b> not found.")
+			self.printer.error(f"Parser [b]{exception}[/b] not found.")
 
 		except exceptions.parsers.RepositoryError as exception:
-			self.printer.error(f"Repository <b>{exception}</b> not found.")
+			self.printer.error(f"Repository [b]{exception}[/b] not found.")
 
 		return False
 

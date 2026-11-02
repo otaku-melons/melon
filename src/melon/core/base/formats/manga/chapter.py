@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, cast, override
 
-from ...structs.image import ImageData
+from ...structs.image import ImageData, ImageType
 from ..base_format.chapter import BaseChapter
 
 if TYPE_CHECKING:
@@ -10,7 +10,7 @@ class Chapter(BaseChapter):
 	"""Глава манги."""
 
 	#==========================================================================================#
-	# >>>>> СВОЙСТВА <<<<< #
+	# >>>>> PROPERTIES <<<<< #
 	#==========================================================================================#
 
 	@property
@@ -43,11 +43,23 @@ class Chapter(BaseChapter):
 	#==========================================================================================#
 	# >>>>> OVERRIDABLE METHODS <<<<< #
 	#==========================================================================================#
+
 	@override
 	def _clear(self):
 		"""Очищает контент главы."""
 
 		self.__slides.clear()
+
+	@override
+	def _get_chapter_images(self) -> "Sequence[ImageData]":
+		"""
+		Get chapter-associated images.
+
+		Returns:
+			Sequence[ImageData]: Chapter images.
+		"""
+
+		return tuple(self.__slides.values())
 
 	@override
 	def _is_empty(self) -> bool:
@@ -75,7 +87,7 @@ class Chapter(BaseChapter):
 		for SlideData in self._data["slides"]:
 			SlideData = cast("dict", SlideData)
 			SlideIndex: int = SlideData["index"]
-			SlideImage = ImageData(SlideData["link"])
+			SlideImage = ImageData(SlideData["link"], ImageType.Slide)
 
 			Width, Height = SlideData.get("width"), SlideData.get("height")
 
@@ -93,7 +105,7 @@ class Chapter(BaseChapter):
 
 	@override
 	def _pre_formatter(self):
-		"""Метод, запускающийся перед генерацией словарного представления объекта."""
+		"""Execute before chapter data conversion into dictionary."""
 
 		SlidesData: list[dict] = []
 

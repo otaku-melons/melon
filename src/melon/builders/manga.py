@@ -8,12 +8,11 @@ from typing import TYPE_CHECKING, cast
 
 import img2pdf
 
-from dublib.cli.text_styler import FastStyler
 from dublib.functions.data import stringify_float
 
 from ..core import exceptions
 from ..core.base.builder import BaseBuilder
-from ..core.base.formats.base_format.enums import ImagesTypes
+from ..core.base.structs.image import ImageType
 
 if TYPE_CHECKING:
 	from ..core.base.formats.base_format.branch import Branch
@@ -179,7 +178,7 @@ class MangaBuilder(BaseBuilder):
 		"""
 
 		ProgressString = self.__GetProgressString(progress)
-		self._SystemObjects.printer.emit(f"{ProgressString}Building chapter <b>{chapter.id}</b>…")
+		self._SystemObjects.printer.emit(f"{ProgressString}Building chapter [b]{chapter.id}[/b]…")
 
 		with TemporaryDirectory(dir = self._ParserTempDirectory) as TempDir:
 			TempDirPath = Path(TempDir)
@@ -191,7 +190,7 @@ class MangaBuilder(BaseBuilder):
 				FileIndex = Index + 1
 
 				Filename = str(FileIndex).rjust(len(str(SlidesCount)), "0")
-				Future = self._Printer.templates.images.start_downloading(SlideInfo.filename, ImagesTypes.Slide)
+				Future = self._Printer.templates.images.start_downloading(SlideInfo.filename, ImageType.Slide)
 				Result = self._Parser.source_operator.download_image(SlideInfo.link, TempDirPath, filename = Filename)
 				Future.result(Result)
 
@@ -214,7 +213,7 @@ class MangaBuilder(BaseBuilder):
 			return ""
 
 		ProgressString = stringify_float(progress * 100.0) + "%"
-		ProgressString = FastStyler(ProgressString).colorize.bright_cyan
+		ProgressString = f"[bright_cyan]{ProgressString}[/]"
 
 		return f"[{ProgressString}] "
 
@@ -237,7 +236,7 @@ class MangaBuilder(BaseBuilder):
 			TargetDirectory.mkdir(exist_ok = True)
 
 		ChapterPath = self.__FormatsBuilders[self.__OutputFormat]().build_chapter(ChapterName, temp_dir, TargetDirectory)
-		self._Printer.emit(f"Chapter <b>{chapter.id}</b> built in: <i>{ChapterPath}</i>.")
+		self._Printer.emit(f"Chapter [b]{chapter.id}[/] built in: [i]{ChapterPath}[/].")
 
 	#==========================================================================================#
 	# >>>>> OVERRIDABLE METHODS <<<<< #
@@ -307,7 +306,7 @@ class MangaBuilder(BaseBuilder):
 			self.__BuildChapter(CurrentChapter, Progress)
 
 		ProgressString = self.__GetProgressString(1.0)
-		self._Printer.emit(f"{ProgressString}In branch <b>{BranchToBuild.id}</b> built {BranchToBuild.chapters_count} chapters.")
+		self._Printer.emit(f"{ProgressString}In branch [b]{BranchToBuild.id}[/b] built {BranchToBuild.chapters_count} chapters.")
 
 	def select_output_format(self, output_format: MangaOutputFormats):
 		"""

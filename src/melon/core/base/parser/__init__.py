@@ -1,21 +1,16 @@
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, cast
-
-from dublib.functions.decorators import run_before_method
+from typing import TYPE_CHECKING, Any
 
 from ....core import exceptions
 from ..formats.base_format.branch import Branch
-from ..formats.base_format.controller import BaseTitleController
 from ..formats.base_format.data import BaseTitleData
-from ..formats.base_format.enums import ImagesTypes
-from ..parsers.components.images_downloader import (
+from .components.images_downloader import (
 	ImageDownloadingResult,
 	ImagesDownloader,
 )
-from ..structs.image import ImageData
-from .components.words_dictionary import WordsDictionary, presets
+from .enums import ContentType, ImagesLevel
 
 if TYPE_CHECKING:
 	from pydantic import BaseModel
@@ -25,19 +20,25 @@ if TYPE_CHECKING:
 	from ....core.base.formats.base_format.chapter import BaseChapter
 	from ....core.base.formats.base_format.data import BaseTitleData
 	from ....core.base.formats.base_format.structs import SavingResult
-	from ....core.base.parsers.components.manifest import ParserManifest
-	from ....core.base.parsers.components.settings import ParserSettings
 	from ....core.system_objects.printer import Portals
+	from ..formats.base_format.controller import BaseTitleController
 	from ..source_operator import BaseSourceOperator
+	from ..structs.image import ImageData
+	from .components.manifest import ParserManifest
+	from .components.settings import ParserSettings
 
-class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
-	"""Базовый парсер."""
-
-	_Title: "BaseTitleController[BaseTitleData] | None"
+class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleController[BaseTitleData[BaseChapter]]"](ABC):
+	"""Base parser."""
 
 	#==========================================================================================#
-	# >>>>> СВОЙСТВА <<<<< #
+	# >>>>> PROPERTIES <<<<< #
 	#==========================================================================================#
+
+	@property
+	def content_type(self) -> ContentType:
+		"""Content type."""
+
+		return self._export_content_type()
 
 	@property
 	def images_downloader(self) -> "ImagesDownloader":
@@ -82,71 +83,55 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 		return self._source_operator
 
 	@property
-	def title(self) -> "BaseTitleController[BaseTitleData] | None":
-		"""Тайтл."""
+	def title(self) -> T:
+		"""
+		Title controller.
+
+		Raises:
+			TitleNotSetError: Title required, but not set.
+		"""
+
+		if not self._title:
+			raise exceptions.parsers.TitleNotSetError()
 
 		return self._title
-
-	@property
-	def words_dictionary(self) -> WordsDictionary:
-		"""Словарь ключевых локализованных определений."""
-
-		return self._words_dictionary
 
 	#==========================================================================================#
 	# >>>>> PROTECTED METHODS <<<<< #
 	#==========================================================================================#
 
-	@run_before_method("_require_title")
-	def _download_images(self, images_data: Sequence[ImageData], images_type: ImagesTypes, force_mode: bool) -> list[ImageDownloadingResult]:
+	def _download_images(self, images_data: Sequence["ImageData"], subdir: str | None = None) -> list[ImageDownloadingResult]:
 		"""
-		Скачивает изображения тайтла определённого типа.
+		Download images sequence.
 
-		:param images_data: Данные изображений.
-		:type images_data: Sequence[ImageData]
-		:param images_type: Тип изображений.
-		:type images_type: ImagesTypes
-		:param force_mode: Указывает, перезаписывать ли существующие файлы изображений.
-		:type force_mode: bool
-		:return: Список результатов скачивания изображений.
-		:rtype: list[ImageDownloadingResult]
+		Args:
+			images_data (Sequence[ImageData]): Images data.
+			subdir (str | None): Subdirectory name to storage files. Required for chapters images.
+
+		Returns:
+			list[ImageDownloadingResult]: Images downloadings results.
 		"""
 
 		if not images_data:
 			return []
 
-		Title = cast("BaseTitleController", self._title)
+		results: list[ImageDownloadingResult] = []
+		images_count: int = len(images_data)
 
-		ImageDirectory: Path = Title.get_images_type_directory(images_type)
-		Results: list = []
-		ImagesCount: int = len(images_data)
+		for index in range(images_count):
+			image_data = images_data[index]
 
-		for Index in range(ImagesCount):
-			CurrentImageData = images_data[Index]
+			future = self.portals.printer.templates.images.start_downloading(image_data.filename, image_data.image_type)
+			result = self._source_operator.images_downloader.download_image_from_data(
+				data = image_data,
+				title = self.title,
+				subdir = subdir,
+				force_mode = self._force_mode,
+			)
+			results.append(result)
+			future.result(result)
 
-			Future = self.portals.printer.templates.images.start_downloading(CurrentImageData.filename, images_type)
-			Result = self._source_operator.images_downloader.download_image(CurrentImageData.link, ImageDirectory, force_mode = force_mode)
-			Results.append(Result)
-
-			if Result.resolution:
-				CurrentImageData.set_resolution(Result.resolution)
-
-			Future.result(Result)
-
-			if Result.is_already_exists and not Result.is_downloaded:
-				continue
-
-		return Results
-
-	def _require_title(self):
-		"""
-		Проверяет, задан ли тайтл.
-
-		:raises exceptions.parsers.TitleNotSetError: Не задан тайтл.
-		"""
-
-		if not self._title:
-			raise exceptions.parsers.TitleNotSetError()
+		return results
 
 	def _unstub_covers(self, title: "BaseTitleController[BaseTitleData]", results: list[ImageDownloadingResult]):
 		"""
@@ -186,20 +171,42 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 					if result.path: result.path.unlink(missing_ok = True)
 
 	#==========================================================================================#
-	# >>>>> ПЕРЕОПРЕДЕЛЯЕМЫЕМЕТОДЫ <<<<< #
+	# >>>>> OVVERRIDABLE METHODS <<<<< #
 	#==========================================================================================#
 
 	@abstractmethod
 	def _amend(self, branch: Branch, chapter: Any) -> str | None:
 		"""
-		Amend chapter by content.
+		Amend chapter content.
 
-		:param branch: Title content branch.
-		:type branch: Branch
-		:param chapter: Chapter.
-		:type chapter: Any
-		:return: Optional additional message about amending result or `None`.
-		:rtype: str | None
+		Args:
+			branch (Branch): Branch.
+			chapter (Any): Chapter
+
+		Returns:
+			str | None: Optional additional message about amending result.
+		"""
+
+		pass
+
+	@abstractmethod
+	def _export_content_type(self) -> ContentType:
+		"""
+		Export content type.
+
+		Returns:
+			ContentType: Content type.
+		"""
+
+		pass
+
+	@abstractmethod
+	def _export_controller_type(self) -> type[T]:
+		"""
+		Export chapter controller type.
+
+		Returns:
+			type[BaseChapterController]: Chapter controller type.
 		"""
 
 		pass
@@ -224,29 +231,30 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 	# >>>>> PUBLIC METHODS <<<<< #
 	#==========================================================================================#
 
-	def __init__(self, source_operator: SO):
+	def __init__(self, source_operator: SO, force_mode: bool, images_level: ImagesLevel | None):
 		"""
-		Базовый парсер.
+		Base parser.
 
-		:param source_operator: Оператор источника.
-		:type source_operator: source_operator
+		Args:
+			source_operator (SO): Source operator.
+			force_mode (bool): Condition: is file overwriting enabled.
+			images_level (ImagesLevel | None): Images downloading level.
 		"""
 
-		self._source_operator = source_operator
+		self._source_operator: SO = source_operator
+		self._force_mode: bool = force_mode
+		self._images_level: ImagesLevel = images_level or ImagesLevel.NO
 
-		self._words_dictionary: WordsDictionary = WordsDictionary(None)
-		self._title: BaseTitleController[BaseTitleData] | None = None
+		self._title: T | None = None
 
 		self._post_init()
 
-	@run_before_method("_require_title")
 	def amend(self):
 		"""Amend empty chapters with content."""
 
-		title = cast("BaseTitleController[BaseTitleData]", self._title)
 		empty_chapters: list[tuple[Branch, BaseChapter]] = []
 
-		for branch in title.data.branches:
+		for branch in self.title.data.branches:
 			for chapter in branch.chapters:
 				if chapter.is_empty:
 					empty_chapters.append((branch, chapter))
@@ -263,52 +271,35 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 				self.portals.printer.templates.parsing.chapter_amended(chapter, progress, message)
 				amended_chapters_count += 1
 
+				if self._images_level is ImagesLevel.ALL:
+					self._download_images(chapter.images, subdir = str(chapter.id))
+
 		self.portals.printer.templates.parsing.amending_end(amended_chapters_count)
 
-	@run_before_method("_require_title")
-	def download_images(self, force_mode: bool) -> "tuple[ImageDownloadingResult, ...]":
+	def download_metainfo_images(self) -> "tuple[ImageDownloadingResult, ...]":
 		"""
-		Скачивает обложки и портреты персонажей.
+		Download title metainfo images.
 
-		:param force_mode: Переключает режим перезаписи существующих изображений.
-		:type force_mode: bool
-		:return: Последовательность результатов скачивания.
-		:rtype: tuple[ImageDownloadingResult, ...]
+		Returns:
+			tuple[ImageDownloadingResult, ...]: _description_
 		"""
 
-		title = cast('BaseTitleController["BaseTitleData"]', self._title)
+		if self._images_level is ImagesLevel.NO:
+			return ()
 
-		covers_results = self._download_images(title.data.covers, ImagesTypes.Cover, force_mode)
-		self._unstub_covers(title, covers_results)
+		covers_results = self._download_images(self.title.data.covers)
+		self._unstub_covers(self.title, covers_results)
 
 		persons_images: list[ImageData] = []
-		for person in title.data.perons:
+		for person in self.title.data.perons:
 			persons_images += person.images
 
-		persons_results = self._download_images(persons_images, ImagesTypes.Person, force_mode)
-		self._unstub_persons(title.data, persons_results)
+		persons_results = self._download_images(persons_images)
+		self._unstub_persons(self.title.data, persons_results)
 
 		return tuple(covers_results + persons_results)
 
-	def load_words_dictionary_preset(self, language_code: str) -> WordsDictionary | None:
-		"""
-		Загружает готовый словарь локализованных определений. Словарь будет установлен в качестве рабочего для парсера.
-
-		:param language_code: Код языка по стандарту ISO 639-3.
-		:type language_code: str
-		:return: Пресет словаря для определённого языка или `None` при его отсутствии.
-		:rtype: WordsDictionary | None
-		"""
-
-		Preset = presets.GetDictionaryPreset(language_code)
-
-		if Preset:
-			self._words_dictionary = Preset
-
-		return Preset
-
-	@abstractmethod
-	def init_empty_title(self, slug: str) -> BaseTitleController:
+	def init_empty_title(self, slug: str) -> "BaseTitleController":
 		"""
 		Устанавливает пустой тайтл для парсера.
 
@@ -318,29 +309,44 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 		:rtype: BaseTitleController
 		"""
 
-		pass
+		self._title = self._export_controller_type()(self, slug)
 
-	@run_before_method("_require_title")
+		return self._title
+
 	def parse(self):
 		"""Получает основные данные тайтла."""
 
 		self._parse()
 
-	@abstractmethod
 	def repair(self, chapter_id: int) -> bool:
 		"""
-		Восстанавливает содержимое главы, заново получая его из источника.
+		Repair chapter content.
 
-		:param chapter_id: Уникальный идентификатор целевой главы.
-		:type chapter_id: int
-		:raises ChapterNotFoundError: В локальном JSON не найдена глава с указанным ID.
-		:return: Возвращает `True`, если глава содержит контент после восстановления.
-		:rtype: bool
+		Args:
+			chapter_id (int): Chapter ID.
+
+		Raises:
+			ChapterNotFoundError: Target chapter not found.
+
+		Returns:
+			bool: `True` if chapter isn't empty after repairing.
 		"""
 
-		pass
+		search_result = self.title.data.find_chapter(chapter_id)
 
-	@run_before_method("_require_title")
+		if not search_result:
+			raise exceptions.parsing.ChapterNotFoundError(chapter_id)
+
+		chapter = search_result.chapter
+		chapter.clear()
+
+		self._amend(search_result.branch, chapter)
+
+		if not chapter.is_empty and self._images_level is ImagesLevel.ALL:
+			self._download_images(chapter.images, str(chapter_id))
+
+		return not chapter.is_empty
+
 	def save(self, sorting: bool = False) -> "SavingResult":
 		"""
 		Сохраняет тайтл и выгружает его из парсера.
@@ -351,10 +357,8 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel"](ABC):
 		:rtype: SavingResult
 		"""
 
-		self._title = cast("BaseTitleController", self._title)
-
 		self._pre_saver()
-		result = self._title.save(sorting)
+		result = self.title.save(sorting)
 		self._title = None
 
 		return result

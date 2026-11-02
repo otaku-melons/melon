@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, override
 
-from dublib.validators import ValidableTypes
+from dublib.validators import ValidableType
 
 from ...base.templates import T_ForceModeRequired, T_SingleParserRequired
 from ._base import CommandProcessorTemplate
@@ -40,7 +40,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 
 		position = model.create_position("URL", "Link to image.", important = True)
-		position.set_argument(ValidableTypes.URL)
+		position.set_argument(ValidableType.URL)
 
 		self._add_parser_position(key = "--use")
 
@@ -50,7 +50,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		self._add_force_mode_flag()
 
-		model.base.add_key("--dir", value_type = ValidableTypes.ValidPath, description = "Output directory.")
+		model.base.add_key("--dir", value_type = ValidableType.ExistingDirPath, description = "Output directory.")
 
 		return model
 

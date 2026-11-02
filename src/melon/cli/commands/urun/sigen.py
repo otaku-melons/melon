@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, override
 
 from dublib.functions.filesystem import json
-from dublib.validators import ValidableTypes
+from dublib.validators import ValidableType
 
 from .... import utils
 from ...base.templates import T_OptionalSingleParser
@@ -20,7 +20,7 @@ class Parameters(T_OptionalSingleParser):
 	"""Required by command processor parameters."""
 
 	image: Path
-	signature_version: utils.unstubber.SignaturesVersions
+	signature_version: utils.unstubber.SignatureVersion
 
 class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	"""Обработчик команды."""
@@ -61,7 +61,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		Signatures.append(signature)
 		ConfigData["filters"]["images"]["signatures"] = Signatures
 		json.write(Config, ConfigData)
-		self.printer.emit(f"Exported in <b>{required_parser.name}</b> config.")
+		self.printer.emit(f"Exported in [b]{required_parser.name}[/] config.")
 
 		return True
 
@@ -81,13 +81,13 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 
 		position = model.create_position("IMAGE", "Path to image.", important = True)
-		position.set_argument(ValidableTypes.ValidPath)
+		position.set_argument(ValidableType.ExistingFilePath)
 
 		position = model.create_position("VERSION", "Signature version.", important = True)
 		position.add_flag("-v1", description = "Based on image sizes and pixels SHA256 hash: exact match.")
 		position.add_flag("-v2", description = "Based on perceptual hash: approximate match.")
 
-		self._add_parser_position(key = "--export", description = "Export signature in parser config.")
+		self._add_parser_position(key = "--export", description = "Export signature in parser config.", important = False)
 
 		return model
 
@@ -117,7 +117,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		version_key: str = entity.get_position_value("VERSION", expected_type = str, important = True)
 		version_key = version_key.lstrip("-")
-		version = utils.unstubber.SignaturesVersions[version_key]
+		version = utils.unstubber.SignatureVersion[version_key]
 
 		return Parameters(
 			required_parser = prepared_data.required_parsers[0] if prepared_data.required_parsers else None,
@@ -139,7 +139,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		Unstubber = utils.Unstubber()
 		Image = Unstubber.load_image(parameters.image)
 		Signature: str = Unstubber.generate_signature(Image, parameters.signature_version)
-		self.printer.emit(f"Signature: <i>{Signature}</i>")
+		self.printer.emit(f"Signature: [i]{Signature}[/]")
 
 		if parameters.required_parser:
 			return self.__export_signature(Signature, parameters.required_parser)

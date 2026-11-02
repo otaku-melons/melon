@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, override
 
-from dublib.validators import ValidableTypes
+from dublib.validators import ValidableType
 
 from ....core import exceptions
 from ....core.base.formats.base_format.enums import By
+from ....core.base.parser.enums import ImagesLevel
 from ...base.templates import T_SingleParserRequired
 from ._base import CommandProcessorTemplate
 
@@ -19,6 +20,7 @@ class Parameters(T_SingleParserRequired):
 
 	filename: str
 	target_id: int
+	images_level: ImagesLevel
 	is_target_chapter: bool
 
 class CommandProcessor(CommandProcessorTemplate[Parameters]):
@@ -43,11 +45,13 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		position.set_argument()
 
 		position = model.create_position("TARGET", "Target to repairing.", important = True)
-		position.add_key("--branch", value_type = ValidableTypes.UnsignedInteger, description = "Branch ID.")
-		position.add_key("--chapter", value_type = ValidableTypes.UnsignedInteger, description = "Chapter ID.")
+		position.add_key("--branch", value_type = ValidableType.UnsignedInteger, description = "Branch ID.")
+		position.add_key("--chapter", value_type = ValidableType.UnsignedInteger, description = "Chapter ID.")
 
 		self._add_parser_position(key = "--use")
 		self._add_mirror_key()
+
+		model.base.add_key("--images-level", value_type = ValidableType.UnsignedInteger, description = "Images downloadnig level: 0 – no downloads, 1 – only for metainfo, 3 – all.")
 
 		return model
 
@@ -80,10 +84,14 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		if not filename.endswith(".json"):
 			filename += ".json"
 
+		image_level_value: int | None = entity.get_key_value("--images-level", expected_type = int, not_found_error = False)
+		image_level: ImagesLevel = ImagesLevel(image_level_value) if image_level_value else ImagesLevel.METAINFO
+
 		return Parameters(
 			required_parser = prepared_data.required_parsers[0],
 			filename = filename,
 			target_id = entity.get_position_value("TARGET", expected_type = int, important = True),
+			images_level = image_level,
 			is_target_chapter = entity.check_key("--chapter"),
 		)
 
@@ -106,19 +114,20 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		typing_result = source_operator.get_content_type_by_file(parameters.filename)
 
-		if not typing_result.slug:
-			raise exceptions.parsing.ParsingError("Undefined title slug.")
+		if not typing_result.slug or not typing_result.content_type:
+			raise exceptions.parsing.ParsingError("Unprocessable title.")
 
-		parser = source_operator.launch_parser(typing_result.content_type)
+		# TODO: Support force mode.
+		parser = source_operator.launch_parser(typing_result.content_type, images_level = parameters.images_level)
 		title = parser.init_empty_title(typing_result.slug)
 
 		if title.load(parameters.filename, By.Filename):
-			self.printer.emit(f"Loaded file: <i>{parameters.filename}</i>.")
+			self.printer.emit(f"Loaded file: [i]{parameters.filename}[/].")
 		else:
-			self.printer.error(f"Unable load file: <b>{parameters.filename}</b>.")
+			self.printer.error(f"Unable load file: [b]{parameters.filename}[/].")
 			return False
 
-		self.printer.emit(f"Repairing chapter <b>{parameters.target_id}</b>… ")
+		self.printer.emit(f"Repairing chapter [b]{parameters.target_id}[/]… ")
 
 		if not parser.repair(parameters.target_id):
 			self.printer.warning("Chapter is empty. Repairing failure?")

@@ -1,27 +1,29 @@
 from abc import ABC, abstractmethod
-from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Literal, cast
+from typing import TYPE_CHECKING, Any, Literal
 
+from dublib.functions.data import to_sequence
 from dublib.functions.data.dictionary import insert_item
 from dublib.validators import types
 
 from .... import exceptions
-from ...parsers.components.words_dictionary import CheckLanguageCode
-from ...structs.image import ImageData
+from ...structs.image import ImageData, ImageType
 from .branch import Branch
-from .enums import Statuses
+from .enums import Status
 from .person import Person
 from .structs import ChapterSearchResult, ExtraField
 
 if TYPE_CHECKING:
+	from collections.abc import Sequence
+
+	from ....html.elements import Paragraph
 	from .chapter import BaseChapter
 	from .controller import BaseTitleController
 
 class BaseTitleData[C: "BaseChapter"](ABC):
-	"""Бозовые данные тайтла."""
+	"""Base title data."""
 
 	#==========================================================================================#
-	# >>>>> СВОЙСТВА <<<<< #
+	# >>>>> PROPERTIES <<<<< #
 	#==========================================================================================#
 
 	@property
@@ -91,10 +93,10 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		return self._data["publication_year"]
 
 	@property
-	def description(self) -> str | None:
-		"""Описание."""
+	def description(self) -> tuple["Paragraph", ...]:
+		"""Description elements."""
 
-		return self._data["description"]
+		return self._description
 
 	@property
 	def age_limit(self) -> int | None:
@@ -127,7 +129,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		return tuple(self._persons)
 
 	@property
-	def status(self) -> Statuses | None:
+	def status(self) -> Status | None:
 		"""Статус тайтла."""
 
 		return self._data["status"]
@@ -172,8 +174,8 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		self._covers.clear()
 
 		for CoverData in self._data["covers"]:
-			CoverData = cast("dict", CoverData)
-			Buffer = ImageData(CoverData["link"])
+			CoverData: dict
+			Buffer = ImageData(CoverData["link"], ImageType.Cover)
 			Buffer.create_resolution(CoverData.get("width"), CoverData.get("height"))
 			self._covers.append(Buffer)
 
@@ -183,19 +185,19 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		self._persons.clear()
 
 		for PersonData in self._data["persons"]:
-			CoverData = cast("dict", PersonData)
-			Buffer = Person(CoverData["name"])
+			PersonData: dict
+			Buffer = Person(PersonData["name"])
 
-			AnotherNames = CoverData.get("another_names") or ()
-			Images = CoverData.get("images") or ()
-			Description = CoverData.get("description")
+			AnotherNames = PersonData.get("another_names") or ()
+			Images = PersonData.get("images") or ()
+			Description = PersonData.get("description")
 
 			for AnotherName in AnotherNames:
 				Buffer.add_another_name(AnotherName)
 
 			for CurrentImageData in Images:
-				CurrentImageData = cast("dict", CurrentImageData)
-				Image = ImageData(CurrentImageData["link"])
+				CurrentImageData: dict
+				Image = ImageData(CurrentImageData["link"], ImageType.Person)
 				Image.create_resolution(CurrentImageData.get("width"), CurrentImageData.get("height"))
 				Buffer.add_image(Image)
 
@@ -238,6 +240,11 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		for CurrentCover in self._covers:
 			self._data["covers"].append(CurrentCover.to_dict())
 
+	def _build_description(self):
+		"""Build title description from elements."""
+
+		self._data["description"] = [element.to_html() for element in self._description]
+
 	def _build_persons(self):
 		"""Обновляет данные персонажей во внутреннем словарном хранилище данных тайтла."""
 
@@ -272,7 +279,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 			"authors": [],
 			"publication_year": None,
-			"description": None,
+			"description": [],
 			"age_limit": None,
 			"status": None,
 			"is_licensed": None,
@@ -339,7 +346,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 		pass
 
-	def _export_extra_fields(self) -> Sequence[ExtraField]:
+	def _export_extra_fields(self) -> "Sequence[ExtraField]":
 		"""
 		Экспортирует последовательность дополнительных корневых полей данных.
 
@@ -374,6 +381,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		self._data["format"] = title_format
 		self._chapter_type: type[C] = self._export_chapter_type()
 
+		self._description: tuple[Paragraph, ...] = ()
 		self._covers: list[ImageData] = []
 		self._persons: list[Person] = []
 		self._branches: dict[int, Branch] = {}
@@ -404,6 +412,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		:rtype: dict[str, Any]
 		"""
 
+		self._build_description()
 		self._build_covers()
 		self._build_persons()
 		self._update_branches_info()
@@ -463,8 +472,8 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 					ChapterResult = CurrentChapter
 					break
 
-		if all((BranchResult, ChapterResult)):
-			return ChapterSearchResult(cast("Branch", BranchResult), ChapterResult) if ChapterResult else None
+		if BranchResult and ChapterResult:
+			return ChapterSearchResult(BranchResult, ChapterResult) if ChapterResult else None
 
 		return None
 
@@ -635,7 +644,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 	# >>>>> PUBLIC METHODS УСТАНОВКИ КОНТЕЙНЕРОВ <<<<< #
 	#==========================================================================================#
 
-	def set_another_names(self, another_names: Sequence[str]):
+	def set_another_names(self, another_names: "Sequence[str]"):
 		"""
 		Задаёт набор альтернативных названий.
 
@@ -646,7 +655,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		for Name in another_names:
 			self.add_another_name(Name)
 
-	def set_covers(self, covers: Sequence[ImageData]):
+	def set_covers(self, covers: "Sequence[ImageData]"):
 		"""
 		Задаёт последовательность обложек.
 
@@ -658,7 +667,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		for CurrentCover in covers:
 			self.add_cover(CurrentCover)
 
-	def set_authors(self, authors: Sequence[str]):
+	def set_authors(self, authors: "Sequence[str]"):
 		"""
 		Задаёт список авторов.
 
@@ -669,7 +678,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		for Author in authors:
 			self.add_author(Author)
 
-	def set_genres(self, genres: Sequence[str]):
+	def set_genres(self, genres: "Sequence[str]"):
 		"""
 		Задаёт список жанров.
 
@@ -680,7 +689,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		for Genre in genres:
 			self.add_genre(Genre)
 
-	def set_tags(self, tags: Sequence[str]):
+	def set_tags(self, tags: "Sequence[str]"):
 		"""
 		Задаёт список тегов.
 
@@ -691,7 +700,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		for Tag in tags:
 			self.add_tag(Tag)
 
-	def set_franchises(self, franchises: Sequence[str]):
+	def set_franchises(self, franchises: "Sequence[str]"):
 		"""
 		Задаёт список франшиз.
 
@@ -702,7 +711,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		for Franchise in franchises:
 			self.add_franchise(Franchise)
 
-	def set_persons(self, persons: Sequence[Person]):
+	def set_persons(self, persons: "Sequence[Person]"):
 		"""
 		Задаёт список персонажей.
 
@@ -733,7 +742,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		else:
 			self._data[key] = data
 
-	# To-Do: реализовать set_branches().
+	# TODO: реализовать set_branches().
 
 	#==========================================================================================#
 	# >>>>> PUBLIC METHODS УСТАНОВКИ СВОЙСТВ <<<<< #
@@ -763,22 +772,16 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 		self._data["id"] = title_id
 
-	def set_content_language(self, language_code: str | None, load_preset: bool = True):
+	def set_content_language(self, language_code: str | None):
 		"""
-		Задаёт язык контента по стандарту ISO 639-3.
+		Set content language ISO 639-3 code.
 
-		:param original_language: Код языка.
-		:type original_language: str | None
-		:param load_preset: Указывает, стоит ли попытаться загрузить готовый словарь ключевых локальных определений.
-		:type load_preset: bool
-		:raise ValueError: Выбрасывается при несоответствии кода языка стандарту.
+		Args:
+			language_code (str | None): Language ISO 639-3 code.
 		"""
 
 		if language_code:
-			CheckLanguageCode(language_code)
-
-			if load_preset:
-				self._title_controller.parser.load_words_dictionary_preset(language_code)
+			types.LanguageCode.parse(language_code)
 
 		self._data["content_language"] = language_code
 
@@ -812,15 +815,18 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 		self._data["publication_year"] = publication_year
 
-	def set_description(self, description: str | None):
+	def set_description(self, description: "Paragraph | Sequence[Paragraph] | None"):
 		"""
-		Задаёт описание тайтла.
+		Set title description.
 
-		:param description: Описание тайтла.
-		:type description: str | None
+		Args:
+			description (Paragraph | Sequence[Paragraph] | None): Title description elements.
 		"""
 
-		self._data["description"] = description.strip() if description else None
+		if not description:
+			self._description = ()
+
+		self._description = to_sequence(description)
 
 	def set_age_limit(self, age_limit: int | None):
 		"""
@@ -845,12 +851,12 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 		self._data["slug"] = slug
 
-	def set_status(self, status: Statuses | None):
+	def set_status(self, status: Status | None):
 		"""
 		Задаёт статус тайтла.
 
 		:param status: Статус тайтла.
-		:type status: Statuses | None
+		:type status: Status | None
 		"""
 
 		self._data["status"] = status.value if status else None

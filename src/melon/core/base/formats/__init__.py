@@ -3,9 +3,9 @@ from enum import Enum
 from .manga.controller import Manga
 from .ranobe.controller import Ranobe
 
-__all__ = ["ContentTypes", "Manga", "Ranobe"]
+__all__ = ["ContentType", "Manga", "Ranobe"]
 
-class ContentTypes(Enum):
+class ContentType(Enum):
 	"""Перечисление типов контента."""
 
 	manga = Manga

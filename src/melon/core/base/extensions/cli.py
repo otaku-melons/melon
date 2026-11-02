@@ -47,7 +47,7 @@ class BaseExtensionCLI[E: "BaseExtension[BaseSourceOperator]"]:
 		"""Called if no command model matches for parameters."""
 
 		self.printer.error("Extension command not found.")
-		self.printer.emit("Execute <b>melon run {PARSER} {EXTENSION} -l</b> to show available commands.")
+		self.printer.emit("Execute [b]melon run {PARSER} {EXTENSION} -l[/] to show available commands.")
 
 	def _build_models_group(self, group: ModelsGroup):
 		"""

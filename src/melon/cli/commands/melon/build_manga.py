@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal, cast, override
 
-from dublib.validators import ValidableTypes
+from dublib.validators import ValidableType
 
 from ....builders.manga import MangaBuilder, MangaOutputFormats
 from ....core import exceptions
 from ....core.base.formats.base_format.enums import By
+from ....core.base.parser.enums import ContentType
 from ...base.templates import T_SingleParserRequired
 from ._base import CommandProcessorTemplate
 
@@ -50,8 +51,8 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		self._add_parser_position(key = "--use")
 
 		position = model.create_position("TARGET", "Target for building. By default longest branch.")
-		position.add_key("--branch", value_type = ValidableTypes.UnsignedInteger, description = "Branch ID.")
-		position.add_key("--chapter", value_type = ValidableTypes.UnsignedInteger, description = "Chapter ID.")
+		position.add_key("--branch", value_type = ValidableType.UnsignedInteger, description = "Branch ID.")
+		position.add_key("--chapter", value_type = ValidableType.UnsignedInteger, description = "Chapter ID.")
 
 		position = model.create_position("FORMAT", "Format of output content. By default downloads images in folder.")
 		position.add_flag("-cbz", description = "Make *.CBZ files.")
@@ -124,13 +125,13 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		if not typing_result.slug:
 			raise exceptions.builders.BuildingError("Undefined title slug.")
 
-		Parser = source_operator.launch_parser(typing_result.content_type)
+		Parser = source_operator.launch_parser(ContentType.Manga)
 		Title = Parser.init_empty_title(typing_result.slug)
 
 		if Title.load(parameters.filename, By.Filename):
-			self.printer.emit(f"Loaded file: <i>{parameters.filename}</i>.")
+			self.printer.emit(f"Loaded file: [i]{parameters.filename}[/].")
 		else:
-			self.printer.error(f"Unable load file: <b>{parameters.filename}</b>.")
+			self.printer.error(f"Unable load file: [b]{parameters.filename}[/].")
 			return False
 
 		Builder = MangaBuilder(Parser, Title)

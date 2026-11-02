@@ -1,6 +1,6 @@
 import importlib
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, overload
 
 from dublib.functions.filesystem import json
 
@@ -88,18 +88,16 @@ class ExtensionsOperator:
 
 		return self.set_state(extension_name, True)
 
-	def is_enabled[E: "BaseExtension | str"](self, extension: type[E]) -> bool:
+	def is_enabled[E: "BaseExtension"](self, extension: str | type[E]) -> bool:
 		"""
-		Check if extension enabled.
+		Check is extension enabled.
 
-		:param extension: Extension class or name.
-		:type extension: type[BaseExtension | str]
-		:return: Return `True` if extension enabled.
-		:rtype: bool
-		:raises ExtensionNotFoundError: Extension not found.
+		Args:
+			extension (str | type[BaseExtension]): Extension class or name.
+
+		Returns:
+			bool: State: is extension enabled.
 		"""
-
-		extension_name: str = ""
 
 		if isinstance(extension, str):
 			extension_name = extension
@@ -140,33 +138,35 @@ class ExtensionsOperator:
 			is_enabled = file_states.get(name, False)
 			self.__states[name] = is_enabled
 
-	def run[E: "BaseExtension"](self, source_operator: "BaseSourceOperator", extension: type[E]) -> E:
+	@overload
+	def run[E: "BaseExtension"](self, source_operator: "BaseSourceOperator", extension: type[E], force: Literal[False] = False) -> E | None: ...
+	@overload
+	def run[E: "BaseExtension"](self, source_operator: "BaseSourceOperator", extension: type[E], force: Literal[True]) -> E: ...
+	@overload
+	def run(self, source_operator: "BaseSourceOperator", extension: str, force: Literal[False] = False) -> "BaseExtension | None": ...
+	@overload
+	def run(self, source_operator: "BaseSourceOperator", extension: str, force: Literal[True]) -> "BaseExtension": ...
+
+	def run[E: "BaseExtension"](self, source_operator: "BaseSourceOperator", extension: str | type[E], force: bool = False) -> "BaseExtension | E | None":
 		"""
-		Run typed extension by it class.
+		Run extension by class or name (in this case untyped).
 
-		:param source_operator: Source operator.
-		:type source_operator: type[BaseExtension]
-		:param extension: Extension class.
-		:type extension: type[BaseExtension]
-		:return: Extension.
-		:rtype: BaseExtension
-		"""
+		Args:
+			source_operator (BaseSourceOperator): Source operator.
+			extension (str | type[E]): Extension class or name.
+			force (bool): Ignore extension state.
 
-		return extension(source_operator)
-
-	def run_by_name(self, source_operator: "BaseSourceOperator", extension_name: str) -> "BaseExtension":
-		"""
-		Run untyped extension by it name.
-
-		:param source_operator: Source operator.
-		:type source_operator: type[BaseExtension]
-		:param extension_name: Extension name.
-		:type extension_name: str
-		:return: Extension.
-		:rtype: BaseExtension
+		Returns:
+			BaseExtension | E | None: Extension or `None` if disabled.
 		"""
 
-		module_path = f"parsers.{self.__parser_operator.name}.extensions.{extension_name}"
+		if not force and not self.is_enabled(extension) :
+			return
+
+		if not isinstance(extension, str):
+			return extension(source_operator)
+
+		module_path = f"parsers.{self.__parser_operator.name}.extensions.{extension}"
 		module = importlib.import_module(module_path)
 
 		return module.Extension(source_operator)

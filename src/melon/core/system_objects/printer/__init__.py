@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING, Literal, NoReturn, overload
 
 import orjson
 
-from dublib.cli.messages.generator import MessagesTypes, generate_message
+from dublib.cli.messages.generator import MessageType, generate_message
 from dublib.cli.progress_indicator import ProgressIndicator
-from dublib.cli.text_styler import get_styled_text_from_html
+from dublib.cli.text_styler import TextStyler
 
 from .portals import Portals
 from .templates import Templates
@@ -21,7 +21,7 @@ class Printer:
 	"""Оператор вывода."""
 
 	#==========================================================================================#
-	# >>>>> СВОЙСТВА <<<<< #
+	# >>>>> PROPERTIES <<<<< #
 	#==========================================================================================#
 
 	@property
@@ -56,30 +56,42 @@ class Printer:
 
 		self.__SystemObjects = system_objects
 
+		self.__styler: TextStyler = TextStyler()
 		self.__ProgressIndicator = ProgressIndicator()
 		self.__Templates = Templates(self)
 
-	def emit(self, text: str, message_type: MessagesTypes | None = None, origin: str | None = None, end_line: bool = True, flush: bool = False, parse_html: bool = True):
+	def emit(
+		self,
+		text: str,
+		message_type: MessageType | None = None,
+		origin: str | None = None,
+		end_line: bool = True,
+		flush: bool = False,
+		parse_mode: Literal["html", "rich"] | None = "rich",
+	):
 		"""
-		Отправляет сообщение в поток вывода.
+		Emit message in output stream.
 
-		:param text: Текст сообщения.
+		:param text: Message text.
 		:type text: str
-		:param message_type: Тип сообщения.
-		:type message_type: MessagesTypes | None
-		:param origin: Источник сообщения.
+		:param message_type: Message type.
+		:type message_type: MessageType | None
+		:param origin: Message origin.
 		:type origin: str | None
-		:param end_line: Указывает, нужно ли добавить в конец строки символ новой строки.
+		:param end_line: Condition: addn ewline character at message end.
 		:type end_line: bool
-		:param flush: Переключает вывод кэшированных данных.
+		:param flush: Condition: flush buffer.
 		:type flush: bool
-		:param parse_html: Указывает, парсить HTML теги при помощи функции `get_styled_text_from_html()`.
-		:type parse_html: bool
+		:param parse_mode: Message styles parsing mode.
+		:type parse_mode: Literal["html", "rich"] | None
 		"""
 
-		if parse_html: text = get_styled_text_from_html(text)
-		MessageText = generate_message(text, message_type, origin)
-		print(MessageText, end = "\n" if end_line else "", flush = flush)
+		match parse_mode:
+			case "html": text = self.__styler.convert_from_html(text)
+			case "rich": text = self.__styler.convert(text)
+
+		message_text: str = generate_message(text, message_type, origin).lstrip()
+		print(message_text, end = "\n" if end_line else "", flush = flush)
 
 	def get_parser_portals(self, parser_name: str) -> Portals:
 		"""
@@ -114,7 +126,7 @@ class Printer:
 		:type end_work: bool
 		"""
 
-		self.emit(text, MessagesTypes.Critical, origin)
+		self.emit(text, MessageType.Critical, origin)
 		if end_work: sys.exit(1)
 
 	def debug(self, text: str, origin: str | None = None):
@@ -128,7 +140,7 @@ class Printer:
 		"""
 
 		if self.__SystemObjects.options.DEBUG:
-			self.emit(text, MessagesTypes.Debug, origin)
+			self.emit(text, MessageType.Debug, origin)
 
 	def error(self, text: str, origin: str | None = None):
 		"""
@@ -140,7 +152,7 @@ class Printer:
 		:type origin: str | None
 		"""
 
-		self.emit(text, MessagesTypes.Error, origin)
+		self.emit(text, MessageType.Error, origin)
 
 	def json(self, data: dict):
 		"""
@@ -162,4 +174,4 @@ class Printer:
 		:type origin: str | None
 		"""
 
-		self.emit(text, MessagesTypes.Warning, origin)
+		self.emit(text, MessageType.Warning, origin)

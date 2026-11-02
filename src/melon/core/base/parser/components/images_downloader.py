@@ -7,11 +7,12 @@ from typing import TYPE_CHECKING
 from urllib.parse import urlparse, urlunparse
 
 from .....utils.unstubber import Unstubber
-from ...structs.image import ImageResolution
+from ...structs.image import ImageData, ImageResolution, ImageType
 
 if TYPE_CHECKING:
 	from dublib.web_requestor import WebRequestor
 
+	from ...formats.base_format.controller import BaseTitleController
 	from ...source_operator import BaseSourceOperator
 
 #==========================================================================================#
@@ -46,7 +47,7 @@ class ImagesDownloader:
 	"""Оператор загрузки изображений."""
 
 	#==========================================================================================#
-	# >>>>> СВОЙСТВА <<<<< #
+	# >>>>> PROPERTIES <<<<< #
 	#==========================================================================================#
 
 	@property
@@ -202,6 +203,52 @@ class ImagesDownloader:
 			path = ImagePath,
 			error_message = ErrorMessage,
 		)
+
+	def download_image_from_data(self, data: ImageData, title: "BaseTitleController", subdir: str | None = None, force_mode: bool = False) -> ImageDownloadingResult:
+		"""
+		Download image from data.
+
+		Args:
+			data (ImageData): Image data.
+			title (BaseTitleController): Title controller.
+			subdir (str | None): Subdirectory name to storage files. Required for chapters images.
+			force_mode (bool): Condition: is file overwriting enabled.
+
+		Raises:
+			ValueError: Missing subdirectory for chapter image.
+
+		Returns:
+			ImageDownloadingResult: Image downloading result.
+		"""
+
+		if data.image_type in (ImageType.Slide, ImageType.Illustration) and not subdir:
+			raise ValueError("Missing subdirectory for chapter image.")
+
+		image_type_directory: Path = Path(data.image_type.value if data.image_type else "")
+
+		if subdir:
+			image_type_directory /= subdir
+
+		title_images_directory: Path = self.__SourceOperator.settings.directories.images / title.used_filename
+		directory: Path = title_images_directory / image_type_directory
+		# TODO: Create dirs only if default value?
+		directory.mkdir(parents = True, exist_ok = True)
+
+		result = self.download_image(
+			url = data.link,
+			directory = directory,
+			filename = data.filename,
+			is_full_filename = True,
+			force_mode = force_mode,
+		)
+
+		if not data.resolution and result.resolution:
+			data.set_resolution(result.resolution)
+
+		if result.path:
+			data.set_file_path(image_type_directory / data.filename)
+
+		return result
 
 	def filter_image(self, image: bytes, resolution: ImageResolution | None) -> FilteredBy | None:
 		"""

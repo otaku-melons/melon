@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, override
 from dublib.functions.filesystem import json
 
 from ..base import BaseCheck
-from ..enums import ChecksStatuses
+from ..enums import CheckStatus
 
 if TYPE_CHECKING:
 	from pathlib import Path
@@ -28,14 +28,14 @@ class Check(BaseCheck):
 		settings_path: Path = operator.path / "settings.json"
 
 		if not settings_path.exists():
-			self._emit(ChecksStatuses.Skipped, "Settings defaults not provided.")
+			self._emit(CheckStatus.Skipped, "Settings defaults not provided.")
 
 		settings: dict = json.read(settings_path)
 		files: list[str] = os.listdir(operator.path)
 
 		if settings.get("custom"):
 			if "custom.py" not in files:
-				self._emit(ChecksStatuses.Error, "Custom settings must provide typing model.")
+				self._emit(CheckStatus.Error, "Custom settings must provide typing model.")
 
 		else:
-			self._emit(ChecksStatuses.Skipped, "Custom settings not provided.")
+			self._emit(CheckStatus.Skipped, "Custom settings not provided.")

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
+from enum import Enum
+from os import PathLike
 from pathlib import Path
-from typing import cast
 
 @dataclass(frozen = True)
 class ImageResolution:
@@ -9,106 +10,162 @@ class ImageResolution:
 	width: int
 	height: int
 
+class ImageType(Enum):
+	"""Title image type."""
+
+	Cover = "covers"
+	Person = "persons"
+	Slide = "slides"
+	Illustration = "illustrations"
+
 class ImageData:
-	"""Данные изображения."""
+	"""Image data."""
 
 	#==========================================================================================#
-	# >>>>> СВОЙСТВА <<<<< #
+	# >>>>> PROPERTIES <<<<< #
 	#==========================================================================================#
+
+	@property
+	def file(self) -> Path | None:
+		"""Path to image file in parser's images directory."""
+
+		return self._file
 
 	@property
 	def filename(self) -> str:
-		"""Имя файла."""
+		"""Image file name (from source)."""
 
-		return Path(self._Link.split("?", maxsplit = 1)[0]).name
+		return self._filename
+
+	@property
+	def image_type(self) -> ImageType | None:
+		"""Image type."""
+
+		return self._type
 
 	@property
 	def link(self) -> str:
-		"""Ссылка на изображение."""
+		"""Image link."""
 
-		return self._Link
+		return self._link
 
 	@property
 	def resolution(self) -> ImageResolution | None:
-		"""Разрешение изображения."""
+		"""Image resolution."""
 
-		return self._Resolution
+		return self._resolution
 
 	#==========================================================================================#
 	# >>>>> PUBLIC METHODS <<<<< #
 	#==========================================================================================#
 
-	def __init__(self, link: str):
+	def __init__(self, link: str, image_type: ImageType | None):
 		"""
-		Данные изображения.
+		Image data.
 
-		:param link: Ссылка на изображение.
-		:type link: str
-		"""
-
-		self._Link: str = link
-
-		self._Resolution: ImageResolution | None = None
-
-	def create_resolution(self, width: int | None, height: int | None):
-		"""
-		Создаёт и устанавливает разрешение изображения. Если одно или оба значения `None`, операция пропускается.
-
-		:param width: Ширина изображения.
-		:type width: int | None
-		:param height: Высота изображения.
-		:type height: int | None
+		Args:
+			link (str): Image link.
+			image_type (ImageType | None): Image type.
 		"""
 
-		if not all((width, height)):
+		self._link: str = link
+		self._type: ImageType | None = image_type
+
+		self._file: Path | None = None
+		self._filename: str = Path(self._link.split("?", maxsplit = 1)[0]).name
+		self._resolution: ImageResolution | None = None
+
+	def create_resolution(self, width: int | None, height: int | None, autoset: bool = True) -> ImageResolution | None:
+		"""
+		Create image resolution.
+
+		Args:
+			width (int | None): Image width.
+			height (int | None): Image height.
+			autoset (bool): Set resolution to image data if valid.
+
+		Returns:
+			ImageResolution | None: Image resolution or `None` if data invalid.
+		"""
+
+		if not width or not height:
 			return
 
-		self.set_resolution(ImageResolution(cast("int", width), cast("int", height)))
+		resolution = ImageResolution(width, height)
 
-	def set_link(self, link: str):
+		if autoset:
+			self.set_resolution(resolution)
+
+		return resolution
+
+	def set_file_path(self, file: PathLike[str] | str):
 		"""
-		Задаёт ссылку.
+		Set file path in images directory of title.
 
-		:param link: Ссылка на изображение.
-		:type link: str
+		Args:
+			file (PathLike[str] | str): Image file path in parser's images directory.
 		"""
 
-		self._Link = link
+		self._file = Path(file)
 
 	def set_resolution(self, resolution: ImageResolution | None):
 		"""
-		Указывает разрешение изображения.
+		Set image resolution.
 
-		:param resolution: Разрешение изображения.
-		:type resolution: ImageResolution | None
+		Args:
+			resolution (ImageResolution | None): Image resolution.
 		"""
 
-		self._Resolution = resolution
+		self._resolution = resolution
 
-	def to_dict(self, add_filename: bool = False, sizing: bool = True) -> dict:
+	def to_dict(self, sizing: bool = True) -> dict:
 		"""
-		Возвращает словарное представление объекта.
+		Generate dictionary representation of image data.
 
-		:param add_filename: Указывает, нужно ли добавлять ключ с именем файла.
-		:type add_filename: bool
-		:param sizing: Указывает, нужно ли сохранять ключи с разрешением изображения.
-		:type sizing: bool
-		:return: Словарное представление объекта.
-		:rtype: dict
+		Args:
+			sizing (bool): Add image resolution.
+
+		Returns:
+			dict: Dictionary representation of image data.
 		"""
 
-		Buffer: dict = {
-			"link": self._Link,
-			"filename": self.filename,
-			"width": self._Resolution.width if self._Resolution else None,
-			"height": self._Resolution.height if self._Resolution else None,
+		buffer: dict = {
+			"link": self._link,
+			"file": self._file.as_posix() if self._file else None,
 		}
 
-		if not sizing:
-			del Buffer["width"]
-			del Buffer["height"]
+		if self._file:
+			buffer["file"] = self._file.as_posix()
 
-		if not add_filename:
-			del Buffer["filename"]
+		if sizing:
+			buffer["width"] = self._resolution.width if self._resolution else None
+			buffer["height"] = self._resolution.height if self._resolution else None
 
-		return Buffer
+		return buffer
+
+	def to_html(self, sizing: bool = True) -> str:
+		"""
+		Generate HTML representation of image data.
+
+		Args:
+			sizing (bool): Add image resolution.
+
+		Returns:
+			str: HTML representation of image data.
+		"""
+
+		attributes: dict[str, str] = {
+			"src": self._link,
+		}
+
+		if sizing and self._resolution:
+			attributes["width"] = str(self._resolution.width)
+			attributes["height"] = str(self._resolution.width)
+
+		if self._file:
+			attributes["data-file"] = self._file.as_posix()
+
+		attributes_string: str = " ".join(f"{name}=\"{value}\"" for name, value in attributes.items())
+		if attributes_string: attributes_string = " " + attributes_string
+
+		return f"<img{attributes_string}>"

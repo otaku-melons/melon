@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, override
 
-from dublib.validators import ValidableTypes
+from dublib.validators import ValidableType
 
 from ....builders.ranobe import RanobeBuilder
 from ....core import exceptions
 from ....core.base.formats.base_format.enums import By
+from ....core.base.parser.enums import ContentType
 from ...base.templates import T_SingleParserRequired
 from ._base import CommandProcessorTemplate
 
@@ -44,7 +45,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		self._add_parser_position(key = "--use")
 
-		model.base.add_key("--branch", value_type = ValidableTypes.UnsignedInteger, description = "Branch ID to building.")
+		model.base.add_key("--branch", value_type = ValidableType.UnsignedInteger, description = "Branch ID to building.")
 
 		return model
 
@@ -92,19 +93,17 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		source_operator = self._launch_source_operator(parameters.required_parser)
 		typing_result = source_operator.get_content_type_by_file(parameters.filename)
 
-		typing_result = source_operator.get_content_type_by_file(parameters.filename)
-
 		if not typing_result.slug:
 			raise exceptions.builders.BuildingError("Undefined title slug.")
 
-		Parser = source_operator.launch_parser(typing_result.content_type)
+		Parser = source_operator.launch_parser(ContentType.Ranobe)
 
 		Title = Parser.init_empty_title(typing_result.slug)
 
 		if Title.load(parameters.filename, By.Filename):
-			self.printer.emit(f"Loaded file: <i>{parameters.filename}</i>.")
+			self.printer.emit(f"Loaded file: [i]{parameters.filename}[/].")
 		else:
-			self.printer.error(f"Unable load file: <b>{parameters.filename}</b>.")
+			self.printer.error(f"Unable load file: [b]{parameters.filename}[/].")
 			return False
 
 		Builder = RanobeBuilder(Parser, Title)

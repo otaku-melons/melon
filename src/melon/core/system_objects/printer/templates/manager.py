@@ -1,27 +1,25 @@
-from prettytable import PLAIN_COLUMNS, PrettyTable
+from prettytable import PrettyTable, TableStyle
 
-from dublib.cli.text_styler import FastStyler
-
-from ...manager.parser.enums import ExportResults
+from ...manager.parser.enums import ExportResult
 from ._base import _BaseTemplatesSection
 
 class ManagerTemplates(_BaseTemplatesSection):
 	"""Расширенные шаблоны вывода: системный менеджер."""
 
-	def exported(self, result: ExportResults):
+	def exported(self, result: ExportResult):
 		"""
 		Шаблон вывода: результат экспорта настроек.
 
 		:param result: Результат экспорта настроек.
-		:type result: ExportResults
+		:type result: ExportResult
 		"""
 
 		match result:
-			case ExportResults.Missing: self.printer.emit("Preset missing. Skipped.")
-			case ExportResults.Installed: self.printer.emit("Config installed.")
-			case ExportResults.AlreadyExists: self.printer.emit("Config already exists. Skipped.")
-			case ExportResults.Overwtitten: self.printer.emit("Config overwritten.")
-			case ExportResults.Merged: self.printer.emit("Config merged with preset.")
+			case ExportResult.Missing: self.printer.emit("Preset missing. Skipped.")
+			case ExportResult.Installed: self.printer.emit("Config installed.")
+			case ExportResult.AlreadyExists: self.printer.emit("Config already exists. Skipped.")
+			case ExportResult.Overwtitten: self.printer.emit("Config overwritten.")
+			case ExportResult.Merged: self.printer.emit("Config merged with preset.")
 
 	def parsers_table(self, columns: dict[str, list[str]]):
 		"""
@@ -32,16 +30,16 @@ class ManagerTemplates(_BaseTemplatesSection):
 		"""
 
 		TableObject = PrettyTable()
-		TableObject.set_style(PLAIN_COLUMNS)
+		TableObject.set_style(TableStyle.PLAIN_COLUMNS)
 		Implementations = ("collect",)
 		ImplementationStatuses = {
-			"True": FastStyler("true").colorize.green,
-			"False": FastStyler("false").colorize.yellow,
-			"None": FastStyler("error").colorize.red,
+			"True": "[green]true[/]",
+			"False": "[yellow]false[/]",
+			"None": "[red]error[/]",
 		}
 
 		for DomainIndex in range(len(columns["DOMAIN"])):
-			columns["DOMAIN"][DomainIndex] = FastStyler(columns["DOMAIN"][DomainIndex]).decorate.italic
+			columns["DOMAIN"][DomainIndex] = f"[i]{columns["DOMAIN"][DomainIndex]}[/]"
 
 		for ColumnName in Implementations:
 
@@ -49,11 +47,11 @@ class ManagerTemplates(_BaseTemplatesSection):
 				columns[ColumnName][StatusIndex] = ImplementationStatuses[columns[ColumnName][StatusIndex]]
 
 		for ColumnName in columns.keys():
-			Buffer = FastStyler(ColumnName).decorate.bold
+			Buffer = f"[b]{ColumnName}[/]"
 			TableObject.add_column(Buffer, columns[ColumnName])
 
 		TableObject.align = "l"
-		TableObject.sortby = FastStyler("NAME").decorate.bold
+		TableObject.sortby = "[b]{NAME}[/]"
 		TableString = str(TableObject).strip()
 		self.printer.emit(TableString if TableString else "Parsers not installed.")
 

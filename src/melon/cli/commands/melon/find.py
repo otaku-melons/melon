@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, override
 
-from dublib.cli.text_styler import FastStyler
-from dublib.validators import ValidableTypes
+from dublib.validators import ValidableType
 
 from ....core.base.structs.title import TitleDescriptor
 from ...base.templates import T_SingleParserRequired
@@ -64,7 +63,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 				del data["Path"]
 
 			for key, value in data.items():
-				value = FastStyler(str(value)).decorate.italic if value else FastStyler("not found").colorize.red
+				value = f"[i]{value}[/]" if value else "[red]not found[/]"
 				self.printer.emit(f"{key}: {value}")
 
 	#==========================================================================================#
@@ -83,7 +82,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 
 		position = model.create_position("QUERY", "Search query", important = True)
-		position.add_key("--id", value_type = ValidableTypes.UnsignedInteger, description = "Title ID.")
+		position.add_key("--id", value_type = ValidableType.UnsignedInteger, description = "Title ID.")
 		position.set_argument(description = "Title slug.")
 
 		self._add_parser_position(key = "--use")
