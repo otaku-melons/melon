@@ -128,16 +128,16 @@ class ParserOperator:
 					return ExportResult.AlreadyExists
 
 				case ExportStrategy.Overwrite:
-					json.write(StorageFile, Config)
+					json.write(StorageFile, Config, atomic = True)
 					return ExportResult.Overwtitten
 
 				case ExportStrategy.Merge:
 					CurrentConfig: dict = json.read(StorageFile)
 					Config = dictionary.deep_merge(Config, CurrentConfig, uniqueness = True)
-					json.write(StorageFile, Config)
+					json.write(StorageFile, Config, atomic = True)
 					return ExportResult.Merged
 
-		json.write(StorageFile, Config)
+		json.write(StorageFile, Config, atomic = True)
 
 		return ExportResult.Installed
 

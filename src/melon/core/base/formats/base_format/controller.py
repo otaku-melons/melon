@@ -478,7 +478,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 			is_slug_changed = True
 
 		if not is_local_file_equal:
-			json.write(self.path, data)
+			json.write(self.path, data, atomic = True)
 
 		if not self._parser.settings.common.use_id_as_filename and is_slug_changed:
 			original_path = self.path

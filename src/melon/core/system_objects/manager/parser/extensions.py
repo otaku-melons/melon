@@ -174,7 +174,7 @@ class ExtensionsOperator:
 	def save_states(self):
 		"""Save extensions activation states in `enabled.json` file in extensions temporary directory."""
 
-		json.write(self.__activation_file, self.__states)
+		json.write(self.__activation_file, self.__states, atomic = True)
 
 	def set_state(self, extension_name: str, state: bool, not_found_error: bool = True) -> bool:
 		"""

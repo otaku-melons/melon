@@ -60,7 +60,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		Signatures.append(signature)
 		ConfigData["filters"]["images"]["signatures"] = Signatures
-		json.write(Config, ConfigData)
+		json.write(Config, ConfigData, atomic = True)
 		self.printer.emit(f"Exported in [b]{required_parser.name}[/] config.")
 
 		return True

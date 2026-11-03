@@ -107,4 +107,4 @@ class SharedData:
 	def save(self):
 		"""Сохраняет разделяемые данные."""
 
-		json.write(self.__shared_data_file, self.__data)
+		json.write(self.__shared_data_file, self.__data, atomic = True)

@@ -119,4 +119,4 @@ class FilteredImages:
 	def save(self):
 		"""Сохраняет кэш."""
 
-		json.write(self.__cache_path, self.__data)
+		json.write(self.__cache_path, self.__data, atomic = True)

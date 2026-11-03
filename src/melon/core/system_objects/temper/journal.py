@@ -77,7 +77,7 @@ class Journal:
 		"""Сохраняет журнал."""
 
 		self.__Data = dict(sorted(self.__Data.items()))
-		json.write(self.__JournalPath, self.__Data)
+		json.write(self.__JournalPath, self.__Data, atomic = True)
 
 	def update(self, title_id: int, slug: str):
 		"""
