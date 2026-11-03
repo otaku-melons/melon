@@ -42,7 +42,7 @@ class Assistant:
 
 		manifest_data: dict = TypeAdapter(ManifestModel).dump_python(manifest)
 
-		json.write(self.__template_path / "manifest.json", manifest_data, atomic = True)
+		json.write(self.__template_path / "manifest.json", manifest_data, atomic = self.__system_objects.options.JSON_ATOMIC_WRITE)
 
 	def __clone_template(self):
 		"""Clone parser template from Git repository (provided by environment variable `MELON_TEMPLATE_REPOS`)."""

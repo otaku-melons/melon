@@ -16,7 +16,9 @@ class Options(BaseSettings):
 	CONFIGS_DIR: Path = Path("configs")
 	DEBUG: bool = False
 	DEFAULT_OUTPUT_DIR: Path = Path("output")
+	JSON_ATOMIC_WRITE: bool = True
 	REPOS: AnyHttpUrl = AnyHttpUrl("https://github.com/otaku-melons/melon")
 	TEMP_DIR: Path = Path("temp")
 	TEMPLATE_REPOS: AnyHttpUrl = AnyHttpUrl("https://github.com/otaku-melons/.parser-template")
 	USE_CACHE: bool = True
+

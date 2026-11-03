@@ -119,4 +119,4 @@ class FilteredImages:
 	def save(self):
 		"""Сохраняет кэш."""
 
-		json.write(self.__cache_path, self.__data, atomic = True)
+		json.write(self.__cache_path, self.__data, atomic = self.__shared_data.temper.system_objects.options.JSON_ATOMIC_WRITE)

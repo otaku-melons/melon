@@ -117,7 +117,7 @@ class ParserOperator:
 
 		if PresetFile.exists():
 			Buffer: dict = json.read(PresetFile)
-			Config = dictionary.deep_merge(BaseConfig, Buffer, uniqueness = True)
+			Config = dictionary.deep_merge(BaseConfig, Buffer, uniqueness = self.__Parsers.manager.system_objects.options.JSON_ATOMIC_WRITE)
 		else:
 			return ExportResult.Missing
 
@@ -128,16 +128,16 @@ class ParserOperator:
 					return ExportResult.AlreadyExists
 
 				case ExportStrategy.Overwrite:
-					json.write(StorageFile, Config, atomic = True)
+					json.write(StorageFile, Config, atomic = self.__Parsers.manager.system_objects.options.JSON_ATOMIC_WRITE)
 					return ExportResult.Overwtitten
 
 				case ExportStrategy.Merge:
 					CurrentConfig: dict = json.read(StorageFile)
-					Config = dictionary.deep_merge(Config, CurrentConfig, uniqueness = True)
-					json.write(StorageFile, Config, atomic = True)
+					Config = dictionary.deep_merge(Config, CurrentConfig, uniqueness = self.__Parsers.manager.system_objects.options.JSON_ATOMIC_WRITE)
+					json.write(StorageFile, Config, atomic = self.__Parsers.manager.system_objects.options.JSON_ATOMIC_WRITE)
 					return ExportResult.Merged
 
-		json.write(StorageFile, Config, atomic = True)
+		json.write(StorageFile, Config, atomic = self.__Parsers.manager.system_objects.options.JSON_ATOMIC_WRITE)
 
 		return ExportResult.Installed
 

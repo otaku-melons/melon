@@ -107,4 +107,4 @@ class SharedData:
 	def save(self):
 		"""Сохраняет разделяемые данные."""
 
-		json.write(self.__shared_data_file, self.__data, atomic = True)
+		json.write(self.__shared_data_file, self.__data, atomic = self.temper.system_objects.options.JSON_ATOMIC_WRITE)

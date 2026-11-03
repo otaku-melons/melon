@@ -77,7 +77,7 @@ class Journal:
 		"""Сохраняет журнал."""
 
 		self.__Data = dict(sorted(self.__Data.items()))
-		json.write(self.__JournalPath, self.__Data, atomic = True)
+		json.write(self.__JournalPath, self.__Data, atomic = self.__SharedData.temper.system_objects.options.JSON_ATOMIC_WRITE)
 
 	def update(self, title_id: int, slug: str):
 		"""
