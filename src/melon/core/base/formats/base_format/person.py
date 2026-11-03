@@ -121,6 +121,7 @@ class Person:
 
 		if not description:
 			self.__description = ()
+			return
 
 		self.__description = to_sequence(description)
 

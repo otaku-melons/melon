@@ -6,6 +6,7 @@ from dublib.functions.data.dictionary import insert_item
 from dublib.validators import types
 
 from .... import exceptions
+from ....html.elements import Paragraph
 from ...structs.image import ImageData, ImageType
 from .branch import Branch
 from .enums import Status
@@ -15,7 +16,6 @@ from .structs import ChapterSearchResult, ExtraField
 if TYPE_CHECKING:
 	from collections.abc import Sequence
 
-	from ....html.elements import Paragraph
 	from .chapter import BaseChapter
 	from .controller import BaseTitleController
 
@@ -245,6 +245,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 		self._data = self._data | data
 
+		self._description = tuple(Paragraph(element) for element in self._data["description"])
 		self._parse_covers()
 		self._parse_persons()
 		self._parse_content()
@@ -788,31 +789,32 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 			self._covers.append(Buffer)
 
 	def _parse_persons(self):
-		"""Парсит персонажей в объектные представления."""
+		"""Parse persons data from dictionaries."""
 
 		self._persons.clear()
 
-		for PersonData in self._data["persons"]:
-			PersonData: dict
-			Buffer = Person(PersonData["name"])
+		for person_data in self._data["persons"]:
+			person_data: dict
+			buffer = Person(person_data["name"])
 
-			AnotherNames = PersonData.get("another_names") or ()
-			Images = PersonData.get("images") or ()
-			Description = PersonData.get("description")
+			another_names: list[str] = person_data.get("another_names") or []
+			images: list[dict] = person_data.get("images") or []
+			description: list[str] = person_data.get("description") or []
 
-			for AnotherName in AnotherNames:
-				Buffer.add_another_name(AnotherName)
+			for another_name in another_names:
+				buffer.add_another_name(another_name)
 
-			for CurrentImageData in Images:
-				CurrentImageData: dict
-				Image = ImageData(CurrentImageData["link"], ImageType.Person)
-				Image.create_resolution(CurrentImageData.get("width"), CurrentImageData.get("height"))
-				Buffer.add_image(Image)
+			for image_data in images:
+				image_data: dict
+				image = ImageData(image_data["link"], ImageType.Person)
+				image.create_resolution(image_data.get("width"), image_data.get("height"))
+				buffer.add_image(image)
 
-			if Description:
-				Buffer.set_description(Description)
+			if description:
+				elements: tuple[Paragraph, ...] = tuple(Paragraph(element) for element in description)
+				buffer.set_description(elements)
 
-			self._persons.append(Buffer)
+			self._persons.append(buffer)
 
 	def _post_init(self):
 		"""Execute after instance initialization."""
