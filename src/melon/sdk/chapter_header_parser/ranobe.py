@@ -24,12 +24,12 @@ class RanobeChapterHeaderParser(MangaChapterHeaderParser):
 		"""Получает тип главы из заголовка."""
 
 		Determinations: dict = {
-			ChapterType.prologue: self._WordsDictionary.prologue,
-			ChapterType.epilogue: self._WordsDictionary.epilogue,
-			ChapterType.art: self._WordsDictionary.art,
-			ChapterType.afterword: self._WordsDictionary.afterword,
-			ChapterType.glossary: self._WordsDictionary.glossary,
-			ChapterType.extra: self._WordsDictionary.extra,
+			ChapterType.Prologue: self._WordsDictionary.prologue,
+			ChapterType.Epilogue: self._WordsDictionary.epilogue,
+			ChapterType.Art: self._WordsDictionary.art,
+			ChapterType.Afterword: self._WordsDictionary.afterword,
+			ChapterType.Glossary: self._WordsDictionary.glossary,
+			ChapterType.Extra: self._WordsDictionary.extra,
 		}
 
 		LowerHeader = self._Header.lower()
@@ -39,7 +39,7 @@ class RanobeChapterHeaderParser(MangaChapterHeaderParser):
 				self._Type = chapter_type
 				break
 
-		if not self._Type and self._Number: self._Type = ChapterType.chapter
+		if not self._Type and self._Number: self._Type = ChapterType.Chapter
 
 	def _RemovePartTypers(self):
 		"""Удаляет ключевые слова типизации."""

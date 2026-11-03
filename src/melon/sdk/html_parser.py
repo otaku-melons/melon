@@ -5,19 +5,20 @@ from bs4 import BeautifulSoup, NavigableString, PageElement, Tag
 from dublib.functions.data import to_sequence
 from dublib.functions.data.string import remove_recurring_substrings
 
-from ...core.base.structs.image import ImageData, ImageResolution, ImageType
-from ...core.exceptions.html import UnresolvedElementError, UnresolvedTagError
-from ...core.html.allowed_tags import ALLOWED_TAGS
-from ...core.html.elements import Blockquote, Header, Paragraph
-from ...core.html.enums import Align, TagCategory
-from ...core.html.footnote import Footnote
+from ..core.base.structs.image import ImageData, ImageResolution, ImageType
+from ..core.exceptions.html import UnresolvedElementError, UnresolvedTagError
+from ..core.html.allowed_tags import ALLOWED_TAGS
+from ..core.html.elements import Blockquote, Header, Paragraph
+from ..core.html.enums import Align, TagCategory
+from ..core.html.footnote import Footnote
+from ..core.html.interpreter import HyperTextInterpreter
 
 if TYPE_CHECKING:
 	from collections.abc import Sequence
 
 	from bs4._typing import AttributeValueList
 
-	from ...core.html.base_elements import BaseElement
+	from ..core.html.base_elements import BaseElement
 
 class HyperTextParser:
 	"""HTML elements parser."""
@@ -31,6 +32,8 @@ class HyperTextParser:
 		"""
 
 		self._pretty: bool = pretty
+
+		self._interpreter: HyperTextInterpreter = HyperTextInterpreter()
 
 	def check_unresolved_childrens(self, tag: Tag, raise_error: bool = False) -> tuple[str, ...]:
 		"""
@@ -469,7 +472,7 @@ class HyperTextParser:
 			if self.pretty:
 				text = self.normalize_text(text)
 
-			paragraph = Paragraph(text)
+			paragraph = Paragraph(text, allow_footnotes = True)
 			align: Align | None = self.parse_align(inner_paragraph)
 			paragraph.set_align(align)
 			paragraph.set_footnotes(footnotes)
@@ -547,6 +550,12 @@ class HyperTextParser:
 				child.unwrap()
 
 		return tuple(unwrapped_tags)
+
+	@property
+	def html_interpreter(self) -> HyperTextInterpreter:
+		"""HTML lines into elements interpreter."""
+
+		return self._interpreter
 
 	@property
 	def pretty(self) -> bool:

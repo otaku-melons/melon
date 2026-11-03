@@ -2,30 +2,31 @@ from typing import TYPE_CHECKING
 
 from bs4 import Tag
 
-from ...exceptions.html import UnresolvedTagError
+from ... import exceptions
 from ..allowed_tags import ALLOWED_TAGS
-from ..enums import TagCategory
 from .base import BaseElement
 
 if TYPE_CHECKING:
 	from collections.abc import Sequence
 
+	from ..allowed_tags import TagData
 	from ..footnote import Footnote
 
 class TextElement(BaseElement):
 	"""Text element."""
 
-	def __init__(self, text: str):
+	def __init__(self, text: str, allow_footnotes: bool = False):
 		"""
 		Text element.
 
 		Args:
 			text (str): Element text.
+			allow_footnotes (bool): Allow footnotes in element text.
 		"""
 
-		text = self._validate_text(text)
+		self._is_footnotes_allowed: bool = allow_footnotes
+		self._text: str = self._validate_text(text)
 
-		self._text: str = text
 		self._footnotes: list[Footnote] = []
 
 	def set_footnotes(self, footnotes: "Sequence[Footnote]"):
@@ -44,6 +45,12 @@ class TextElement(BaseElement):
 		"""Footnotes."""
 
 		return tuple(self._footnotes)
+
+	@property
+	def is_footnotes_allowed(self) -> bool:
+		"""Condition: is footnotes allowed."""
+
+		return self._is_footnotes_allowed
 
 	def _validate_text(self, text: str) -> str:
 		"""
@@ -64,16 +71,23 @@ class TextElement(BaseElement):
 		if not soup.get_text().strip():
 			raise ValueError("Text can't be empty.")
 
-		styling_tags_names: tuple[str, ...] = ALLOWED_TAGS.get_category_tags_names(TagCategory.Styling)
-
 		for child in soup.find_all():
 
 			if isinstance(child, Tag):
+				tag_rules: TagData | None = ALLOWED_TAGS.get_tag(child.name)
 
-				if child.name == "a" and child.has_attr("data-footnote") and self.element_tag in ALLOWED_TAGS.get_category_tags_names(TagCategory.Footnotable):
-					continue
+				if not tag_rules:
+					raise exceptions.html.UnresolvedTagError(child.name)
 
-				if child.name not in styling_tags_names:
-					raise UnresolvedTagError(child.name)
+				if child.name == "a":
+
+					if not self.is_footnotes_allowed:
+						raise exceptions.html.UnresolvedTagError(child.name)
+
+					elif not child.has_attr("data-footnote"):
+						raise exceptions.html.UnresolvedTagError(child.name)
+
+				if not tag_rules.is_styling:
+					raise exceptions.html.UnresolvedTagError(child.name)
 
 		return text

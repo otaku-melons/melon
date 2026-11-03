@@ -6,8 +6,9 @@ class _PostInitMeta(ABCMeta):
 	"""Metaclass to run `_post_init()` after `__init__()`."""
 
 	def __call__(cls, *args, **kwargs):
-		"""Create instance and run `_post_init()` method."""
+		"""Base chapter element."""
 
+		# Create instance and run `_post_init()` method.
 		instance = super().__call__(*args, **kwargs)
 		instance._post_init()
 
@@ -16,9 +17,15 @@ class _PostInitMeta(ABCMeta):
 class BaseElement(ABC, metaclass = _PostInitMeta):
 	"""Base chapter element."""
 
-	#==========================================================================================#
-	# >>>>> PROPERTIES <<<<< #
-	#==========================================================================================#
+	def to_html(self) -> str:
+		"""
+		Convert element to HTML representation.
+
+		Returns:
+			str: HTML representation of element.
+		"""
+
+		return self._to_html()
 
 	@property
 	def element_tag(self) -> str:
@@ -26,9 +33,16 @@ class BaseElement(ABC, metaclass = _PostInitMeta):
 
 		return self._export_element_tag()
 
-	#==========================================================================================#
-	# >>>>> PROTECTED METHODS <<<<< #
-	#==========================================================================================#
+	@abstractmethod
+	def _export_element_tag(self) -> str:
+		"""
+		Export element main tag name.
+
+		Returns:
+			str: Element main tag name.
+		"""
+
+		return ""
 
 	def _parse(self, text: BeautifulSoup | str, parser: str = "html.parser") -> BeautifulSoup:
 		"""
@@ -50,21 +64,6 @@ class BaseElement(ABC, metaclass = _PostInitMeta):
 
 		return BeautifulSoup(text, parser)
 
-	#==========================================================================================#
-	# >>>>> OVERRIDABLE METHODS <<<<< #
-	#==========================================================================================#
-
-	@abstractmethod
-	def _export_element_tag(self) -> str:
-		"""
-		Export element main tag name.
-
-		Returns:
-			str: Element main tag name.
-		"""
-
-		return ""
-
 	def _post_init(self):
 		"""Execute after instance initialization."""
 
@@ -80,17 +79,3 @@ class BaseElement(ABC, metaclass = _PostInitMeta):
 		"""
 
 		pass
-
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS <<<<< #
-	#==========================================================================================#
-
-	def to_html(self) -> str:
-		"""
-		Convert element to HTML representation.
-
-		Returns:
-			str: HTML representation of element.
-		"""
-
-		return self._to_html()

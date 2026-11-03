@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup, NavigableString, Tag
 
 from melon.core.html.elements import Paragraph
-from melon.core.html.enums import Align
 from melon.sdk.html_parser import HyperTextParser
 
 parser = HyperTextParser()
@@ -73,29 +72,6 @@ def test_normalize_text():
 
 	text: str = " text\u00a0 with  spaces\t"
 	assert parser.normalize_text(text) == "text with spaces"
-
-def test_parse_align():
-
-	html: str = "<p align=\"center\" style=\"text-align: right\">text</p>"
-	soup = BeautifulSoup(html, "html.parser")
-	tag = soup.find("p")
-	assert tag is not None
-
-	assert parser.parse_align(tag) is Align.Center
-
-	html: str = "<p style=\"text-align: right\">text</p>"
-	soup = BeautifulSoup(html, "html.parser")
-	tag = soup.find("p")
-	assert tag is not None
-
-	assert parser.parse_align(tag) is Align.Right
-
-	html: str = "<p style=\"text-align: justify\">text</p>"
-	soup = BeautifulSoup(html, "html.parser")
-	tag = soup.find("p")
-	assert tag is not None
-
-	assert parser.parse_align(tag) is None
 
 def test_parse_blockquote():
 

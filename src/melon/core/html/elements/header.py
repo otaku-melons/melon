@@ -5,18 +5,19 @@ from ..base_elements import AlignableElement, TextElement
 class Header(AlignableElement, TextElement):
 	"""Header."""
 
-	def __init__(self, text: str, level: Literal[3, 4, 5, 6]):
+	def __init__(self, text: str, level: Literal[3, 4, 5, 6], allow_footnotes: bool = False):
 		"""
 		Header.
 
 		Args:
 			text (str): Header text.
 			level (Literal[3, 4, 5, 6]): Header level.
+			allow_footnotes (bool): Allow footnotes in element text.
 		"""
 
 		self._level: Literal[3, 4, 5, 6] = level
 
-		super().__init__(text)
+		super().__init__(text, allow_footnotes)
 
 	@property
 	def level(self) -> Literal[3, 4, 5, 6]:

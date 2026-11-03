@@ -5,10 +5,6 @@ from ..base_elements import AlignableElement, TextElement
 class Paragraph(AlignableElement, TextElement):
 	"""Paragraph."""
 
-	#==========================================================================================#
-	# >>>>> OVERRIDDEN METHODS <<<<< #
-	#==========================================================================================#
-
 	@override
 	def _export_element_tag(self) -> str:
 		"""

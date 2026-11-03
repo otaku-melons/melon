@@ -4,12 +4,25 @@ if TYPE_CHECKING:
 	from ..base.structs.image import ImageData
 	from ..html.base_elements import BaseElement
 
-class CompositingError(Exception):
-	"""Exception: compositing error."""
+class EncodingError(Exception):
+	"""Exception: HTML element into line encoding error."""
 
 	def __init__(self, message: str):
 		"""
-		Exception: compositing error.
+		Exception: HTML element into line encoding error.
+
+		:param message: Error message.
+		:type message: str
+		"""
+
+		super().__init__(message)
+
+class DecodingError(Exception):
+	"""Exception: HTML line into element decoding error."""
+
+	def __init__(self, message: str):
+		"""
+		Exception: HTML line into element decoding error.
 
 		:param message: Error message.
 		:type message: str
@@ -18,13 +31,13 @@ class CompositingError(Exception):
 		super().__init__(message)
 
 class UnresolvedElementError(Exception):
-	"""Exception: unresolved element."""
+	"""Exception: unresolved child element."""
 
 	def __init__(self, element: "type[BaseElement | ImageData] | BaseElement | ImageData"):
 		"""
-		Exception: unresolved element.
+		Exception: unresolved child element.
 
-		:param element: Element.
+		:param element: Element or it's type.
 		:type element: type[BaseElement | ImageData] | BaseElement | ImageData
 		"""
 
@@ -34,13 +47,13 @@ class UnresolvedElementError(Exception):
 		super().__init__(element)
 
 class UnresolvedTagError(Exception):
-	"""Exception: unresolved tag."""
+	"""Exception: HTML tag has unresolved child tag."""
 
 	def __init__(self, tag: str):
 		"""
-		Exception: unresolved tag.
+		Exception: HTML tag has unresolved child tag.
 
-		:param tag: Tag name.
+		:param tag: Child tag name.
 		:type tag: str
 		"""
 

@@ -8,8 +8,13 @@ from dublib.functions.data.string import remove_recurring_substrings
 if TYPE_CHECKING:
 	from collections.abc import Sequence
 
+	from pydantic import BaseModel
+
+	from ....html.interpreter import HyperTextInterpreter
 	from ...parser import BaseParser
+	from ...source_operator import BaseSourceOperator
 	from ...structs.image import ImageData
+	from .controller import BaseTitleController
 
 class ExtraData:
 	"""Дополнительные данные главы."""
@@ -112,7 +117,7 @@ class ExtraData:
 class BaseChapter(ABC):
 	"""Base chapter."""
 
-	def __init__(self, parser: "BaseParser", chapter_id: int):
+	def __init__(self, parser: "BaseParser[BaseSourceOperator, BaseModel, BaseTitleController]", chapter_id: int):
 		"""
 		Base chapter.
 
@@ -121,7 +126,8 @@ class BaseChapter(ABC):
 			chapter_id (int): Chapter ID.
 		"""
 
-		self._parser: BaseParser = parser
+		self._parser: BaseParser[BaseSourceOperator, BaseModel, BaseTitleController] = parser
+		self._html_interpreter: HyperTextInterpreter = self._parser.title.html_interpreter
 
 		self._data: dict[str, Any] = {
 			"id": chapter_id,
