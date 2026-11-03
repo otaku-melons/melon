@@ -1,13 +1,14 @@
 from enum import Enum
 
 class ChapterType(Enum):
-	"""Определения типов глав."""
+	"""Chapter type."""
 
-	afterword = "afterword"
-	art = "art"
-	chapter = "chapter"
-	epilogue = "epilogue"
-	extra = "extra"
-	glossary = "glossary"
-	prologue = "prologue"
-	trash = "trash"
+	Afterword = "afterword"
+	Art = "art"
+	Chapter = "chapter"
+	Epilogue = "epilogue"
+	Extra = "extra"
+	Glossary = "glossary"
+	Prologue = "prologue"
+	Trash = "trash"
+

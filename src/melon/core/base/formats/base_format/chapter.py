@@ -110,11 +110,138 @@ class ExtraData:
 		return self.__data.copy()
 
 class BaseChapter(ABC):
-	"""Базовая глава."""
+	"""Base chapter."""
 
-	#==========================================================================================#
-	# >>>>> PROPERTIES <<<<< #
-	#==========================================================================================#
+	def __init__(self, parser: "BaseParser", chapter_id: int):
+		"""
+		Base chapter.
+
+		Args:
+			parser (BaseParser): Parser.
+			chapter_id (int): Chapter ID.
+		"""
+
+		self._parser: BaseParser = parser
+
+		self._data: dict[str, Any] = {
+			"id": chapter_id,
+			"slug": None,
+			"volume": None,
+			"number": None,
+			"name": None,
+			"is_paid": None,
+			"workers": [],
+		}
+
+		self._post_init()
+		self._extra_data = ExtraData(tuple(self._data.keys()))
+
+	def add_worker(self, worker: str):
+		"""
+		Добавляет идентификатор лица, адаптировавшего контент.
+
+		:param worker: Идентификатор.
+		:type worker: str
+		"""
+
+		if worker not in self._data["workers"]:
+			self._data["workers"].append(worker)
+
+	def clear(self):
+		"""Clear chapter content."""
+
+		self._clear()
+
+	def from_dict(self, data: dict):
+		"""
+		Заполняет данные главы из словаря.
+
+		:param data: Словарь данных главы.
+		:type data: dict
+		"""
+
+		self._from_dict(data)
+		self.extra_data.from_dict(data)
+
+	def set_is_paid(self, is_paid: bool | None):
+		"""
+		Указывает, является ли глава платной.
+
+		:param is_paid: Состояние: платная ли глава.
+		:type is_paid: bool | None
+		"""
+
+		self._data["is_paid"] = is_paid
+
+	def set_name(self, name: str | None):
+		"""
+		Задаёт название главы.
+
+		:param name: Название главы.
+		:type name: str | None
+		"""
+
+		name = zerotify(name)
+		if name: name = name.strip()
+
+		if name and self._parser.settings.common.pretty:
+			if name.endswith("..."): name = name.rstrip(".") + "…"
+			else: name = name.rstrip(".–")
+
+			name = name.replace("\u00A0", " ")
+			name = remove_recurring_substrings(name, " ")
+
+			name = name.rstrip(":.")
+
+		self._data["name"] = name
+
+	def set_number(self, number: float | int | str | None):
+		"""
+		Задаёт номер главы.
+
+		:param number: Номер главы.
+		:type number: float | int | str | None
+		"""
+
+		self._data["number"] = self._pretty_number(number)
+
+	def set_workers(self, workers: "Sequence[str]"):
+		"""
+		Задаёт идентификаторы лиц, адаптировавших контент.
+
+		:param workers: Набор идентификаторов.
+		:type workers: Sequence[str]
+		"""
+
+		for Worker in workers:
+			self.add_worker(Worker)
+
+	def set_slug(self, slug: str | None):
+		"""
+		Задаёт алиас главы.
+
+		:param slug: Алиас главы.
+		:type slug: str | None
+		"""
+
+		self._data["slug"] = slug
+
+	def set_volume(self, volume: float | int | str | None):
+		"""
+		Задаёт номер тома, к которому принадлежит глава.
+
+		:param volume: Номер тома.
+		:type volume: float | int | str | None
+		"""
+
+		self._data["volume"] = self._pretty_number(volume)
+
+	def to_dict(self) -> dict:
+		"""Возвращает копию словаря данных главы."""
+
+		self._pre_formatter()
+
+		return insert_dictionary_after_key(self._data.copy(), self.extra_data.to_dict(), "workers")
 
 	@property
 	def id(self) -> int:
@@ -176,32 +303,6 @@ class BaseChapter(ABC):
 
 		return self._extra_data
 
-	#==========================================================================================#
-	# >>>>> PROTECTED METHODS <<<<< #
-	#==========================================================================================#
-
-	def _PrettyNumber(self, number: float | int | str | None) -> str | None:
-		"""
-		Преобразует номер главы или тома в корректное значение.
-
-		:param number: Номер главы или тома.
-		:type number: float | int | str | None
-		:return: Откорректированный номер.
-		:rtype: str | None
-		"""
-
-		if number is None: number = ""
-		elif type(number) is not str: number = str(number)
-		if "-" in number: number = number.split("-")[0]
-		number = number.strip("\t .\n")
-		Number = cast("str | None", zerotify(number))
-
-		return Number
-
-	#==========================================================================================#
-	# >>>>> OVERRIDABLE METHODS <<<<< #
-	#==========================================================================================#
-
 	@abstractmethod
 	def _clear(self):
 		"""Очищает контент главы."""
@@ -251,138 +352,20 @@ class BaseChapter(ABC):
 
 		pass
 
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS <<<<< #
-	#==========================================================================================#
-
-	def __init__(self, parser: "BaseParser", chapter_id: int):
+	def _pretty_number(self, number: float | int | str | None) -> str | None:
 		"""
-		Базовая глава.
+		Преобразует номер главы или тома в корректное значение.
 
-		:param parser: Парсер.
-		:type parser: BaseParser
-		:param chapter_id: ID главы.
-		:type chapter_id: int
-		"""
-
-		self._parser = parser
-
-		self._data: dict[str, Any] = {
-			"id": chapter_id,
-			"slug": None,
-			"volume": None,
-			"number": None,
-			"name": None,
-			"is_paid": None,
-			"workers": [],
-		}
-
-		self._post_init()
-		self._extra_data = ExtraData(tuple(self._data.keys()))
-
-	def add_worker(self, worker: str):
-		"""
-		Добавляет идентификатор лица, адаптировавшего контент.
-
-		:param worker: Идентификатор.
-		:type worker: str
-		"""
-
-		if worker not in self._data["workers"]:
-			self._data["workers"].append(worker)
-
-	def clear(self):
-		"""Удаляет содержимое главы."""
-
-		self._clear()
-
-	def from_dict(self, data: dict):
-		"""
-		Заполняет данные главы из словаря.
-
-		:param data: Словарь данных главы.
-		:type data: dict
-		"""
-
-		self._from_dict(data)
-		self.extra_data.from_dict(data)
-
-	def set_is_paid(self, is_paid: bool | None):
-		"""
-		Указывает, является ли глава платной.
-
-		:param is_paid: Состояние: платная ли глава.
-		:type is_paid: bool | None
-		"""
-
-		self._data["is_paid"] = is_paid
-
-	def set_name(self, name: str | None):
-		"""
-		Задаёт название главы.
-
-		:param name: Название главы.
-		:type name: str | None
-		"""
-
-		name = zerotify(name)
-		if name: name = name.strip()
-
-		if name and self._parser.settings.common.pretty:
-			if name.endswith("..."): name = name.rstrip(".") + "…"
-			else: name = name.rstrip(".–")
-
-			name = name.replace("\u00A0", " ")
-			name = remove_recurring_substrings(name, " ")
-
-			name = name.rstrip(":.")
-
-		self._data["name"] = name
-
-	def set_number(self, number: float | int | str | None):
-		"""
-		Задаёт номер главы.
-
-		:param number: Номер главы.
+		:param number: Номер главы или тома.
 		:type number: float | int | str | None
+		:return: Откорректированный номер.
+		:rtype: str | None
 		"""
 
-		self._data["number"] = self._PrettyNumber(number)
+		if number is None: number = ""
+		elif type(number) is not str: number = str(number)
+		if "-" in number: number = number.split("-")[0]
+		number = number.strip("\t .\n")
+		Number = cast("str | None", zerotify(number))
 
-	def set_workers(self, workers: "Sequence[str]"):
-		"""
-		Задаёт идентификаторы лиц, адаптировавших контент.
-
-		:param workers: Набор идентификаторов.
-		:type workers: Sequence[str]
-		"""
-
-		for Worker in workers:
-			self.add_worker(Worker)
-
-	def set_slug(self, slug: str | None):
-		"""
-		Задаёт алиас главы.
-
-		:param slug: Алиас главы.
-		:type slug: str | None
-		"""
-
-		self._data["slug"] = slug
-
-	def set_volume(self, volume: float | int | str | None):
-		"""
-		Задаёт номер тома, к которому принадлежит глава.
-
-		:param volume: Номер тома.
-		:type volume: float | int | str | None
-		"""
-
-		self._data["volume"] = self._PrettyNumber(volume)
-
-	def to_dict(self) -> dict:
-		"""Возвращает копию словаря данных главы."""
-
-		self._pre_formatter()
-
-		return insert_dictionary_after_key(self._data.copy(), self.extra_data.to_dict(), "workers")
+		return Number

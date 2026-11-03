@@ -54,6 +54,12 @@ class Chapter(BaseChapter):
 		self._data["type"] = chapter_type.value if chapter_type else None
 
 	@property
+	def footnote(self) -> tuple["Footnote", ...]:
+		"""Footnotes."""
+
+		return tuple(self.__footnotes)
+
+	@property
 	def paragraphs(self) -> tuple[str, ...]:
 		"""Paragraphs."""
 
@@ -108,6 +114,7 @@ class Chapter(BaseChapter):
 	def _post_init(self):
 		"""Execute after instance initialization."""
 
+		self._data["type"] = None
 		self._data["paragraphs"] = []
 		self._data["footnotes"] = {}
 

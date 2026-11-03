@@ -10,78 +10,33 @@ class TagData:
 	name: str
 	categories: tuple[TagCategory, ...] = ()
 	attributes: tuple[str, ...] = ()
-	is_support_data: bool = False
-	is_alignable: bool = False
+
+	@property
+	def is_alignable(self) -> bool:
+		"""Condition: is tag alignable."""
+
+		return TagCategory.Alignable in self.categories
+
+	@property
+	def is_footnotable(self) -> bool:
+		"""Condition: is tag footnotable."""
+
+		return TagCategory.Footnotable in self.categories
+
+	@property
+	def is_styling(self) -> bool:
+		"""Condition: is tag styling."""
+
+		return TagCategory.Styling in self.categories
+
+	@property
+	def is_support_data(self) -> bool:
+		"""Condition: is tag support data."""
+
+		return TagCategory.SupportData in self.categories
 
 class AllowedTags:
 	"""Allowed tags."""
-
-	#==========================================================================================#
-	# >>>>> PROPERTIES <<<<< #
-	#==========================================================================================#
-
-	@property
-	def names(self) -> tuple[str, ...]:
-		"""Allowed tags names."""
-
-		return self.__allowed_tags_names
-
-	#==========================================================================================#
-	# >>>>> PRIVATE METHODS <<<<< #
-	#==========================================================================================#
-
-	def __build_categories(self) -> dict[TagCategory, tuple[TagData, ...]]:
-		"""
-		Build tags categories.
-
-		Returns:
-			dict[TagCategory, tuple[TagData, ...]]: Tags categories dictionary.
-		"""
-
-		categories: dict[TagCategory, list[TagData]] = {category: [] for category in TagCategory}
-
-		for tag in self.__data.values():
-
-			for category in tag.categories:
-				categories[category].append(tag)
-
-		return {category: tuple(tags) for category, tags in categories.items()}
-
-	def __build_data(self) -> dict[str, TagData]:
-		"""
-		Build tags data.
-
-		Returns:
-			dict[str, TagData]: Tags data.
-		"""
-
-		data: list[TagData] = []
-
-		paragraph = TagData("p", categories = (TagCategory.Footnotable,), is_alignable = True)
-		data.append(paragraph)
-
-		blockquote = TagData("blockquote", is_support_data = True, is_alignable = True)
-		data.append(blockquote)
-
-		for level in (3, 4, 5, 6):
-			header = TagData(f"h{level}", categories = (TagCategory.Footnotable,), is_alignable = True)
-			data.append(header)
-
-		for name in ("b", "strong", "i", "em", "s", "del", "u", "ins", "sup", "sub"):
-			styling_tag = TagData(name, categories = (TagCategory.Styling,))
-			data.append(styling_tag)
-
-		anchor = TagData("a", attributes = ("href",))
-		data.append(anchor)
-
-		image = TagData("img", attributes = ("src", "width", "height"))
-		data.append(image)
-
-		return {tag.name: tag for tag in data}
-
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS <<<<< #
-	#==========================================================================================#
 
 	def __init__(self):
 		"""Allowed tags."""
@@ -89,6 +44,7 @@ class AllowedTags:
 		self.__data: dict[str, TagData] = self.__build_data()
 
 		self.__categories: dict[TagCategory, tuple[TagData, ...]] = self.__build_categories()
+		self.__categories_tags_names: dict[TagCategory, tuple[str, ...]] = self.__build_categories_tags_names()
 		self.__allowed_tags_names: tuple[str, ...] = tuple(tag.name for tag in self.__data.values())
 
 	def get_category_tags(self, category: TagCategory) -> tuple[TagData, ...]:
@@ -129,5 +85,78 @@ class AllowedTags:
 		"""
 
 		return self.__data.get(name)
+
+	@property
+	def names(self) -> tuple[str, ...]:
+		"""Allowed tags names."""
+
+		return self.__allowed_tags_names
+
+	def __build_categories(self) -> dict[TagCategory, tuple[TagData, ...]]:
+		"""
+		Build tags categories.
+
+		Returns:
+			dict[TagCategory, tuple[TagData, ...]]: Tags categories dictionary.
+		"""
+
+		categories: dict[TagCategory, list[TagData]] = {category: [] for category in TagCategory}
+
+		for tag in self.__data.values():
+
+			for category in tag.categories:
+				categories[category].append(tag)
+
+		return {category: tuple(tags) for category, tags in categories.items()}
+
+	def __build_categories_tags_names(self) -> dict[TagCategory, tuple[str, ...]]:
+		"""
+		Build tags categories tags names.
+
+		Returns:
+			dict[TagCategory, tuple[str, ...]]: Tags categories names dictionary.
+		"""
+
+		categories: dict[TagCategory, list[str]] = {category: [] for category in TagCategory}
+
+		for tag in self.__data.values():
+
+			for category in tag.categories:
+				categories[category].append(tag.name)
+
+		return {category: tuple(tags) for category, tags in categories.items()}
+
+
+	def __build_data(self) -> dict[str, TagData]:
+		"""
+		Build tags data.
+
+		Returns:
+			dict[str, TagData]: Tags data.
+		"""
+
+		data: list[TagData] = []
+
+		paragraph = TagData("p", categories = (TagCategory.Alignable, TagCategory.Footnotable))
+		data.append(paragraph)
+
+		blockquote = TagData("blockquote", categories = (TagCategory.Alignable, TagCategory.SupportData))
+		data.append(blockquote)
+
+		for level in (3, 4, 5, 6):
+			header = TagData(f"h{level}", categories = (TagCategory.Alignable, TagCategory.Footnotable))
+			data.append(header)
+
+		for name in ("b", "strong", "i", "em", "s", "del", "u", "ins", "sup", "sub"):
+			styling_tag = TagData(name, categories = (TagCategory.Styling,))
+			data.append(styling_tag)
+
+		anchor = TagData("a", attributes = ("href",))
+		data.append(anchor)
+
+		image = TagData("img", attributes = ("src", "width", "height"))
+		data.append(image)
+
+		return {tag.name: tag for tag in data}
 
 ALLOWED_TAGS = AllowedTags()
