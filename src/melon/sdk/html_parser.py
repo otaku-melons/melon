@@ -257,7 +257,7 @@ class HyperTextParser:
 		if tag.name != "blockquote":
 			raise ValueError("Blockquote can be parsed only from same tag.")
 
-		inner_elements: tuple[BaseElement | ImageData, ...] = self.parse_elements(tag, paragraphs_tags, from_strings)
+		inner_elements: tuple[BaseElement | ImageData, ...] = self.parse_elements(tag, True, paragraphs_tags, from_strings)
 		elements: tuple[Header | ImageData | Paragraph, ...] = self.filter_elements(inner_elements, (Header, ImageData, Paragraph))
 
 		blockquote = Blockquote()
@@ -267,12 +267,13 @@ class HyperTextParser:
 
 		return blockquote
 
-	def parse_elements(self, tag: Tag, paragraphs_tags: "Sequence[str]" = ("p", "pre"), from_strings: bool = True) -> tuple["BaseElement | ImageData", ...]:
+	def parse_elements(self, tag: Tag, allow_footnotes: bool, paragraphs_tags: "Sequence[str]" = ("p", "pre"), from_strings: bool = True) -> tuple["BaseElement | ImageData", ...]:
 		"""
 		Parse elements from tag childrens.
 
 		Args:
-			tag (Tag): HTML tag..
+			tag (Tag): HTML tag.
+            allow_footnotes (bool): Allow footnotes in element text.
 			paragraphs_tags (Sequence[str]): Tags names from which paragraphs will be parsed.
 			from_strings (bool):  Allow parse paragraphs from `NavigableString`.
 
@@ -286,7 +287,7 @@ class HyperTextParser:
 		def flush_strings():
 			if not strings: return
 			new_paragraph: Tag = self.make_tag("p", tuple(strings))
-			elements.extend(self.parse_paragraphs(new_paragraph))
+			elements.extend(self.parse_paragraphs(new_paragraph, allow_footnotes))
 			strings.clear()
 
 		for child in tuple(tag.contents):
@@ -323,7 +324,7 @@ class HyperTextParser:
 					if child.name not in paragraphs_tags:
 						continue
 
-					elements.extend(self.parse_paragraphs(child))
+					elements.extend(self.parse_paragraphs(child, allow_footnotes))
 
 		flush_strings()
 
@@ -350,7 +351,7 @@ class HyperTextParser:
 			if not anchor.has_attr("data-footnote"):
 				continue
 
-			inner_elements: tuple[BaseElement | ImageData, ...] = self.parse_elements(anchor)
+			inner_elements: tuple[BaseElement | ImageData, ...] = self.parse_elements(anchor, allow_footnotes = False)
 			elements: tuple[ImageData | Paragraph, ...] = self.filter_elements(inner_elements, (ImageData, Paragraph))
 
 			if elements:
@@ -444,12 +445,13 @@ class HyperTextParser:
 
 		return image
 
-	def parse_paragraphs(self, tag: Tag) -> tuple[Paragraph, ...]:
+	def parse_paragraphs(self, tag: Tag, allow_footnotes: bool) -> tuple[Paragraph, ...]:
 		"""
 		Parse paragraphs from HTML tag.
 
 		Args:
 			tag (Tag): HTML tag.
+            allow_footnotes (bool): Allow footnotes in element text.
 
 		Returns:
 			tuple[Paragraph, ...]: Paragraphs elements.
@@ -472,7 +474,7 @@ class HyperTextParser:
 			if self.pretty:
 				text = self.normalize_text(text)
 
-			paragraph = Paragraph(text, allow_footnotes = True)
+			paragraph = Paragraph(text, allow_footnotes = allow_footnotes)
 			align: Align | None = self.parse_align(inner_paragraph)
 			paragraph.set_align(align)
 			paragraph.set_footnotes(footnotes)

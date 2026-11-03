@@ -1,21 +1,14 @@
-from abc import ABC, ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 
 from bs4 import BeautifulSoup
 
-class _PostInitMeta(ABCMeta):
-	"""Metaclass to run `_post_init()` after `__init__()`."""
+class BaseElement(ABC):
+	"""Base chapter element."""
 
-	def __call__(cls, *args, **kwargs):
+	def __init__(self):
 		"""Base chapter element."""
 
-		# Create instance and run `_post_init()` method.
-		instance = super().__call__(*args, **kwargs)
-		instance._post_init()
-
-		return instance
-
-class BaseElement(ABC, metaclass = _PostInitMeta):
-	"""Base chapter element."""
+		self._post_init()
 
 	def to_html(self) -> str:
 		"""

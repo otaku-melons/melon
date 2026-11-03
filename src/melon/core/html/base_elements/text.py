@@ -29,6 +29,8 @@ class TextElement(BaseElement):
 
 		self._footnotes: list[Footnote] = []
 
+		super().__init__()
+
 	def set_footnotes(self, footnotes: "Sequence[Footnote]"):
 		"""
 		Set footnotes and clear exists.
@@ -86,6 +88,8 @@ class TextElement(BaseElement):
 
 					elif not child.has_attr("data-footnote"):
 						raise exceptions.html.UnresolvedTagError(child.name)
+
+					continue
 
 				if not tag_rules.is_styling:
 					raise exceptions.html.UnresolvedTagError(child.name)

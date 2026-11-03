@@ -126,7 +126,6 @@ class AllowedTags:
 
 		return {category: tuple(tags) for category, tags in categories.items()}
 
-
 	def __build_data(self) -> dict[str, TagData]:
 		"""
 		Build tags data.
@@ -151,7 +150,7 @@ class AllowedTags:
 			styling_tag = TagData(name, categories = (TagCategory.Styling,))
 			data.append(styling_tag)
 
-		anchor = TagData("a", attributes = ("href",))
+		anchor = TagData("a", categories = (TagCategory.Styling,), attributes = ("href",))
 		data.append(anchor)
 
 		image = TagData("img", attributes = ("src", "width", "height"))

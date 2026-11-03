@@ -30,13 +30,13 @@ def test_clear_attributes():
 	assert parser.clear_attributes(tag) == ("data-color", "class")
 	assert str(tag) == "<blockquote data-custom=\"1\">text<b>bold</b></blockquote>"
 
-	html: str = "<p><b class=\"someclass1\"><i class=\"someclass2\">text</i></b></p>"
+	html: str = "<p><b class=\"someclass1\"><i class=\"someclass2\">text</i></b><a href=\"www.example.com\" target=\"_blank\">anchor</a></p>"
 	soup = BeautifulSoup(html, "html.parser")
 	tag = soup.find("p")
 	assert tag is not None
 
-	assert parser.clear_attributes(tag) == ("class", "class")
-	assert str(tag) == "<p><b><i>text</i></b></p>"
+	assert parser.clear_attributes(tag) == ("class", "class", "target")
+	assert str(tag) == "<p><b><i>text</i></b><a href=\"www.example.com\">anchor</a></p>"
 
 def test_has_child_tag():
 
@@ -103,7 +103,7 @@ def test_parse_elements():
 	tag = soup.find("div")
 	assert tag is not None
 
-	elements = parser.parse_elements(tag)
+	elements = parser.parse_elements(tag, allow_footnotes = True)
 
 	assert len(elements) == 3
 	assert elements[0].to_html() == "<h3 style=\"text-align: center\">Header</h3>"
@@ -197,7 +197,7 @@ def test_parse_paragraphs():
 	tag = soup.find("p")
 	assert tag is not None
 
-	paragraphs = parser.parse_paragraphs(tag)
+	paragraphs = parser.parse_paragraphs(tag, allow_footnotes = False)
 
 	assert len(paragraphs) == 3
 
@@ -215,7 +215,7 @@ def test_parse_paragraphs():
 	tag = soup.find("p")
 	assert tag is not None
 
-	paragraphs = parser.parse_paragraphs(tag)
+	paragraphs = parser.parse_paragraphs(tag, allow_footnotes = True)
 	assert len(paragraphs[0].footnotes) == 1
 
 def test_split():
@@ -241,10 +241,10 @@ def test_split():
 
 def test_unwrap_non_styling_childrens():
 
-	html: str = "<p><sup>styled</sup> text <a href=\"somelink\">wrapped</a> or <span>no</span></p>"
+	html: str = "<p><sup>styled</sup> text <a href=\"www.example.com\">wrapped</a> or <span>no</span></p>"
 	soup = BeautifulSoup(html, "html.parser")
 	tag = soup.find("p")
 	assert tag is not None
 
 	parser.unwrap_non_styling_childrens(tag)
-	assert str(tag) == "<p><sup>styled</sup> text wrapped or no</p>"
+	assert str(tag) == "<p><sup>styled</sup> text <a href=\"www.example.com\">wrapped</a> or no</p>"
