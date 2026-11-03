@@ -77,15 +77,14 @@ class UnsupportedContentError(Exception):
 		super().__init__(content_type.value)
 
 class UnsupportedFormatError(Exception):
-	"""Исключение: неподдерживаемый формат JSON."""
+	"""Exception: unsupported JSON format."""
 
-	def __init__(self, title_format: str | None = None):
+	def __init__(self, message: str):
 		"""
-		Исключение: неподдерживаемый формат JSON.
+		Exception: unsupported JSON format.
 
-		:param title_format: Название формата.
-		:type title_format: str | None
+		:param message: Error message or format name.
+		:type message: str
 		"""
 
-		title_format = f" \"{title_format}\"" if title_format else ""
-		super().__init__(f"Unsupported format{title_format}.")
+		super().__init__(message)

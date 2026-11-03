@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Literal
 
+from bs4 import BeautifulSoup, Tag
+
 from dublib.functions.data import to_sequence
 from dublib.functions.data.dictionary import insert_item
 from dublib.validators import types
@@ -245,7 +247,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 		self._data = self._data | data
 
-		self._description = tuple(Paragraph(element) for element in self._data["description"])
+		self._description = self._parse_description(self._data["description"])
 		self._parse_covers()
 		self._parse_persons()
 		self._parse_content()
@@ -315,14 +317,16 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 	def set_tags(self, tags: "Sequence[str]"):
 		"""
-		Задаёт список тегов.
+		Set new tags and clear exists.
 
-		:param tags: Список тегов.
-		:type tags: Sequence[str]
+		Args:
+			tags (Sequence[str]): New tags.
 		"""
 
-		for Tag in tags:
-			self.add_tag(Tag)
+		self._data["tags"] = []
+
+		for tag in tags:
+			self.add_tag(tag)
 
 	def set_franchises(self, franchises: "Sequence[str]"):
 		"""
@@ -788,6 +792,33 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 			Buffer.create_resolution(CoverData.get("width"), CoverData.get("height"))
 			self._covers.append(Buffer)
 
+	def _parse_description(self, description: "Sequence[str]") -> tuple[Paragraph, ...]:
+		"""
+		Parse descriptions into paragraphs elements.
+
+		Args:
+			description (Sequence[str]): Description lines with HTML markup.
+
+		Returns:
+			tuple[Paragraph, ...]: Paragraphs elements..
+
+		Raises:
+			exceptions.parsers.UnsupportedFormatError: Description.
+		"""
+		paragraphs: list[Paragraph] = []
+
+		for line in description:
+			soup = BeautifulSoup(line, "html.parser")
+			tag: Tag | None = soup.find("p")
+
+			if not tag:
+				raise exceptions.parsers.UnsupportedFormatError("Description contain non-paragraph element.")
+
+			inner_text: str = tag.decode_contents()
+			paragraphs.append(Paragraph(inner_text))
+
+		return tuple(paragraphs)
+
 	def _parse_persons(self):
 		"""Parse persons data from dictionaries."""
 
@@ -811,7 +842,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 				buffer.add_image(image)
 
 			if description:
-				elements: tuple[Paragraph, ...] = tuple(Paragraph(element) for element in description)
+				elements: tuple[Paragraph, ...] = self._parse_description(description)
 				buffer.set_description(elements)
 
 			self._persons.append(buffer)
