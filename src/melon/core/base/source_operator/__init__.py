@@ -36,215 +36,7 @@ if TYPE_CHECKING:
 __all__ = ["BaseSourceOperator", "SourceProperties"]
 
 class BaseSourceOperator[CSM: "BaseModel"](ABC):
-	"""Базовый оператор источника."""
-
-	#==========================================================================================#
-	# >>>>> PROPERTIES <<<<< #
-	#==========================================================================================#
-
-	@property
-	def extensions(self) -> "ExtensionsOperator":
-		"""Оператор расширений."""
-
-		return self._parser_operator.extensions
-
-	@property
-	def images_downloader(self) -> ImagesDownloader:
-		"""Оператор скачивания изображений."""
-
-		return self._ImagesDownloader
-
-	@property
-	def is_collector_implemented(self) -> bool:
-		"""Состояние: переопределён ли метод `_CollectSlugs()`."""
-
-		return type(self)._collect_slugs is not BaseSourceOperator._collect_slugs
-
-	@property
-	def manifest(self) -> ParserManifest:
-		"""Манифест парсера."""
-
-		return self._Manifest
-
-	@property
-	def parser_name(self) -> str:
-		"""Имя парсера."""
-
-		return self._Manifest.parser_name
-
-	@property
-	def portals(self) -> "Portals":
-		"""Порталы вывода парсера."""
-
-		return self._Portals
-
-	@property
-	def properties(self) -> SourceProperties:
-		"""Свойства источника."""
-
-		return self._Properties
-
-	@property
-	def requestor(self) -> WebRequestor:
-		"""Менеджер запросов."""
-
-		return self._Requestor
-
-	@property
-	def settings(self) -> ParserSettings[CSM]:
-		"""Настройки парсера."""
-
-		return self._Settings
-
-	@property
-	def shared_data(self) -> "SharedData":
-		"""Разделяемые в контексте сессий одного парсера данные."""
-
-		return self._SharedData
-
-	@property
-	def system_objects(self) -> "SystemObjects":
-		"""Коллекция системных объектов."""
-
-		return self._SystemObjects
-
-	@property
-	def temp_directory(self) -> Path:
-		"""Путь ко временному каталогу парсера.."""
-
-		return self._Temper.get_parser_temp_directory(self._Manifest.parser_name)
-
-	#==========================================================================================#
-	# >>>>> OVERRIDABLE METHODS <<<<< #
-	#==========================================================================================#
-
-	def _authorize(self):
-		"""
-		It is executed after `_InitializeRequestor()` and wrapped to catch `TokenExpiredError` exceptions.
-
-		Used to set up authorization based on the _Authorization_ header.
-		"""
-
-		pass
-
-	def _collect_slugs(self, period: int | None = None, filters: str | None = None, pages: int | None = None) -> Sequence[str]:  # noqa: ARG002
-		"""
-		Collect titles slug by parameters.
-
-		:param period: Number of hours until the current moment, which constitutes the data parsing period.
-		:type period: int | None
-		:param filters: Filtering parameters. For more details see parser *README.md*.
-		:type filters: str | None
-		:param pages: Requested pages count.
-		:type pages: int | None
-		:return: Number of requested catalog pages.
-		:rtype: Sequence[str]
-		"""
-
-		return ()
-
-	@abstractmethod
-	def _export_custom_settings_model(self) -> type[CSM]:
-		"""
-		Export custom parser settings [pydantic](https://github.com/pydantic/pydantic) model.
-
-		:return: Custom parser settings model.
-		:rtype: type[BaseModel]
-		"""
-
-		pass
-
-	def _export_source_properties(self) -> SourceProperties:
-		"""
-		Export source properties.
-
-		:return: Source properties.
-		:rtype: SourceProperties
-		"""
-
-		return SourceProperties(
-			one_cover = True,
-		)
-
-	def _extract_slug_from_string(self, string: str) -> str | None:
-		"""
-		Extract title slug from string. Can be used to extract slugs from links.
-
-		:param string: String to extraction.
-		:type string: str
-		:return: Title slug or `None` if extracting failed or not implemented.
-		:rtype: str | None
-		"""
-
-		return string
-
-	def _initialize_requestor(self) -> WebRequestor:
-		"""
-		Initialize requests operator.
-
-		:return: Requests operator.
-		:rtype: WebRequestor
-		"""
-
-		Config = WebConfig()
-		Config.select_lib(WebLib.requests)
-		Config.set_retries_count(self.settings.network.retries)
-		Config.set_delay(self.settings.network.delay)
-		Config.enable_proxy_protocol_switching(True)
-
-		Config.headers.generate_user_agent(("desktop",))
-		Config.headers.automatically_accept_client_hints(True)
-		Config.headers.add("referer", f"https://{self.manifest.domain}/")
-
-		WebRequestorObject = WebRequestor(Config)
-		WebRequestorObject.add_proxies(self.settings.network.proxies)
-
-		return WebRequestorObject
-
-	def _is_title_exists(self, slug: str) -> bool | None:  # noqa: ARG002
-		"""
-		Check if title exists in source.
-
-		:param slug: Title slug.
-		:type slug: str
-		:return: Return `True` if title exists in source or `None` if checking failed or not implemented.
-		:rtype: bool | None
-		"""
-
-		return None
-
-	def _post_init(self):
-		"""Execute after instance initialization."""
-
-		pass
-
-	def _post_mirror_changing(self, mirror: str | None):
-		"""
-		Execute after mirror changing.
-
-		:param mirror: Mirror domain.
-		:type mirror: str | None
-		"""
-
-		pass
-
-	def _temp_image(self, url: str, force_mode: bool = False) -> ImageDownloadingResult:
-		"""
-		Download image into parser temporary directory.
-
-		:param url: Link to image.
-		:type url: str
-		:param force_mode: Enable images overwriting mode.
-		:type force_mode: bool
-		:return: Image downloading result.
-		:rtype: ImageDownloadingResult
-		"""
-
-		return self._ImagesDownloader.temp_image(url, force_mode = force_mode)
-
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS <<<<< #
-	#==========================================================================================#
+	"""Base source operator."""
 
 	def __init__(self, system_objects: "SystemObjects", manifest: "ParserManifest"):
 		"""
@@ -384,18 +176,18 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 
 		return descriptor
 
-	def get_content_type_by_slug(self, slug: str) -> ContentType:  # noqa: ARG002
+	def get_content_type_by_slug(self, slug: str) -> ContentType:
 		"""
-		Определяет тип контента по алиасу тайтла.
+		Get content type by title slug.
 
-		:param slug: Алиас тайтла.
-		:type slug: str
-		:return: Тип контента.
-		:rtype: ContentType
+		Args:
+			slug (str): Title slug.
+
+		Returns:
+			ContentType: Content type.
 		"""
 
-		# TODO: метод для определения типа контента по алиасу.
-		return self._Manifest.content_types[0]
+		return self._get_content_type_by_slug(slug)
 
 	def is_title_exists(self, slug: str) -> bool | None:
 		"""
@@ -484,3 +276,220 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		self._post_mirror_changing(mirror)
 
 		return True
+
+	@property
+	def extensions(self) -> "ExtensionsOperator":
+		"""Оператор расширений."""
+
+		return self._parser_operator.extensions
+
+	@property
+	def images_downloader(self) -> ImagesDownloader:
+		"""Оператор скачивания изображений."""
+
+		return self._ImagesDownloader
+
+	@property
+	def is_collector_implemented(self) -> bool:
+		"""Состояние: переопределён ли метод `_CollectSlugs()`."""
+
+		return type(self)._collect_slugs is not BaseSourceOperator._collect_slugs
+
+	@property
+	def manifest(self) -> ParserManifest:
+		"""Манифест парсера."""
+
+		return self._Manifest
+
+	@property
+	def parser_name(self) -> str:
+		"""Имя парсера."""
+
+		return self._Manifest.parser_name
+
+	@property
+	def portals(self) -> "Portals":
+		"""Порталы вывода парсера."""
+
+		return self._Portals
+
+	@property
+	def properties(self) -> SourceProperties:
+		"""Свойства источника."""
+
+		return self._Properties
+
+	@property
+	def requestor(self) -> WebRequestor:
+		"""Менеджер запросов."""
+
+		return self._Requestor
+
+	@property
+	def settings(self) -> ParserSettings[CSM]:
+		"""Настройки парсера."""
+
+		return self._Settings
+
+	@property
+	def shared_data(self) -> "SharedData":
+		"""Разделяемые в контексте сессий одного парсера данные."""
+
+		return self._SharedData
+
+	@property
+	def system_objects(self) -> "SystemObjects":
+		"""Коллекция системных объектов."""
+
+		return self._SystemObjects
+
+	@property
+	def temp_directory(self) -> Path:
+		"""Путь ко временному каталогу парсера.."""
+
+		return self._Temper.get_parser_temp_directory(self._Manifest.parser_name)
+
+	def _authorize(self):
+		"""
+		It is executed after `_InitializeRequestor()` and wrapped to catch `TokenExpiredError` exceptions.
+
+		Used to set up authorization based on the _Authorization_ header.
+		"""
+
+		pass
+
+	def _collect_slugs(self, period: int | None = None, filters: str | None = None, pages: int | None = None) -> Sequence[str]:  # noqa: ARG002
+		"""
+		Collect titles slug by parameters.
+
+		:param period: Number of hours until the current moment, which constitutes the data parsing period.
+		:type period: int | None
+		:param filters: Filtering parameters. For more details see parser *README.md*.
+		:type filters: str | None
+		:param pages: Requested pages count.
+		:type pages: int | None
+		:return: Number of requested catalog pages.
+		:rtype: Sequence[str]
+		"""
+
+		return ()
+
+	@abstractmethod
+	def _export_custom_settings_model(self) -> type[CSM]:
+		"""
+		Export custom parser settings [pydantic](https://github.com/pydantic/pydantic) model.
+
+		:return: Custom parser settings model.
+		:rtype: type[BaseModel]
+		"""
+
+		pass
+
+	# OVERRIDABLE
+	def _export_source_properties(self) -> SourceProperties:
+		"""
+		Export source properties.
+
+		:return: Source properties.
+		:rtype: SourceProperties
+		"""
+
+		return SourceProperties(
+			one_cover = True,
+		)
+
+	# OVERRIDABLE
+	def _extract_slug_from_string(self, string: str) -> str | None:
+		"""
+		Extract title slug from string. Can be used to extract slugs from links.
+
+		:param string: String to extraction.
+		:type string: str
+		:return: Title slug or `None` if extracting failed or not implemented.
+		:rtype: str | None
+		"""
+
+		return string
+
+	@abstractmethod
+	def _get_content_type_by_slug(self, slug: str) -> ContentType:
+		"""
+		Get content type by title slug.
+
+		Args:
+			slug (str): Title slug.
+
+		Returns:
+			ContentType: Content type.
+		"""
+
+		pass
+
+	# OVERRIDABLE
+	def _initialize_requestor(self) -> WebRequestor:
+		"""
+		Initialize requests operator.
+
+		:return: Requests operator.
+		:rtype: WebRequestor
+		"""
+
+		Config = WebConfig()
+		Config.select_lib(WebLib.requests)
+		Config.set_retries_count(self.settings.network.retries)
+		Config.set_delay(self.settings.network.delay)
+		Config.enable_proxy_protocol_switching(True)
+
+		Config.headers.generate_user_agent(("desktop",))
+		Config.headers.automatically_accept_client_hints(True)
+		Config.headers.add("referer", f"https://{self.manifest.domain}/")
+
+		WebRequestorObject = WebRequestor(Config)
+		WebRequestorObject.add_proxies(self.settings.network.proxies)
+
+		return WebRequestorObject
+
+	# OVERRIDABLE
+	def _is_title_exists(self, slug: str) -> bool | None:  # noqa: ARG002
+		"""
+		Check if title exists in source.
+
+		:param slug: Title slug.
+		:type slug: str
+		:return: Return `True` if title exists in source or `None` if checking failed or not implemented.
+		:rtype: bool | None
+		"""
+
+		return None
+
+	# OVERRIDABLE
+	def _post_init(self):
+		"""Execute after instance initialization."""
+
+		pass
+
+	# OVERRIDABLE
+	def _post_mirror_changing(self, mirror: str | None):
+		"""
+		Execute after mirror changing.
+
+		:param mirror: Mirror domain.
+		:type mirror: str | None
+		"""
+
+		pass
+
+	# OVERRIDABLE
+	def _temp_image(self, url: str, force_mode: bool = False) -> ImageDownloadingResult:
+		"""
+		Download image into parser temporary directory.
+
+		:param url: Link to image.
+		:type url: str
+		:param force_mode: Enable images overwriting mode.
+		:type force_mode: bool
+		:return: Image downloading result.
+		:rtype: ImageDownloadingResult
+		"""
+
+		return self._ImagesDownloader.temp_image(url, force_mode = force_mode)

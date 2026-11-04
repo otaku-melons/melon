@@ -18,6 +18,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Title data now has method for many branches set. 
 - Parent parser version specification.
 - Title ID now printed after main data parsed.
+- Source operator method for determining content type by title slug.
 
 ### 🎨 Changed
 - Manifest now parsed with [pydantic](https://github.com/pydantic/PYDANTIC) model and [dublib](https://github.com/dub1401/dublib) validators
