@@ -113,4 +113,4 @@ class Check(BaseCheck):
 	def _post_init(self):
 		"""This method will be executed after instance initialization."""
 
-		self.__pattern: str = r"from \.(\w+) import Extension as (\w+)"
+		self.__pattern: str = r"from (\.+[a-zA-Z0-9_.]+) import Extension as (\w+)"

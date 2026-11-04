@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, override
 
-from ....core.base.parser.enums import ContentType
+from ....core.system_objects.printer.templates.manager import ParsersTableRow
 from ...base import BaseCommandProcessor
 from ...base.structs import ProcessorOptions
 from ...base.templates import BaseParameters
@@ -78,32 +78,22 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 		:rtype: bool
 		"""
 
-		TableData: dict[str, list[str]] = {
-			"NAME": [],
-			"VERSION": [],
-			"TYPES": [],
-			"DOMAIN": [],
-			"collect": [],
-		}
+		parsers_rows: list[ParsersTableRow] = []
 
-		for ParserName in self.system_objects.manager.parsers.installed:
-			parser_operator = self.system_objects.manager.parsers.get_operator(ParserName)
-			SourceOperator = parser_operator.launch()
-			TypesEmoji = {
-				ContentType.Manga: "m",
-				ContentType.Ranobe: "r",
-			}
+		for parser_name in self.system_objects.manager.parsers.installed:
+			parser_operator = self.system_objects.manager.parsers.get_operator(parser_name)
+			source_operator = parser_operator.launch()
 
-			ParserVersion = SourceOperator.manifest.version or ""
-			ParserContentType: list[str] = [TypesEmoji[CurrentType] for CurrentType in SourceOperator.manifest.content_types]
-			ParserSite: str = "https://" + SourceOperator.manifest.domain
+			buffer = ParsersTableRow(
+				name = parser_name,
+				version = source_operator.manifest.version,
+				content_types = source_operator.manifest.content_types,
+				domain = source_operator.manifest.domain,
+				collect = source_operator.is_collector_implemented,
+			)
 
-			TableData["NAME"].append(ParserName)
-			TableData["VERSION"].append(str(ParserVersion))
-			TableData["TYPES"].append(", ".join(ParserContentType))
-			TableData["DOMAIN"].append(ParserSite)
-			TableData["collect"].append(str(SourceOperator.is_collector_implemented))
+			parsers_rows.append(buffer)
 
-		self.printer.templates.manager.parsers_table(TableData)
+		self.printer.templates.manager.parsers_table(parsers_rows)
 
 		return True

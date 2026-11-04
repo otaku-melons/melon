@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, override
 
-from prettytable import PrettyTable
+from rich.table import Table
 
 from dublib.functions.data import stringify_float
 
@@ -50,12 +50,10 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 		"""
 
 		match status:
-			case CheckStatus.OK: return f"[green]{text}[/]"
-			case CheckStatus.Skipped: return f"[bright_cyan]{text}[/]"
-			case CheckStatus.Error: return f"[red]{text}[/]"
-			case CheckStatus.Warning: return f"[yellow]{text}[/]"
-
-		return text
+			case CheckStatus.OK: return f"[green]{text}[/green]"
+			case CheckStatus.Skipped: return f"[bright_cyan]{text}[/bright_cyan]"
+			case CheckStatus.Error: return f"[red]{text}[/red]"
+			case CheckStatus.Warning: return f"[yellow]{text}[/yellow]"
 
 	def __print_results(self, results: tuple[CheckResult, ...]):
 		"""
@@ -66,16 +64,7 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 		"""
 
 		results_count: int = len(results)
-
-		headers: tuple[str, ...] = ("Progress", "Status", "Name", "Message")
-		headers = tuple(f"[b]{string}[/]" for string in headers)
-
-		table = PrettyTable(headers)
-		table.border = False
-		# table.header = False
-		table.align = "l"
-		table.left_padding_width = 0
-		table.right_padding_width = 4
+		table = Table(box = None, show_header = False, pad_edge = False, show_footer = False)
 
 		for index in range(results_count):
 			result = results[index]
@@ -92,9 +81,9 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 			row: list[str] = [progress_string, status, name, message]
 			row = [self.__colorize_text(result.status, string) for string in row]
 
-			table.add_row(row)
+			table.add_row(*row)
 
-		self.printer.emit(table.get_string())
+		self.printer.table(table)
 
 	def __print_statistics(self, statistics: Statistics):
 		"""

@@ -1,17 +1,35 @@
-from prettytable import PrettyTable, TableStyle
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
+from packaging.version import Version
+from rich.table import Table
+
+from ....base.parser.enums import ContentType
 from ...manager.parser.enums import ExportResult
 from ._base import _BaseTemplatesSection
 
+if TYPE_CHECKING:
+	from collections.abc import Sequence
+
+@dataclass(frozen = True)
+class ParsersTableRow:
+	"""Parser table row."""
+
+	name: str
+	version: Version | None
+	content_types: tuple[ContentType, ...]
+	domain: str
+	collect: bool
+
 class ManagerTemplates(_BaseTemplatesSection):
-	"""Расширенные шаблоны вывода: системный менеджер."""
+	"""Extended output templates: manager."""
 
 	def exported(self, result: ExportResult):
 		"""
-		Шаблон вывода: результат экспорта настроек.
+		Emit message: config exported.
 
-		:param result: Результат экспорта настроек.
-		:type result: ExportResult
+		Args:
+			result (ExportResult): Config export result.
 		"""
 
 		match result:
@@ -21,37 +39,25 @@ class ManagerTemplates(_BaseTemplatesSection):
 			case ExportResult.Overwtitten: self.printer.emit("Config overwritten.")
 			case ExportResult.Merged: self.printer.emit("Config merged with preset.")
 
-	def parsers_table(self, columns: dict[str, list[str]]):
+	def parsers_table(self, rows: "Sequence[ParsersTableRow]"):
 		"""
-		Шаблон вывода: таблица парсеров.
+		Emit message: parsers table.
 
-		:param columns: Словарь данных для вывода.
-		:type columns: dict[str, list[str]]
+		Args:
+			rows (Sequence[ParsersTableRow]): Parsers table rows.
 		"""
 
-		TableObject = PrettyTable()
-		TableObject.set_style(TableStyle.PLAIN_COLUMNS)
-		Implementations = ("collect",)
-		ImplementationStatuses = {
-			"True": "[green]true[/green]",
-			"False": "[yellow]false[/yellow]",
-			"None": "[red]error[/red]",
-		}
+		table = Table(box = None, header_style = "bold")
 
-		for DomainIndex in range(len(columns["DOMAIN"])):
-			columns["DOMAIN"][DomainIndex] = f"[i]{columns["DOMAIN"][DomainIndex]}[/i]"
+		for column in ("Name", "Version", "Content", "Source", "collect"):
+			table.add_column(column)
 
-		for ColumnName in Implementations:
+		for row in rows:
+			version: str | None = str(row.version) if row.version else None
+			content: str = ", ".join(content_type.value[0] for content_type in row.content_types)
+			source: str = f"https://{row.domain}"
+			collect: str = "[green]true[/green]" if row.collect else "[red]false[/red]"
 
-			for StatusIndex in range(len(columns[ColumnName])):
-				columns[ColumnName][StatusIndex] = ImplementationStatuses[columns[ColumnName][StatusIndex]]
+			table.add_row(row.name, version, content, source, collect)
 
-		for ColumnName in columns.keys():
-			Buffer = f"[b]{ColumnName}[/b]"
-			TableObject.add_column(Buffer, columns[ColumnName])
-
-		TableObject.align = "l"
-		TableObject.sortby = "[b]NAME[/b]"
-		TableString = str(TableObject).strip()
-		self.printer.emit(TableString if TableString else "Parsers not installed.")
-
+		self.printer.table(table)

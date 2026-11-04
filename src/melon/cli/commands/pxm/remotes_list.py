@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, override
 
-from prettytable import PrettyTable, TableStyle
+from rich.table import Table
 
 from ...base import BaseCommandProcessor
 from ...base.structs import ProcessorOptions
@@ -78,29 +78,18 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 		:rtype: bool
 		"""
 
-		InstalledParsers: list[str] = self.system_objects.manager.parsers.installed
+		installed_parsers: list[str] = self.system_objects.manager.parsers.installed
+		table = Table(box = None, header_style = "bold", pad_edge = False)
 
-		TableData: dict[str, list[str]] = {
-			"PARSER": [],
-			"REPOSITORY": [],
-		}
+		table.add_column("Parser")
+		table.add_column("Installed", justify = "center")
+		table.add_column("Repository", style = "i")
 
-		for ParserName in self.system_objects.manager.repositories.available_parsers:
-			RepositoryURL: str = self.system_objects.manager.repositories.get(ParserName, exception = True)
-			Status = "✅" if ParserName in InstalledParsers else "❌"
-			TableData["PARSER"].append(f"{Status} {ParserName}")
-			TableData["REPOSITORY"].append(f"[i]{RepositoryURL}[/]")
+		for parser_name in self.system_objects.manager.repositories.available_parsers:
+			repository_url: str = self.system_objects.manager.repositories.get(parser_name, exception = True)
+			status: str = "✅" if parser_name in installed_parsers else "❌"
+			table.add_row(parser_name, status, repository_url)
 
-		TableObject = PrettyTable()
-		TableObject.set_style(TableStyle.PLAIN_COLUMNS)
-
-		for ColumnName in TableData.keys():
-			Buffer = f"[b]{ColumnName}[/]"
-			TableObject.add_column(Buffer, TableData[ColumnName])
-
-		TableObject.align = "l"
-		TableObject.sortby = "[b]PARSER[/]"
-		TableString = str(TableObject).strip()
-		self.printer.emit(TableString)
+		self.printer.table(table)
 
 		return True

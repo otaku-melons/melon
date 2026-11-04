@@ -11,54 +11,56 @@ from .portals import Portals
 from .templates import Templates
 
 if TYPE_CHECKING:
+	from rich.table import Table
+
 	from ....core.system_objects import SystemObjects
 
-#==========================================================================================#
-# >>>>> ОСНОВНОЙ КЛАСС <<<<< #
-#==========================================================================================#
-
 class Printer:
-	"""Оператор вывода."""
-
-	#==========================================================================================#
-	# >>>>> PROPERTIES <<<<< #
-	#==========================================================================================#
-
-	@property
-	def progress_indicator(self) -> ProgressIndicator:
-		"""Терминальный индикатор прогресса на основе OSC 9;4."""
-
-		return self.__ProgressIndicator
-
-	@property
-	def system_objects(self) -> "SystemObjects":
-		"""Коллекция системных объектов."""
-
-		return self.__SystemObjects
-
-	@property
-	def templates(self) -> Templates:
-		"""Расширенные шаблоны вывода."""
-
-		return self.__Templates
-
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS <<<<< #
-	#==========================================================================================#
+	"""Output operator."""
 
 	def __init__(self, system_objects: "SystemObjects"):
 		"""
-		Оператор вывода.
+		Output operator.
 
-		:param system_objects: Коллекция системных объектов.
-		:type system_objects: SystemObjects
+		Args:
+			system_objects (SystemObjects): System objects collection.
 		"""
 
-		self.__SystemObjects = system_objects
+		self.__system_objects: SystemObjects = system_objects
 
 		self.__styler: TextStyler = TextStyler()
-		self.__ProgressIndicator = ProgressIndicator()
-		self.__Templates = Templates(self)
+		self.__progress_indicator: ProgressIndicator = ProgressIndicator()
+		self.__templates: Templates = Templates(self)
+
+	@overload
+	def critical(self, text: str, origin: str | None = None, end_work: Literal[True] = ...) -> NoReturn: ...
+	@overload
+	def critical(self, text: str, origin: str | None = None, end_work: Literal[False] = False): ...
+
+	def critical(self, text: str, origin: str | None = None, end_work: bool = False):
+		"""
+		Emit critical error message.
+
+		Args:
+			text (str): Message text.
+			origin (str | None): Message origin.
+			end_work (bool): Condition: stop script work.
+		"""
+
+		self.emit(text, MessageType.Critical, origin)
+		if end_work: sys.exit(1)
+
+	def debug(self, text: str, origin: str | None = None):
+		"""
+		Emit debug message. If debug mode disabled will be ignored.
+
+		Args:
+			text (str): Message text..
+			origin (str | None): Message origin.
+		"""
+
+		if self.system_objects.options.DEBUG:
+			self.emit(text, MessageType.Debug, origin)
 
 	def emit(
 		self,
@@ -68,22 +70,17 @@ class Printer:
 		end_line: bool = True,
 		flush: bool = False,
 		parse_mode: Literal["html", "rich"] | None = "rich",
-	):
+		):
 		"""
 		Emit message in output stream.
 
-		:param text: Message text.
-		:type text: str
-		:param message_type: Message type.
-		:type message_type: MessageType | None
-		:param origin: Message origin.
-		:type origin: str | None
-		:param end_line: Condition: addn ewline character at message end.
-		:type end_line: bool
-		:param flush: Condition: flush buffer.
-		:type flush: bool
-		:param parse_mode: Message styles parsing mode.
-		:type parse_mode: Literal["html", "rich"] | None
+		Args:
+			text (str): Message text.
+			message_type (MessageType | None): Message type.
+			origin (str | None): Message origin.
+			end_line (bool): Condition: add newline character at end.
+			flush (bool): Condition: flush terminal buffer.
+			parse_mode (Literal["html", "rich"] | None): Parse mode to create ANSI styles.
 		"""
 
 		match parse_mode:
@@ -93,85 +90,82 @@ class Printer:
 		message_text: str = generate_message(text, message_type, origin).lstrip()
 		print(message_text, end = "\n" if end_line else "", flush = flush)
 
-	def get_parser_portals(self, parser_name: str) -> Portals:
-		"""
-		Возвращает порталы вывода парсера.
-
-		:param parser_name: Имя парсера.
-		:type parser_name: str
-		:return: Порталы вывода парсера.
-		:rtype: Portals
-		"""
-
-		return Portals(self, parser_name)
-
-	#==========================================================================================#
-	# >>>>> ШАБЛОНЫ ВЫВОДА БАЗОВЫХ ТИПОВ СООБЩЕНИЙ <<<<< #
-	#==========================================================================================#
-
-	@overload
-	def critical(self, text: str, origin: str | None = None, end_work: Literal[True] = ...) -> NoReturn: ...
-	@overload
-	def critical(self, text: str, origin: str | None = None, end_work: Literal[False] = False): ...
-
-	def critical(self, text: str, origin: str | None = None, end_work: bool = False):
-		"""
-		Выводит в терминал критическую ошибку.
-
-		:param text: Текст сообщения.
-		:type text: str
-		:param origin: Источник сообщения.
-		:type origin: str | None
-		:param end_work: Указывает, нужно ли завершить работу скрипта при обработке ошибки.
-		:type end_work: bool
-		"""
-
-		self.emit(text, MessageType.Critical, origin)
-		if end_work: sys.exit(1)
-
-	def debug(self, text: str, origin: str | None = None):
-		"""
-		Выводит в терминал сообщение отладки.
-
-		:param text: Текст сообщения.
-		:type text: str
-		:param origin: Источник сообщения.
-		:type origin: str | None
-		"""
-
-		if self.__SystemObjects.options.DEBUG:
-			self.emit(text, MessageType.Debug, origin)
-
 	def error(self, text: str, origin: str | None = None):
 		"""
-		Выводит в терминал ошибку.
+		Emit error message.
 
-		:param text: Текст сообщения.
-		:type text: str
-		:param origin: Источник сообщения.
-		:type origin: str | None
+		Args:
+			text (str): Message text..
+			origin (str | None): Message origin.
 		"""
 
 		self.emit(text, MessageType.Error, origin)
 
+	def get_parser_portals(self, parser_name: str) -> Portals:
+		"""
+		Create parser portals instance.
+
+		Args:
+			parser_name (str): Parser name.
+
+		Returns:
+			Portals: Portals instance.
+		"""
+
+		return Portals(self, parser_name)
+
 	def json(self, data: dict):
 		"""
-		Выводит в терминал JSON-строку.
+		Serialize dictionary into JSON and emit it as message.
 
-		:param data: Словарь для преобразования в JSON-строку.
-		:type data: dict
+		Args:
+			data (dict): Serializable data.
 		"""
 
 		self.emit(orjson.dumps(data).decode())
 
+	def table(self, table: "Table"):
+		"""
+		Parse [Rich](https://github.com/textualize/rich) table end emit it as message.
+
+		Args:
+			table (Table): Rich table.
+		"""
+
+		text: str = self.styler.convert_table(table)
+		self.emit(text, parse_mode = None)
+
 	def warning(self, text: str, origin: str | None = None):
 		"""
-		Выводит в терминал предупреждения.
+		Emit warning message.
 
-		:param text: Текст сообщения.
-		:type text: str
-		:param origin: Источник сообщения.
-		:type origin: str | None
+		Args:
+			text (str): Message text..
+			origin (str | None): Message origin.
 		"""
 
 		self.emit(text, MessageType.Warning, origin)
+
+	@property
+	def progress_indicator(self) -> ProgressIndicator:
+		"""**OSC 9;4** protocol progress indicator."""
+
+		return self.__progress_indicator
+
+	@property
+	def system_objects(self) -> "SystemObjects":
+		"""System objects collection."""
+
+		return self.__system_objects
+
+	@property
+	def styler(self) -> TextStyler:
+		"""Text styler."""
+
+		return self.__styler
+
+	@property
+	def templates(self) -> Templates:
+		"""Extended output templates."""
+
+		return self.__templates
