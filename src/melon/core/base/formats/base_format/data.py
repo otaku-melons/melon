@@ -237,10 +237,10 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 	def from_dict(self, data: dict):
 		"""
-		Заполняет данные тайтла из переданного словаря.
+		Parse chapter dictionary from descriptive file and fill instance attributes.
 
-		:param data: Словарь данных.
-		:type data: dict
+		Args:
+			data (dict): Chapter data.
 		"""
 
 		self._data = self._data | data

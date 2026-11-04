@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
-from dublib.functions.data import zerotify
+from dublib.functions.data import deep_copy, zerotify
 from dublib.functions.data.dictionary import insert_dictionary_after_key
 from dublib.functions.data.string import remove_recurring_substrings
 
@@ -17,72 +17,86 @@ if TYPE_CHECKING:
 	from .controller import BaseTitleController
 
 class ExtraData:
-	"""Дополнительные данные главы."""
+	"""Chapter extra data."""
 
 	def __init__(self, base_keys: "Sequence[str]"):
 		"""
-		Дополнительные данные главы.
+		Chapter extra data.
 
-		:param base_keys: Последовательность базовых ключей, которые не могут быть использованы в дополнительных данных.
-		:type base_keys: Sequence[str]
+		Args:
+			base_keys (Sequence[str]): Base key which is reserved for main data.
 		"""
 
-		self.__BaseKeys = base_keys
+		self.__base_keys: tuple[str, ...] = tuple(base_keys)
 
-		self.__data: dict = {}
+		self.__data: dict[str, Any] = {}
 
 	def clear(self):
-		"""Удаляет все дополнительные данные."""
+		"""Clear extra data."""
 
 		self.__data.clear()
 
 	def exists(self, key: str) -> bool:
 		"""
-		Проверяет существования дополнительных данных.
+		Check is extra data with key exists.
 
-		:param key: Проверяемый ключ.
-		:type key: str
-		:return: Возвращает `True`, если ключ найден.
-		:rtype: bool
-		:raises ValueError: Ключ зарезервирован обязательными значениями.
+		Args:
+			key (str): Extra data key.
+
+		Returns:
+			bool: `True` if key exists.
+
+		Raises:
+			KeyError: Key is reserved by important values.
 		"""
 
-		if key in self.__BaseKeys:
-			raise ValueError("Key ir reserved by important values, not extra.")
+		if key in self.__base_keys:
+			raise KeyError(f"Key \"{key}\" is reserved by important values.")
 
 		return key in self.__data
 
-	def from_dict(self, data: dict):
+	def from_dict(self, data: dict, raise_error: bool = True):
 		"""
-		Копирует все пары ключ-значение, ключи которых не являются обязательными, в дополнительные данные.
+		Copy dictionary and check for base keys presence..
 
-		:param data: Словарь данных главы.
-		:type data: dict
+		Args:
+			data (dict): Extra data.
+			raise_error (bool): condition: raise error if data contains base key.
+
+		Raises:
+			KeyError: Key is reserved by important values.
 		"""
 
-		for Key in data.keys():
-			if Key not in self.__BaseKeys:
-				self.set(Key, data[Key])
+		self.clear()
+
+		for key in data.keys():
+			if key not in self.__base_keys:
+				if raise_error:
+					raise KeyError(f"Key \"{key}\" is reserved by important values.")
+				else:
+					self.set(key, data[key])
 
 	def get(self, key: str) -> Any:
-		"""
-		Возвращает дополнительные данные главы.
+		"""Summary.
 
-		:param key: Ключ, под которым хранятся дополнительные данные.
-		:type key: str
-		:return: Дополнительные данные.
-		:rtype: Any
-		:raises KeyError: Ключ не найден.
+		Args:
+			key (str): Description.
+
+		Returns:
+			Any: Description.
+
+		Raises:
+			KeyError: Extra data key missing.
 		"""
 
 		return self.__data[key]
 
 	def remove(self, key: str):
 		"""
-		Удаляет дополнительные данные главы. Игнорирует отсутствие ключа.
+		Remove extra data.
 
-		:param key: Ключ, под которым хранятся дополнительные данные.
-		:type key: str
+		Args:
+			key (str): Extra data key.
 		"""
 
 		if key in self.__data:
@@ -90,29 +104,30 @@ class ExtraData:
 
 	def set(self, key: str, value: Any):
 		"""
-		Задаёт дополнительные данные.
+		Set extra data.
 
-		:param key: Ключ.
-		:type key: str
-		:param value: Значение.
-		:type value: Any
-		:raises KeyError: Ключ используется для обязательных полей данных.
+		Args:
+			key (str): Key.
+			value (Any): Data.
+
+		Raises:
+			KeyError: Key is reserved by important values.
 		"""
 
-		if key in self.__BaseKeys:
-			raise KeyError(key)
+		if key in self.__base_keys:
+			raise KeyError(f"Key \"{key}\" is reserved by important values.")
 
 		self.__data[key] = value
 
 	def to_dict(self) -> dict:
 		"""
-		Возвращает словарное представление объекта.
+		Get dictionary representation of data (make deep copy of inner dictionary).
 
-		:return: Словарное представление объекта.
-		:rtype: dict
+		Returns:
+			dict: Dictionary representation of data.
 		"""
 
-		return self.__data.copy()
+		return deep_copy(self.__data)
 
 class BaseChapter(ABC):
 	"""Base chapter."""
@@ -138,75 +153,73 @@ class BaseChapter(ABC):
 			"is_paid": None,
 			"workers": [],
 		}
+		self._extra_data = ExtraData(tuple(self._data.keys()))
 
 		self._post_init()
-		self._extra_data = ExtraData(tuple(self._data.keys()))
 
 	def add_worker(self, worker: str):
 		"""
-		Добавляет идентификатор лица, адаптировавшего контент.
+		Add chapter worker.
 
-		:param worker: Идентификатор.
-		:type worker: str
+		Args:
+			worker (str): Worker details.
 		"""
 
-		if worker not in self._data["workers"]:
-			self._data["workers"].append(worker)
+		workers: list[str] = self._data["workers"]
+
+		if worker not in workers:
+			workers.append(worker)
 
 	def clear(self):
-		"""Clear chapter content."""
+		"""Clear chapter data."""
 
-		self._clear()
+		self._clear_content()
+		self.extra_data.clear()
 
 	def from_dict(self, data: dict):
 		"""
-		Заполняет данные главы из словаря.
+		Parse data from chapter dictionary.
 
-		:param data: Словарь данных главы.
-		:type data: dict
+		Args:
+			data (dict): Chapter dictionary.
 		"""
 
+		self.clear()
 		self._from_dict(data)
 		self.extra_data.from_dict(data)
 
 	def set_is_paid(self, is_paid: bool | None):
 		"""
-		Указывает, является ли глава платной.
+		Set condition: is chapter paid.
 
-		:param is_paid: Состояние: платная ли глава.
-		:type is_paid: bool | None
+		Args:
+			is_paid (bool | None): Condition: is chapter paid.
 		"""
 
 		self._data["is_paid"] = is_paid
 
 	def set_name(self, name: str | None):
 		"""
-		Задаёт название главы.
+		Set chapter name.
 
-		:param name: Название главы.
-		:type name: str | None
+		Args:
+			name (str | None): Chapter name.
 		"""
 
 		name = zerotify(name)
-		if name: name = name.strip()
 
-		if name and self._parser.settings.common.pretty:
-			if name.endswith("..."): name = name.rstrip(".") + "…"
-			else: name = name.rstrip(".–")
+		if name:
+			if self._parser.settings.common.pretty:
+				name = self._pretty_name(name)
 
-			name = name.replace("\u00A0", " ")
-			name = remove_recurring_substrings(name, " ")
-
-			name = name.rstrip(":.")
-
-		self._data["name"] = name
+			self._data["name"] = name
 
 	def set_number(self, number: float | int | str | None):
 		"""
-		Задаёт номер главы.
+		Set chapter number. Number should be in `x.y.z` format.
 
-		:param number: Номер главы.
-		:type number: float | int | str | None
+		Args:
+			number (float | int | str | None): Chapter number.
 		"""
 
 		self._data["number"] = self._pretty_number(number)
@@ -251,67 +264,78 @@ class BaseChapter(ABC):
 
 	@property
 	def id(self) -> int:
-		"""Уникальный идентификатор главы."""
+		"""ID."""
 
 		return self._data["id"]
 
 	@property
 	def images(self) -> tuple["ImageData", ...]:
-		"""Chapter images."""
+		"""Images."""
 
 		return tuple(self._get_chapter_images())
 
 	@property
 	def slug(self) -> str | None:
-		"""Алиас главы."""
+		"""Slug."""
 
 		return self._data["slug"]
 
 	@property
 	def volume(self) -> str | None:
-		"""Номер тома."""
+		"""Volume number."""
 
 		return self._data["volume"]
 
 	@property
 	def number(self) -> str | None:
-		"""Номер главы."""
+		"""Chapter number."""
 
 		return self._data["number"]
 
 	@property
 	def name(self) -> str | None:
-		"""Название главы."""
+		"""Name."""
 
 		return self._data["name"]
 
 	@property
 	def is_empty(self) -> bool:
-		"""Состояние: пуста ли глава."""
+		"""Condition: is chapter empty."""
 
 		return self._is_empty()
 
 	@property
 	def is_paid(self) -> bool | None:
-		"""Состояние: платная ли глава."""
+		"""Condition: is chapter paid."""
 
 		return self._data["is_paid"]
 
 	@property
-	def workers(self) -> tuple[str]:
-		"""Набор идентификаторов лиц, адаптировавших контент."""
+	def workers(self) -> tuple[str, ...]:
+		"""Workers."""
 
 		return tuple(self._data["workers"])
 
 	@property
 	def extra_data(self) -> ExtraData:
-		"""Дополнительные данные главы."""
+		"""Extra data."""
 
 		return self._extra_data
 
 	@abstractmethod
-	def _clear(self):
-		"""Очищает контент главы."""
+	def _clear_content(self):
+		"""Clear chapter content."""
+
+		pass
+
+	@abstractmethod
+	def _from_dict(self, data: dict):
+		"""
+		Parse chapter dictionary from descriptive file and fill instance attributes.
+
+		Args:
+			data (dict): Chapter data.
+		"""
 
 		pass
 
@@ -327,23 +351,12 @@ class BaseChapter(ABC):
 		pass
 
 	@abstractmethod
-	def _from_dict(self, data: dict):
-		"""
-		Заполняет данные главы из словаря.
-
-		:param data: Словарь данных главы.
-		:type data: dict
-		"""
-
-		pass
-
-	@abstractmethod
 	def _is_empty(self) -> bool:
 		"""
-		Проверяет, пустая ли глава.
+		Check is chapter empty.
 
-		:return: Состояние: пуста ли глава.
-		:rtype: bool
+		Returns:
+			bool: Condition: is chapter empty.
 		"""
 
 		return False
@@ -358,20 +371,50 @@ class BaseChapter(ABC):
 
 		pass
 
+	def _pretty_name(self, name: str) -> str:
+		"""
+		Pretty chapter name.
+
+		Args:
+			name (str): Raw chapter name.
+
+		Returns:
+			str: Prettified chapter name.
+		"""
+
+		if name.endswith("..."):
+			name = name.rstrip(".") + "…"
+		else:
+			name = name.rstrip(".–")
+
+		name = name.replace("\u00A0", " ")
+		name = remove_recurring_substrings(name, " ")
+
+		return name.rstrip(":.")
+
 	def _pretty_number(self, number: float | int | str | None) -> str | None:
 		"""
-		Преобразует номер главы или тома в корректное значение.
+		Convert raw chapter number into valid value.
 
-		:param number: Номер главы или тома.
-		:type number: float | int | str | None
-		:return: Откорректированный номер.
-		:rtype: str | None
+		Args:
+			number (float | int | str | None): Raw chapter number.
+
+		Returns:
+			str | None: Converted chapter number in `x.y.z` format.
 		"""
 
-		if number is None: number = ""
-		elif type(number) is not str: number = str(number)
-		if "-" in number: number = number.split("-")[0]
-		number = number.strip("\t .\n")
-		Number = cast("str | None", zerotify(number))
+		if number is None:
+			return
 
-		return Number
+		if isinstance(number, str):
+			number = number.strip()
+		else:
+			number = str(number)
+
+		if "-" in number:
+			number = number.split("-")[0]
+
+		number = number.strip("\t .\n")
+		number = zerotify(number)
+
+		return number
