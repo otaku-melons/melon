@@ -1,14 +1,14 @@
 from typing import TYPE_CHECKING, override
 
 from ....html.base_elements import BaseElement, TextElement
-from ....html.elements.paragraph import Paragraph
-from ....html.footnote import Footnote
 from ...structs.image import ImageData
 from ..base_format.chapter import BaseChapter
 from .enums import ChapterType
 
 if TYPE_CHECKING:
 	from collections.abc import Sequence
+
+	from ....html.footnote import Footnote
 
 class Chapter(BaseChapter):
 	"""Ranobe chapter."""
@@ -97,7 +97,7 @@ class Chapter(BaseChapter):
 
 		self._data = self._data | data
 
-		footnotes: tuple[Footnote, ...] = self.__parse_footnotes(self._data["footnotes"])
+		footnotes: tuple[Footnote, ...] = self._parser.title.html_interpreter.interpret_footnotes(self._data["footnotes"])
 		lines: list[str] = self._data["paragraphs"]
 		elements = self._parser.title.html_interpreter.interpret_lines(lines, footnotes)
 
@@ -160,23 +160,3 @@ class Chapter(BaseChapter):
 		"""
 
 		return tuple(element.to_html() for element in self.__elements)
-
-	def __parse_footnotes(self, footnotes_data: dict[str, list[str]]) -> tuple[Footnote, ...]:
-		"""
-		Parse footnotes from data dictionary.
-
-		Args:
-			footnotes_data (dict[str, list[str]]): Dictionary in which key is footnote ID and value is HTML lines.
-
-		Returns:
-			tuple[Footnote, ...]: Chapter footnotes.
-		"""
-
-		footnotes: list[Footnote] = []
-
-		for footnote_id, lines in footnotes_data.items():
-			elements = self._parser.title.html_interpreter.interpret_lines(lines, allowed_types = (ImageData, Paragraph))
-			buffer = Footnote(elements, id = footnote_id)
-			footnotes.append(buffer)
-
-		return tuple(footnotes)

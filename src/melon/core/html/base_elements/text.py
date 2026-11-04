@@ -81,15 +81,8 @@ class TextElement(BaseElement):
 				if not tag_rules:
 					raise exceptions.html.UnresolvedTagError(child.name)
 
-				if child.name == "a":
-
-					if not self.is_footnotes_allowed:
-						raise exceptions.html.UnresolvedTagError(child.name)
-
-					elif not child.has_attr("data-footnote"):
-						raise exceptions.html.UnresolvedTagError(child.name)
-
-					continue
+				if child.name == "a" and child.has_attr("data-footnote") and not self.is_footnotes_allowed:
+					raise exceptions.html.UnresolvedTagError(child.name)
 
 				if not tag_rules.is_styling:
 					raise exceptions.html.UnresolvedTagError(child.name)

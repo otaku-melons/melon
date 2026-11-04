@@ -10,6 +10,7 @@ from .elements.blockquote import Blockquote
 from .elements.header import Header
 from .elements.paragraph import Paragraph
 from .enums import Align
+from .footnote import Footnote
 
 if TYPE_CHECKING:
 	from collections.abc import Sequence
@@ -17,7 +18,6 @@ if TYPE_CHECKING:
 	from bs4._typing import AttributeValueList
 
 	from .base_elements import BaseElement
-	from .footnote import Footnote
 
 class HyperTextInterpreter:
 	"""HTML lines into elements interpreter."""
@@ -117,7 +117,7 @@ class HyperTextInterpreter:
 
 			case "blockquote":
 				align: Align | None = self.parse_align(tag)
-				childrens: tuple[Tag, ...] = tuple(tag.find_all())
+				childrens: tuple[Tag, ...] = tuple(tag.find_all(recursive = False))
 				elements: list[BaseElement | ImageData] = []
 
 				for child in childrens:
@@ -132,6 +132,26 @@ class HyperTextInterpreter:
 
 			case _:
 				raise exceptions.html.DecodingError(f"Unknown root tag: \"{root_tag_name}\".")
+
+	def interpret_footnotes(self, footnotes_data: dict[str, list[str]]) -> tuple[Footnote, ...]:
+		"""
+		Interpret footnotes from data dictionary.
+
+		Args:
+			footnotes_data (dict[str, list[str]]): Dictionary in which key is footnote ID and value is HTML lines.
+
+		Returns:
+			tuple[Footnote, ...]: Chapter footnotes.
+		"""
+
+		footnotes: list[Footnote] = []
+
+		for footnote_id, lines in footnotes_data.items():
+			elements = self.interpret_lines(lines, allowed_types = (ImageData, Paragraph))
+			buffer = Footnote(elements, id = footnote_id)
+			footnotes.append(buffer)
+
+		return tuple(footnotes)
 
 	@overload
 	def interpret_lines[T: BaseElement | ImageData](
@@ -210,7 +230,7 @@ class HyperTextInterpreter:
 			exceptions.html.DecodingError: Header level must be from 3 to 6..
 		"""
 
-		level: int = int(header_tag.rstrip("h"))
+		level: int = int(header_tag.lstrip("h"))
 
 		if level not in (3, 4, 5, 6):
 			raise exceptions.html.DecodingError("Header level must be from 3 to 6.")
@@ -269,7 +289,15 @@ class HyperTextInterpreter:
 			str: Root tag name.
 		"""
 
-		return line.split(" ", maxsplit = 1)[0].lstrip("<")
+		value: str = line.split(">", maxsplit = 1)[0]
+
+		if not value:
+			raise exceptions.html.DecodingError("Can't parse root HTML tag name.")
+
+		if " " in value:
+			value = value.split(maxsplit = 1)[0]
+
+		return value.lstrip("<")
 
 	def __to_tag(self, line: str, tag_name: str) -> Tag:
 		"""

@@ -6,6 +6,7 @@ from .base import BaseElement
 class AlignableElement(BaseElement):
 	"""Alignable element."""
 
+
 	def set_align(self, align: Align | None):
 		"""
 		Set text align.
@@ -15,6 +16,12 @@ class AlignableElement(BaseElement):
 		"""
 
 		self._align = align
+
+	@property
+	def align(self) -> Align | None:
+		"""Align."""
+
+		return self._align
 
 	@override
 	def _post_init(self):
