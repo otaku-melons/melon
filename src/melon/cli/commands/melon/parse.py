@@ -19,6 +19,7 @@ if TYPE_CHECKING:
 	from dublib.cli.terminalyzer import CommandEntity, CommandModel
 
 	from ....core.base.formats.base_format.controller import BaseTitleController
+	from ....core.base.formats.base_format.data import BaseTitleData
 	from ....core.base.parser import BaseParser
 	from ....core.base.source_operator import BaseSourceOperator
 	from ...base.structs import PreparedData
@@ -401,7 +402,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		return statistics
 
-	def __parse_safely(self, parameters: Parameters, parser: "BaseParser", title: "BaseTitleController") -> ParsingSignal:
+	def __parse_safely(self, parameters: Parameters, parser: "BaseParser", title: "BaseTitleController[BaseTitleData]") -> ParsingSignal:
 		"""
 		Выполняет парсинг тайта, отлавливая общие исключения.
 
@@ -417,6 +418,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		try:
 			parser.parse()
+			self.printer.emit(f"Title ID: [b]{title.data.id}[/b].")
 
 			if not parameters.force_mode:
 				MergedChaptersCount = title.merge()

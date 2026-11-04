@@ -55,26 +55,19 @@ class ExtraData:
 
 		return key in self.__data
 
-	def from_dict(self, data: dict, raise_error: bool = True):
+	def from_dict(self, data: dict):
 		"""
-		Copy dictionary and check for base keys presence..
+		Fill extra data from chapter dictionary extra fields.
 
 		Args:
 			data (dict): Extra data.
-			raise_error (bool): condition: raise error if data contains base key.
-
-		Raises:
-			KeyError: Key is reserved by important values.
 		"""
 
 		self.clear()
 
 		for key in data.keys():
 			if key not in self.__base_keys:
-				if raise_error:
-					raise KeyError(f"Key \"{key}\" is reserved by important values.")
-				else:
-					self.set(key, data[key])
+				self.set(key, data[key])
 
 	def get(self, key: str) -> Any:
 		"""Summary.
@@ -132,7 +125,7 @@ class ExtraData:
 class BaseChapter(ABC):
 	"""Base chapter."""
 
-	def __init__(self, parser: "BaseParser[BaseSourceOperator, BaseModel, BaseTitleController]", chapter_id: int):
+	def __init__(self, parser: "BaseParser", chapter_id: int):
 		"""
 		Base chapter.
 
