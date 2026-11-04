@@ -143,14 +143,14 @@ class ParserOperator:
 
 	def install(self):
 		"""
-		Устанавливает парсер.
+		Install parser.
 
-		:raises ParserAlreadyExistsError: Парсер уже установлен.
-		:raises RepositoryError: Репозиторий не найден.
+		Raises:
+			exceptions.parsers.ParserAlreadyExistsError: Parser already installed.
 		"""
 
 		if self.is_installed:
-			raise exceptions.parsers.ParserAlreadyExistsError(self.__Name)
+			raise exceptions.parsers.ParserAlreadyExistsError(self.__Name, is_installed = True)
 
 		self.path.mkdir(exist_ok = True)
 

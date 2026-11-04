@@ -17,17 +17,33 @@ class ManifestError(Exception):
 		super().__init__(message)
 
 class ParserAlreadyExistsError(Exception):
-	"""Исключение: парсер уже существует."""
+	"""Exception: parser already exists."""
 
-	def __init__(self, parser_name: str):
+	def __init__(self, parser_name: str, is_installed: bool):
 		"""
-		Исключение: парсер уже существует.
+		Exception: parser already exists..
 
-		:param parser_name: Имя парсера.
-		:type parser_name: str
+		Args:
+			parser_name (str): Parser name.
+			is_installed (bool): Is parser installed or found in repositories.
 		"""
 
-		super().__init__(parser_name)
+		self.__parser_name: str = parser_name
+		self.__is_installed: bool = is_installed
+
+		super().__init__(f"{parser_name} (found in repositories)" if is_installed else parser_name)
+
+	@property
+	def is_installed(self) -> bool:
+		"""Condition: is parser installed."""
+
+		return self.__is_installed
+
+	@property
+	def parser_name(self) -> str:
+		"""Parser name."""
+
+		return self.__parser_name
 
 class ParserNotFoundError(Exception):
 	"""Исключение: парсер не найден."""

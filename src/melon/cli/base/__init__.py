@@ -187,7 +187,10 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 			self.printer.error(f"Extension [b]{exception}[/b] not found.")
 
 		except exceptions.parsers.ParserAlreadyExistsError as exception:
-			self.printer.error(f"Parser [b]{exception}[/b] already exists.")
+			if exception.is_installed:
+				self.printer.error(f"Parser [b]{exception.parser_name}[/b] already exists.")
+			else:
+				self.printer.error(f"Parser [b]{exception.parser_name}[/b] found in repositories.")
 
 		except exceptions.parsers.ParserNotFoundError as exception:
 			self.printer.error(f"Parser [b]{exception}[/b] not found.")

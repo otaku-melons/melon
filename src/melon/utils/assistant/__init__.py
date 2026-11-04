@@ -60,17 +60,17 @@ class Assistant:
 	def __is_parser_exists(self, parser_name: str):
 		"""
 		Check is parser installed or available in repositories.
+		Args:
+			parser_name (str): Parser name.
 
-		:param parser_name: Parser name.
-		:type parser_name: str
-		:raises exceptions.parsers.ParserAlreadyExistsError: Parser installed or found in repositories.
+		Raises:
+			exceptions.parsers.ParserAlreadyExistsError: Parser installed or found in repositories.
 		"""
 
-		if any((
-			self.__system_objects.manager.parsers.is_installed(parser_name, exception = False),
-			parser_name in self.__system_objects.manager.repositories.available_parsers,
-		)):
-			raise exceptions.parsers.ParserAlreadyExistsError(parser_name)
+		is_installed: bool = self.__system_objects.manager.parsers.is_installed(parser_name, exception = False)
+
+		if parser_name in self.__system_objects.manager.repositories.available_parsers or is_installed:
+			raise exceptions.parsers.ParserAlreadyExistsError(parser_name, is_installed = is_installed)
 
 	def __rename_extension_class(self, file: "Path", class_name: str | None):
 		"""
