@@ -659,12 +659,12 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 				if branch_id: break
 
 	def _build_covers(self):
-		"""Обновляет данные обложек во внутреннем словарном хранилище данных тайтла."""
+		"""Build covers data in inner title dictionary."""
 
 		self._data["covers"] = []
 
-		for CurrentCover in self._covers:
-			self._data["covers"].append(CurrentCover.to_dict())
+		for cover in self._covers:
+			self._data["covers"].append(cover.to_dict(self._title_controller.parser.settings.common.sizing_images))
 
 	def _build_description(self):
 		"""Build title description from elements."""
@@ -672,12 +672,12 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		self._data["description"] = [element.to_html() for element in self._description]
 
 	def _build_persons(self):
-		"""Обновляет данные персонажей во внутреннем словарном хранилище данных тайтла."""
+		"""Build persons data in inner title dictionary."""
 
 		self._data["persons"] = []
 
-		for CurrentPerson in self._persons:
-			self._data["persons"].append(CurrentPerson.to_dict(self._title_controller.parser.settings.common.sizing_images))
+		for person in self._persons:
+			self._data["persons"].append(person.to_dict(self._title_controller.parser.settings.common.sizing_images))
 
 	@abstractmethod
 	def _export_chapter_type(self) -> type[C]:
