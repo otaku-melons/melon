@@ -19,9 +19,35 @@ if TYPE_CHECKING:
 class ParserManifest:
 	"""Parser manifest."""
 
-	#==========================================================================================#
-	# >>>>> PROPERTIES <<<<< #
-	#==========================================================================================#
+	def __init__(self, system_objects: "SystemObjects", parser_name: str):
+		"""
+		Parser manifest.
+
+		:param system_objects: System objects collection.
+		:type system_objects: SystemObjects
+		:param parser_name: Parser name.
+		:type parser_name: str
+		"""
+
+		self.__system_objects: SystemObjects = system_objects
+		self.__parser_name: str = parser_name
+
+		self.__manifest: ManifestModel = self.__load()
+		self.__content_types: tuple[ContentType, ...] = self.__get_supported_content_types()
+		self.__version: Version | None = self.__get_version()
+		self.__mirror: str | None = None
+
+	def set_mirror(self, mirror: str | None):
+		"""
+		Set mirror domain and replace original domain in manifest with it.
+
+		Doesn't change manifest file!
+
+		:param mirror: Mirror domain.
+		:type mirror: str | None
+		"""
+
+		self.__mirror = mirror
 
 	@property
 	def parser_name(self) -> str:
@@ -60,6 +86,12 @@ class ParserManifest:
 		return self.__manifest.parent
 
 	@property
+	def parent_version(self) -> "SpecifierSet | None":
+		"""Parent parser required versions range."""
+
+		return self.__manifest.parent_version
+
+	@property
 	def version(self) -> Version | None:
 		"""Parser version."""
 
@@ -70,10 +102,6 @@ class ParserManifest:
 		"""Melon supported versions range."""
 
 		return self.__manifest.platform
-
-	#==========================================================================================#
-	# >>>>> PRIVATE METHODS <<<<< #
-	#==========================================================================================#
 
 	def __get_supported_content_types(self) -> tuple[ContentType, ...]:
 		"""
@@ -122,37 +150,3 @@ class ParserManifest:
 		data: dict = json.read(f"parsers/{self.__parser_name}/manifest.json")
 
 		return TypeAdapter(ManifestModel).validate_python(data)
-
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS <<<<< #
-	#==========================================================================================#
-
-	def __init__(self, system_objects: "SystemObjects", parser_name: str):
-		"""
-		Parser manifest.
-
-		:param system_objects: System objects collection.
-		:type system_objects: SystemObjects
-		:param parser_name: Parser name.
-		:type parser_name: str
-		"""
-
-		self.__system_objects: SystemObjects = system_objects
-		self.__parser_name: str = parser_name
-
-		self.__manifest: ManifestModel = self.__load()
-		self.__content_types: tuple[ContentType, ...] = self.__get_supported_content_types()
-		self.__version: Version | None = self.__get_version()
-		self.__mirror: str | None = None
-
-	def set_mirror(self, mirror: str | None):
-		"""
-		Set mirror domain and replace original domain in manifest with it.
-
-		Doesn't change manifest file!
-
-		:param mirror: Mirror domain.
-		:type mirror: str | None
-		"""
-
-		self.__mirror = mirror

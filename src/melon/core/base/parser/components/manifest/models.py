@@ -10,4 +10,5 @@ class ManifestModel(BaseModel):
 
 	domain: Annotated[str, Domain]
 	parent: str | None = None
+	parent_version: Annotated[SpecifierSet, VersionsRange] | None = None
 	platform: Annotated[SpecifierSet, VersionsRange] | None = None
