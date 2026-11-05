@@ -10,6 +10,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 ## [1.0.0-rc.7]
 
 ### ✨ Added
+- Print warning if repository for installed parser not found.
 - Exception `ParserNotInstalled` if parser required, not installed, but found in repositories.
 - Module `sdk` to improve parsers developers experience.
 - New abstract HTML parser with **HTML to Melon elements** features.

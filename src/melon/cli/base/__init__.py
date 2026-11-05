@@ -166,11 +166,22 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 		if not parsers_names:
 			return
 
-		all_parsers: set[str] = set(self.system_objects.manager.parsers.installed) | set(self.system_objects.manager.repositories.available_parsers)
+		installed_parsers: tuple[str, ...] = tuple(self.system_objects.manager.parsers.installed)
+		parsers_in_repositories: tuple[str, ...] = self.system_objects.manager.repositories.available_parsers
 
 		for parser in parsers_names:
-			if parser not in all_parsers:
-				raise exceptions.parsers.ParserNotFoundError(parser)
+
+			if parser in installed_parsers:
+
+				if parser not in parsers_in_repositories:
+					self.printer.warning(f"Repository not found for parser [b]{parser}[/b].")
+
+				continue
+
+			if parser in parsers_in_repositories:
+				continue
+
+			raise exceptions.parsers.ParserNotFoundError(parser)
 
 	@abstractmethod
 	def _export_description(self) -> str:
@@ -346,7 +357,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 			return self._process(parameters)
 
 		except exceptions.extensions.ExtensionNotFoundError as exception:
-			self.printer.error(f"Extension [b]{exception}[/b] not found.")
+			self.printer.error(f"Extension [bold]{exception}[/bold] not found.")
 
 		except exceptions.parsers.ParserAlreadyExistsError as exception:
 			if exception.is_installed:
