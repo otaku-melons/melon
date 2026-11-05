@@ -30,6 +30,19 @@ class DecodingError(Exception):
 
 		super().__init__(message)
 
+class UnresolvedAttributeError(Exception):
+	"""Exception: unresolved attribute element."""
+
+	def __init__(self, attribute: str):
+		"""
+		Exception: unresolved attribute element.
+
+		:param attribute: Attribute name.
+		:type attribute: str
+		"""
+
+		super().__init__(attribute)
+
 class UnresolvedElementError(Exception):
 	"""Exception: unresolved child element."""
 

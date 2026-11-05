@@ -1,5 +1,8 @@
+from typing import Literal, overload
+
 from pydantic.dataclasses import dataclass
 
+from .. import exceptions
 from .enums import TagCategory
 
 __all__ = ["ALLOWED_TAGS"]
@@ -73,18 +76,32 @@ class AllowedTags:
 
 		return tuple(tag.name for tag in self.get_category_tags(category))
 
-	def get_tag(self, name: str) -> TagData | None:
+	@overload
+	def get_tag(self, name: str, raise_error: Literal[True] = True) -> TagData: ...
+	@overload
+	def get_tag(self, name: str, raise_error: Literal[False]) -> TagData | None: ...
+
+	def get_tag(self, name: str, raise_error: bool = True) -> TagData | None:
 		"""
 		Get tag data.
 
 		Args:
 			name (str): Tag name.
+			raise_error (bool): Raise error if tag data missing.
 
 		Returns:
 			TagData | None: Tag data or `None` if tag not allowed.
+
+		Raises:
+			exceptions.html.UnresolvedTagError: Unresolved tag.
 		"""
 
-		return self.__data.get(name)
+		if name not in self.__data:
+			if raise_error:
+				raise exceptions.html.UnresolvedTagError(name)
+
+		else:
+			return self.__data[name]
 
 	@property
 	def names(self) -> tuple[str, ...]:
@@ -150,7 +167,7 @@ class AllowedTags:
 			styling_tag = TagData(name, categories = (TagCategory.Styling,))
 			data.append(styling_tag)
 
-		anchor = TagData("a", categories = (TagCategory.Styling,), attributes = ("href",))
+		anchor = TagData("a", categories = (TagCategory.Styling,), attributes = ("data-footnote", "href"))
 		data.append(anchor)
 
 		image = TagData("img", attributes = ("src", "width", "height"))

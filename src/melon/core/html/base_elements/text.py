@@ -76,15 +76,21 @@ class TextElement(BaseElement):
 		for child in soup.find_all():
 
 			if isinstance(child, Tag):
-				tag_rules: TagData | None = ALLOWED_TAGS.get_tag(child.name)
+				tag_rules: TagData = ALLOWED_TAGS.get_tag(child.name)
 
-				if not tag_rules:
-					raise exceptions.html.UnresolvedTagError(child.name)
+				if child.name == "a" and child.has_attr("data-footnote"):
 
-				if child.name == "a" and child.has_attr("data-footnote") and not self.is_footnotes_allowed:
-					raise exceptions.html.UnresolvedTagError(child.name)
+					if not self.is_footnotes_allowed:
+						raise exceptions.html.UnresolvedTagError(child.name)
+
+					if child.has_attr("href"):
+						raise exceptions.html.UnresolvedAttributeError("href")
 
 				if not tag_rules.is_styling:
 					raise exceptions.html.UnresolvedTagError(child.name)
+
+				for attribute in child.attrs.keys():
+					if attribute not in tag_rules.attributes:
+						raise exceptions.html.UnresolvedAttributeError(attribute)
 
 		return text

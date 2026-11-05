@@ -210,13 +210,17 @@ def test_parse_paragraphs():
 	for index in range(3):
 		assert paragraphs[index].to_html() == results_strings[index]
 
-	html: str = "<p>sometext<a data-footnote>note</a></p>"
+	html: str = "<p styles=\"decoration: none\" >sometext<a href=\"www.example.com\" data-footnote>note</a></p>"
 	soup = BeautifulSoup(html, "html.parser")
 	tag = soup.find("p")
 	assert tag is not None
 
 	paragraphs = parser.parse_paragraphs(tag, allow_footnotes = True)
 	assert len(paragraphs[0].footnotes) == 1
+
+	paragraph_html: str = paragraphs[0].to_html()
+	assert ">*</a></p>" in paragraph_html # Check footnote content replacing by *.
+	assert paragraph_html.startswith("<p>sometext<a") # Check is unresolved styles removed.
 
 def test_split():
 

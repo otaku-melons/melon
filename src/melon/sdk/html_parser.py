@@ -7,7 +7,7 @@ from dublib.functions.data.string import remove_recurring_substrings
 
 from ..core.base.structs.image import ImageData, ImageResolution, ImageType
 from ..core.exceptions.html import UnresolvedElementError, UnresolvedTagError
-from ..core.html.allowed_tags import ALLOWED_TAGS
+from ..core.html.allowed_tags import ALLOWED_TAGS, TagData
 from ..core.html.elements import Blockquote, Header, Paragraph
 from ..core.html.enums import Align, TagCategory
 from ..core.html.footnote import Footnote
@@ -85,16 +85,20 @@ class HyperTextParser:
 		targets.append(tag)
 
 		for target in targets:
-			tag_data = ALLOWED_TAGS.get_tag(target.name)
+			tag_data: TagData = ALLOWED_TAGS.get_tag(target.name)
 			attributes: dict = target.attrs.copy()
-
-			if not tag_data:
-				raise UnresolvedTagError(target.name)
 
 			for attribute in target.attrs:
 
-				if target.name == "a" and attribute == "data-footnote" and tag.name in ALLOWED_TAGS.get_category_tags_names(TagCategory.Footnotable):
-					continue
+				if target.name == "a":
+
+					if attribute == "data-footnote" and tag_data.is_footnotable:
+						continue
+
+					if attribute == "href" and "data-footnote" in attributes:
+						del attributes[attribute]
+						removed.append(attribute)
+						continue
 
 				if tag_data.is_support_data and attribute.startswith("data-"):
 					continue
