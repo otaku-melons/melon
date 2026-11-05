@@ -9,21 +9,18 @@ if TYPE_CHECKING:
 	from ...base.structs import PreparedData
 
 class CommandProcessor(BaseCommandProcessor[BaseParameters]):
-	"""Обработчик команды."""
-
-	#==========================================================================================#
-	# >>>>> OVERRIDABLE METHODS <<<<< #
-	#==========================================================================================#
+	"""Command processor."""
 
 	@override
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
-		Генерирует модель команды.
+		Build commands model.
 
-		:param model: Шаблон модели команды.
-		:type model: Command
-		:return: Модель команды.
-		:rtype: CommandModel
+		Args:
+			model (CommandModel): Commands model.
+
+		Returns:
+			CommandModel: Commands model.
 		"""
 
 		return model
@@ -31,10 +28,10 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 	@override
 	def _export_description(self) -> str:
 		"""
-		Возвращает описание команды.
+		Export command description.
 
-		:return: Описание команды.
-		:rtype: str
+		Returns:
+			str: Description.
 		"""
 
 		return "Upgrade Melon."
@@ -55,17 +52,16 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 		return BaseParameters()
 
 	@override
-	def _process(self, parameters: BaseParameters) -> bool:
+	def _process(self, parameters: BaseParameters) -> bool | None:
 		"""
-		Выполняет команду.
+		Process command.
 
-		:param parameters: Required by command processor parameters.
-		:type parameters: BaseParameters
-		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
-		:rtype: bool
+		Args:
+			parameters (BaseParameters): Required by command parameters.
+
+		Returns:
+			bool | None: `False` if processing failed.
 		"""
 
-		self.printer.emit(f"Repository: [i]{self.system_objects.options.REPOS}[/]")
+		self.printer.emit(f"Repository: [i]{self.system_objects.options.REPOS}[/i]")
 		self.system_objects.manager.upgrade()
-
-		return True

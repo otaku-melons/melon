@@ -9,21 +9,18 @@ if TYPE_CHECKING:
 	from ...base.structs import PreparedData
 
 class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
-	"""Обработчик команды."""
-
-	#==========================================================================================#
-	# >>>>> OVERRIDABLE METHODS <<<<< #
-	#==========================================================================================#
+	"""Command processor."""
 
 	@override
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
-		Генерирует модель команды.
+		Build commands model.
 
-		:param model: Шаблон модели команды.
-		:type model: Command
-		:return: Модель команды.
-		:rtype: CommandModel
+		Args:
+			model (CommandModel): Commands model.
+
+		Returns:
+			CommandModel: Commands model.
 		"""
 
 		self._add_parser_position()
@@ -33,10 +30,10 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 	@override
 	def _export_description(self) -> str:
 		"""
-		Возвращает описание команды.
+		Export command description.
 
-		:return: Описание команды.
-		:rtype: str
+		Returns:
+			str: Description.
 		"""
 
 		return "Remove parser repository."
@@ -59,17 +56,15 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 		)
 
 	@override
-	def _process(self, parameters: T_SingleParserRequired) -> bool:
+	def _process(self, parameters: T_SingleParserRequired) -> bool | None:
 		"""
-		Выполняет команду.
+		Process command.
 
-		:param parameters: Required by command processor parameters.
-		:type parameters: T_SingleParserRequired
-		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
-		:rtype: bool
+		Args:
+			parameters (T_SingleParserRequired): Required by command parameters.
+
+		Returns:
+			bool | None: `False` if processing failed.
 		"""
 
 		self.system_objects.manager.repositories.remove(parameters.required_parser.name)
-
-		return True
-

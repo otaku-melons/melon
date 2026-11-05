@@ -21,7 +21,7 @@ class Parameters(T_SingleParserRequired):
 	is_json_output: bool
 
 class CommandProcessor(CommandProcessorTemplate[Parameters]):
-	"""Обработчик команды."""
+	"""Command processor."""
 
 	#==========================================================================================#
 	# >>>>> PRIVATE METHODS <<<<< #
@@ -73,12 +73,13 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	@override
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
-		Генерирует модель команды.
+		Build commands model.
 
-		:param model: Шаблон модели команды.
-		:type model: Command
-		:return: Модель команды.
-		:rtype: CommandModel
+		Args:
+			model (CommandModel): Commands model.
+
+		Returns:
+			CommandModel: Commands model.
 		"""
 
 		position = model.create_position("QUERY", "Search query", important = True)
@@ -93,10 +94,10 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	@override
 	def _export_description(self) -> str:
 		"""
-		Возвращает описание команды.
+		Export command description.
 
-		:return: Описание команды.
-		:rtype: str
+		Returns:
+			str: Description.
 		"""
 
 		return "Find title identifier in cache."
@@ -104,14 +105,14 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	@override
 	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> Parameters:
 		"""
-		Парсит данные обработанной команды в структуру **dataclass**.
+		Parse command parameters.
 
-		:param entity: Сущность команды.
-		:type entity: CommandEntity
-		:param prepared_data: Подготовленные шаблонные параметры команды.
-		:type prepared_data: PreparedData
-		:return: Структура **dataclass**.
-		:rtype: Parameters
+		Args:
+			entity (CommandEntity): Command entity.
+			prepared_data (PreparedData): Prepared from templates data.
+
+		Returns:
+			PARAMS: Command parameters.
 		"""
 
 		title_id: int | None = entity.get_key_value("--id", expected_type = int, not_found_error = False)
@@ -128,14 +129,15 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		)
 
 	@override
-	def _process(self, parameters: Parameters) -> bool:
+	def _process(self, parameters: Parameters) -> bool | None:
 		"""
-		Выполняет команду.
+		Process command.
 
-		:param parameters: Required by command processor parameters.
-		:type parameters: Parameters
-		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
-		:rtype: bool
+		Args:
+			parameters (Parameters): Required by command parameters.
+
+		Returns:
+			bool | None: `False` if processing failed.
 		"""
 
 		if not self.system_objects.options.USE_CACHE:
@@ -156,5 +158,3 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			if title_id: descriptor.set_id(title_id)
 
 		self.__print_result(parameters, descriptor)
-
-		return True

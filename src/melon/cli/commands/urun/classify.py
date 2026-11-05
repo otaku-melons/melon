@@ -22,21 +22,18 @@ class Parameters(BaseParameters):
 	is_ignore_case: bool
 
 class CommandProcessor(CommandProcessorTemplate[Parameters]):
-	"""Обработчик команды."""
-
-	#==========================================================================================#
-	# >>>>> OVERRIDABLE METHODS <<<<< #
-	#==========================================================================================#
+	"""Command processor."""
 
 	@override
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
-		Генерирует модель команды.
+		Build commands model.
 
-		:param model: Шаблон модели команды.
-		:type model: Command
-		:return: Модель команды.
-		:rtype: CommandModel
+		Args:
+			model (CommandModel): Commands model.
+
+		Returns:
+			CommandModel: Commands model.
 		"""
 
 
@@ -52,10 +49,10 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	@override
 	def _export_description(self) -> str:
 		"""
-		Возвращает описание команды.
+		Export command description.
 
-		:return: Описание команды.
-		:rtype: str
+		Returns:
+			str: Description.
 		"""
 
 		return "Process titles classificators."
@@ -63,14 +60,14 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	@override
 	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> Parameters:
 		"""
-		Парсит данные обработанной команды в структуру **dataclass**.
+		Parse command parameters.
 
-		:param entity: Сущность команды.
-		:type entity: CommandEntity
-		:param prepared_data: Подготовленные шаблонные параметры команды.
-		:type prepared_data: PreparedData
-		:return: Структура **dataclass**.
-		:rtype: Parameters
+		Args:
+			entity (CommandEntity): Command entity.
+			prepared_data (PreparedData): Prepared from templates data.
+
+		Returns:
+			PARAMS: Command parameters.
 		"""
 
 		return Parameters(
@@ -81,14 +78,15 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		)
 
 	@override
-	def _process(self, parameters: Parameters) -> bool:
+	def _process(self, parameters: Parameters) -> bool | None:
 		"""
-		Выполняет команду.
+		Process command.
 
-		:param parameters: Required by command processor parameters.
-		:type parameters: Parameters
-		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
-		:rtype: bool
+		Args:
+			parameters (Parameters): Required by command parameters.
+
+		Returns:
+			bool | None: `False` if processing failed.
 		"""
 
 		script_work_dir: Path = self.system_objects.options.CONFIGS_DIR / "classificator"
@@ -98,8 +96,6 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			classificator = utils.Classificator(script_work_dir)
 		except FileNotFoundError as exception_data:
 			self.printer.critical(f"Script file \"{exception_data}\" doesn't exists.")
-			return False
-
 
 		executable_lines = classificator.read_script()
 		validation_errors = classificator.validate_script(executable_lines)
@@ -109,13 +105,11 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		if validation_errors:
 			self.printer.critical("Script failure due to validation errors.")
-			return False
 
 		try:
 			procedures = classificator.parse_operations(executable_lines)
 		except exceptions.utils.classificator.ScriptRuntimeError as exception_data:
 			self.printer.critical(str(exception_data))
-			return False
 
 		classification_result = classificator.classify(parameters.target, procedures, ignore_case = parameters.is_ignore_case)
 
@@ -123,5 +117,3 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			self.printer.json(classification_result.to_dict())
 		else:
 			self.printer.templates.classificator.result(classification_result)
-
-		return True

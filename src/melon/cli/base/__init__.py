@@ -19,93 +19,216 @@ if TYPE_CHECKING:
 	from .templates import BaseParameters
 
 class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
-	"""Базовый обработчик команды."""
+	"""Base command processor."""
 
-	_timer: Timer | None
+	def __init__(self, system_objects: "SystemObjects", group: "ModelsGroup"):
+		"""
+		Base command processor.
 
-	#==========================================================================================#
-	# >>>>> PROPERTIES <<<<< #
-	#==========================================================================================#
+		Args:
+			system_objects (SystemObjects): System objects collection.
+			group (ModelsGroup): Commands models group.
+		"""
+
+		self._system_objects: SystemObjects = system_objects
+
+		self._internal_storage: _InternalStorage = _InternalStorage()
+		self._options: ProcessorOptions = self._export_options()
+		self._timer: Timer | None = None
+
+		self._model: CommandModel = group.create_model(
+			name = self.__class__.__module__.split(".")[-1].split("_")[-1],
+			description = self._export_description(),
+		)
+		self._model = self._build_model(self._model)
+
+		self._mirror: str | None = None
+
+		self._post_init()
+
+	def process(self, entity: "CommandEntity"):
+		"""
+		Process command entity.
+
+		Args:
+			entity (CommandEntity): Command entity.
+		"""
+
+		self._start_timer()
+
+		prepared_data = self._prepare_parameters(entity)
+		parameters = self._parse_parameters(entity, prepared_data)
+
+		if self._process_safely(parameters) is False:
+			sys.exit(1)
+
+		self._end_timer()
 
 	@property
 	def model(self) -> CommandModel:
-		"""Модель команды."""
+		"""Command model."""
 
 		return self._model
 
 	@property
 	def options(self) -> ProcessorOptions:
-		"""Настройки обработчика."""
+		"""Processor options."""
 
 		return self._options
 
 	@property
 	def printer(self) -> "Printer":
-		"""Оператор вывода."""
+		"""Output operator."""
 
 		return self._system_objects.printer
 
 	@property
 	def system_objects(self) -> "SystemObjects":
-		"""Коллекция системных объектов."""
+		"""System objects collection."""
 
 		return self._system_objects
 
-	#==========================================================================================#
-	# >>>>> PROTECTED METHODS <<<<< #
-	#==========================================================================================#
+	def _add_force_mode_flag(self):
+		"""Add force mode flag to command model."""
+
+		self.model.base.add_flag(
+			name = "-f",
+			aliases = ("--force",),
+			description = "Enable force mode.")
+
+		self._internal_storage.is_force_mode = True
+
+	def _add_json_output_flag(self):
+		"""Add JSON output flag to command model."""
+
+		self._model.base.add_flag(
+			name = "-j",
+			aliases = ("--json",),
+			description = "Prints output as JSON-string.",
+		)
+
+		self._internal_storage.is_json_output = True
+
+	def _add_parser_position(self, key: str | None = None, description: str | None = None, multiple: bool = False, important: bool = True):
+		"""
+		Add parser position `PARSER` or `PARSERS` to command model.
+
+		Args:
+			key (str | None): Key name. If missing argument will be used.
+			description (str | None): Position description.
+			multiple (bool): Condition: is multiple parsers selection allowed.
+			important (bool): Condition: is position important.
+		"""
+
+		if multiple:
+			self._internal_storage.is_multiple_parsers_allowed = True
+
+			position = self.model.create_position(
+				name = "PARSERS",
+				description = description or "One or more parsers names separated by comma. By default all.",
+				important = important,
+			)
+
+		else:
+			position = self.model.create_position(
+				name = "PARSER",
+				description = description or "Parser name.",
+				important = important,
+			)
+
+		position.add_key(key) if key else position.set_argument()
+
+	@abstractmethod
+	def _build_model(self, model: "CommandModel") -> "CommandModel":
+		"""
+		Build commands model.
+
+		Args:
+			model (CommandModel): Commands model.
+
+		Returns:
+			CommandModel: Commands model.
+		"""
+
+		return model
 
 	def _check_required_parsers(self, parsers_names: tuple[str, ...]):
 		"""
-		Проверяет наличие требуемых парсеров в системе.
+		Check is required parsers available.
 
-		:param parsers_names: Последовательность имён парсеров.
-		:type parsers_names: tuple[str, ...]
-		:raises ParserNotFoundError: Парсер не найден.
-		:raises MultipleParsersDeniedForCommandError: Команде запрещено использование нескольких парсеров.
+		Args:
+			parsers_names (tuple[str, ...]): Required parsers names.
+
+		Raises:
+			exceptions.parsers.ParserNotFoundError: Parser not found.
 		"""
 
 		if not parsers_names:
-			return ()
+			return
 
-		all_parsers = tuple(self.system_objects.manager.parsers.installed) + self.system_objects.manager.repositories.available_parsers
+		all_parsers: set[str] = set(self.system_objects.manager.parsers.installed) | set(self.system_objects.manager.repositories.available_parsers)
 
 		for parser in parsers_names:
 			if parser not in all_parsers:
 				raise exceptions.parsers.ParserNotFoundError(parser)
 
-	def _get_parsers_query(self, entity: "CommandEntity") -> str | None:
+	@abstractmethod
+	def _export_description(self) -> str:
 		"""
-		Возвращает строку, представляющую последовательность имён затребованных парсеров, разделённых запятой.
+		Export command description.
 
-		По умолчанию берёт данные из позиций `PARSER` или `PARSERS`.
+		Returns:
+			str: Description.
+		"""
 
-		:param entity: Сущность команды.
-		:type entity: CommandEntity
-		:return: Строка с именами парсеров или `None`, если не требуются.
-		:rtype: str | None
+		return ""
+
+	# OVERRIDABLE
+	def _export_options(self) -> ProcessorOptions:
+		"""
+		Export processor options.
+
+		Returns:
+			ProcessorOptions: Processor options.
+		"""
+
+		return ProcessorOptions()
+
+	def _get_parsers_query(self, entity: "CommandEntity") -> tuple[str, ...]:
+		"""
+		Get required parsers names. Parsed from `PARSER` or `PARSERS` position.
+
+		Args:
+			entity (CommandEntity): Command entity.
+
+		Returns:
+			tuple[str, ...]: Required parsers names.
 		"""
 
 		position_name: str = "PARSERS" if self._internal_storage.is_multiple_parsers_allowed else "PARSER"
+		query_value: str | None = entity.get_position_value(position_name, expected_type = str)
 
-		return entity.get_position_value(position_name, expected_type = str, important = False)
+		if not query_value:
+			return ()
+
+		return tuple(element.strip() for element in query_value.split(","))
 
 	def _end_timer(self):
-		"""Выводит результат таймера, если производился отсчёт."""
+		"""Emit timer result if enabled."""
 
 		if self._timer is not None and not self._internal_storage.is_json_output:
 			self.printer.emit(f"Done in {self._timer.ends()}.")
 
 	def _launch_source_operator(self, parser_operator: "ParserOperator") -> "BaseSourceOperator":
 		"""
-		Запускает оператор контента.
+		Launch source operator.
+		Automatically enable mirror if available and cache result.
 
-		Автоматически применяет зеркало, полученное из ключа `--mirror`, а также кэширует результат для быстрого повторного вызова.
+		Args:
+			parser_operator (ParserOperator): Parser operator.
 
-		:param parser_operator: Оператор парсера.
-		:type parser_operator: ParserOperator
-		:return: Оператор источника.
-		:rtype: BaseSourceOperator
+		Returns:
+			BaseSourceOperator: Source operator.
 		"""
 
 		parser_name: str = parser_operator.name
@@ -118,23 +241,24 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 
 		return self._internal_storage.source_operators[parser_name]
 
-	def _load_required_parsers(self, data: "CommandEntity") -> tuple["ParserOperator", ...]:
+	def _load_required_parsers_operators(self, data: "CommandEntity") -> tuple["ParserOperator", ...]:
 		"""
-		Загружает последовательность управляющих структур затребованных парсеров.
+		Load required parsers operators.
 
-		:param data: Сущность команды.
-		:type data: CommandEntity
-		:return: Последовательность управляющих структур затребованных парсеров.
-		:rtype: tuple[ParserOperator, ...]
-		:raises exceptions.cli.MultipleParsersDeniedForCommandError: Запрашивание нескольких парсеров запрещено.
+		Args:
+			data (CommandEntity): Command entity.
+
+		Returns:
+			tuple[ParserOperator, ...]: Parsers operators.
+
+		Raises:
+			exceptions.cli.MultipleParsersDeniedForCommandError: Multiple parser denied for command.
 		"""
 
-		parsers_query: str | None = self._get_parsers_query(data)
+		parsers_names: tuple[str, ...] = self._get_parsers_query(data)
 
-		if not parsers_query:
+		if not parsers_names:
 			return ()
-
-		parsers_names = tuple(element.strip() for element in parsers_query.split(","))
 
 		if not parsers_names:
 			if self.system_objects.options.DEBUG:
@@ -152,32 +276,70 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 			for Name in parsers_names
 		)
 
+	@abstractmethod
+	def _parse_parameters(self, entity: "CommandEntity", prepared_data: PreparedData) -> PARAMS:
+		"""
+		Parse command parameters.
+
+		Args:
+			entity (CommandEntity): Command entity.
+			prepared_data (PreparedData): Prepared from templates data.
+
+		Returns:
+			PARAMS: Command parameters.
+		"""
+
+		pass
+
+	# OVERRIDABLE
+	def _post_init(self):
+		"""Execute after instance initialization."""
+
+		pass
+
 	def _prepare_parameters(self, entity: "CommandEntity") -> PreparedData:
 		"""
-		Парсит шаблонные параметры команды.
+		Prepare common data from templates for command.
 
-		:param entity: Сущность команды.
-		:type entity: CommandEntity
-		:return: Подготовленные шаблонные параметры команды.
-		:rtype: PreparedData
+		Args:
+			entity (CommandEntity): Command entity.
+
+		Returns:
+			PreparedData: Prepared data.
 		"""
 
-		self._internal_storage.mirror = entity.get_key_value("--mirror", expected_type = str, not_found_error = False)
+		if self._internal_storage.is_mirror_available:
+			self._internal_storage.mirror = entity.get_key_value("--mirror", expected_type = str, not_found_error = False)
 
 		return PreparedData(
-			required_parsers = self._load_required_parsers(entity),
+			required_parsers = self._load_required_parsers_operators(entity),
 			force_mode = entity.check_flag("-f", missing_error = False),
 			is_json_output = entity.check_flag("-j", missing_error = False),
 		)
 
-	def _process_safely(self, parameters: PARAMS) -> bool:
+	@abstractmethod
+	def _process(self, parameters: PARAMS) -> bool | None:
 		"""
-		Оборачивает метод `_process()` для отлова исключений.
+		Process command.
 
-		:param parameters: Required by command processor parameters.
-		:type parameters: BaseParameters
-		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
-		:rtype: bool
+		Args:
+			parameters (Parameters): Required by command parameters.
+
+		Returns:
+			bool | None: `False` if processing failed.
+		"""
+
+		return True
+
+	def _process_safely(self, parameters: PARAMS) -> bool | None:
+		"""
+		Wrap `_process()` method and catch common exteptions.
+
+		Args:
+			parameters (Parameters): Required by command parameters..
+
+		Returns:
+			bool | None: `False` if processing failed.
 		"""
 
 		try:
@@ -201,183 +363,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 		return False
 
 	def _start_timer(self):
-		"""Запускает таймер, если разрешено использование настройками обработчика."""
+		"""Start timer if enabled."""
 
 		if self.options.use_timer:
 			self._timer = Timer(start = True)
-
-	#==========================================================================================#
-	# >>>>> PROTECTED METHODS ПОСТРОЕНИЯ МОДЕЛЕЙ <<<<< #
-	#==========================================================================================#
-
-	def _add_force_mode_flag(self):
-		"""Добавляет флаг переключения режима перезаписи."""
-
-		self.model.base.add_flag(
-			name = "-f",
-			aliases = ("--force",),
-			description = "Enable force mode.")
-
-		self._internal_storage.is_force_mode = True
-
-	def _add_json_output_flag(self):
-		"""Добавляет флаг включения режима вывода в виде JSON."""
-
-		self._model.base.add_flag(
-			name = "-j",
-			aliases = ("--json",),
-			description = "Prints output as JSON-string.",
-		)
-
-		self._internal_storage.is_json_output = True
-
-	def _add_parser_position(self, key: str | None = None, description: str | None = None, multiple: bool = False, important: bool = True):
-		"""
-		Добавляет позицию для имени парсера(ов): `PARSER` или `PARSERS` в зависимости от параметров обработчика.
-
-		:param key: Имя ключа. Если отсутствует, будет использован аргумент.
-		:type key: str | None
-		:param description: Описание позиции. Если отсутствует, будет использовано стандартное.
-		:type description: str | None
-		:param multiple: Указывает, разрешена ли загрузка нескольких парсеров.
-		:type multiple: bool
-		:param important: Указывает, является ли позиция обязательной.
-		:type important: bool
-		"""
-
-		if multiple:
-			self._internal_storage.is_multiple_parsers_allowed = True
-
-			position = self.model.create_position(
-				name = "PARSERS",
-				description = description or "One or more parsers names separated by comma. By default all.",
-				important = important,
-			)
-
-		else:
-			position = self.model.create_position(
-				name = "PARSER",
-				description = description or "Parser name.",
-				important = important,
-			)
-
-		position.add_key(key) if key else position.set_argument()
-
-	#==========================================================================================#
-	# >>>>> OVERRIDABLE METHODS <<<<< #
-	#==========================================================================================#
-
-	@abstractmethod
-	def _build_model(self, model: "CommandModel") -> "CommandModel":
-		"""
-		Генерирует модель команды.
-
-		:param model: Шаблон модели команды.
-		:type model: Command
-		:return: Модель команды.
-		:rtype: CommandModel
-		"""
-
-		return model
-
-	@abstractmethod
-	def _export_description(self) -> str:
-		"""
-		Возвращает описание команды.
-
-		:return: Описание команды.
-		:rtype: str
-		"""
-
-		return ""
-
-	def _export_options(self) -> ProcessorOptions:
-		"""
-		Возвращает настройки обработчика.
-
-		:return: Настройки обработчика.
-		:rtype: ProcessorOptions
-		"""
-
-		return ProcessorOptions()
-
-	@abstractmethod
-	def _parse_parameters(self, entity: "CommandEntity", prepared_data: PreparedData) -> PARAMS:
-		"""
-		Парсит данные обработанной команды в структуру **dataclass**.
-
-		:param entity: Сущность команды.
-		:type entity: CommandEntity
-		:param prepared_data: Подготовленные шаблонные параметры команды.
-		:type prepared_data: PreparedData
-		:return: Структура **dataclass**.
-		:rtype: BaseParameters
-		"""
-
-		pass
-
-	def _post_init(self):
-		"""Execute after instance initialization."""
-
-		pass
-
-	@abstractmethod
-	def _process(self, parameters: PARAMS) -> bool:
-		"""
-		Выполняет команду.
-
-		:param parameters: Required by command processor parameters.
-		:type parameters: BaseParameters
-		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
-		:rtype: bool
-		"""
-
-		return True
-
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS <<<<< #
-	#==========================================================================================#
-
-	def __init__(self, system_objects: "SystemObjects", group: "ModelsGroup"):
-		"""
-		Базовый обработчик команды.
-
-		:param group: Группа, к которой относится модель команды.
-		:type group: ModelsGroup
-		:param system_objects: Коллекция системных объектов.
-		:type system_objects: SystemObjects
-		"""
-
-		self._system_objects: SystemObjects = system_objects
-
-		self._internal_storage: _InternalStorage = _InternalStorage()
-		self._options: ProcessorOptions = self._export_options()
-		self._timer: Timer | None = None
-
-		self._model: CommandModel = group.create_model(
-			name = self.__class__.__module__.split(".")[-1].split("_")[-1],
-			description = self._export_description(),
-		)
-		self._model = self._build_model(self._model)
-
-		self._mirror: str | None = None
-
-		self._post_init()
-
-	def process(self, entity: "CommandEntity"):
-		"""
-		Выполняет команду.
-
-		:param entity: Сущность команды.
-		:type entity: CommandEntity
-		"""
-
-		self._start_timer()
-
-		prepared_data = self._prepare_parameters(entity)
-		parameters = self._parse_parameters(entity, prepared_data)
-
-		if not self._process_safely(parameters):
-			sys.exit(1)
-
-		self._end_timer()

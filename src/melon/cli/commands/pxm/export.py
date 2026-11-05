@@ -17,21 +17,18 @@ class Parameters(T_SingleParserRequired):
 	config_strategy: ExportStrategy
 
 class CommandProcessor(CommandProcessorTemplate[Parameters]):
-	"""Обработчик команды."""
-
-	#==========================================================================================#
-	# >>>>> OVERRIDABLE METHODS <<<<< #
-	#==========================================================================================#
+	"""Command processor."""
 
 	@override
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
-		Генерирует модель команды.
+		Build commands model.
 
-		:param model: Шаблон модели команды.
-		:type model: Command
-		:return: Модель команды.
-		:rtype: CommandModel
+		Args:
+			model (CommandModel): Commands model.
+
+		Returns:
+			CommandModel: Commands model.
 		"""
 
 		self._add_parser_position()
@@ -42,10 +39,10 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	@override
 	def _export_description(self) -> str:
 		"""
-		Возвращает описание команды.
+		Export command description.
 
-		:return: Описание команды.
-		:rtype: str
+		Returns:
+			str: Description.
 		"""
 
 		return "Export and merge parser config."
@@ -53,14 +50,14 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	@override
 	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> Parameters:
 		"""
-		Парсит данные обработанной команды в структуру **dataclass**.
+		Parse command parameters.
 
-		:param entity: Сущность команды.
-		:type entity: CommandEntity
-		:param prepared_data: Подготовленные шаблонные параметры команды.
-		:type prepared_data: PreparedData
-		:return: Структура **dataclass**.
-		:rtype: Parameters
+		Args:
+			entity (CommandEntity): Command entity.
+			prepared_data (PreparedData): Prepared from templates data.
+
+		Returns:
+			PARAMS: Command parameters.
 		"""
 
 		strategy: str | None = entity.get_position_value("STRATEGY", expected_type = str)
@@ -72,17 +69,16 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		)
 
 	@override
-	def _process(self, parameters: Parameters) -> bool:
+	def _process(self, parameters: Parameters) -> bool | None:
 		"""
-		Выполняет команду.
+		Process command.
 
-		:param parameters: Required by command processor parameters.
-		:type parameters: Parameters
-		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
-		:rtype: bool
+		Args:
+			parameters (Parameters): Required by command parameters.
+
+		Returns:
+			bool | None: `False` if processing failed.
 		"""
 
 		result = parameters.required_parser.export_settings(parameters.config_strategy)
 		self.printer.templates.manager.exported(result)
-
-		return True

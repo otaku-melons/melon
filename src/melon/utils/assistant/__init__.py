@@ -67,7 +67,7 @@ class Assistant:
 			exceptions.parsers.ParserAlreadyExistsError: Parser installed or found in repositories.
 		"""
 
-		is_installed: bool = self.__system_objects.manager.parsers.is_installed(parser_name, exception = False)
+		is_installed: bool = self.__system_objects.manager.parsers.is_installed(parser_name, raise_error = False)
 
 		if parser_name in self.__system_objects.manager.repositories.available_parsers or is_installed:
 			raise exceptions.parsers.ParserAlreadyExistsError(parser_name, is_installed = is_installed)

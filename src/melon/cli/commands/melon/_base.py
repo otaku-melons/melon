@@ -8,13 +8,10 @@ if TYPE_CHECKING:
 	from ...base.templates import BaseParameters
 
 class CommandProcessorTemplate[PARAMS: "BaseParameters"](BaseCommandProcessor[PARAMS]):
-	"""Контейнер шаблонов генерации команд."""
-
-	#==========================================================================================#
-	# >>>>> PROTECTED METHODS ГЕНЕРАЦИИ КОМАНДЫ <<<<< #
-	#==========================================================================================#
+	"""Command processor template."""
 
 	def _add_mirror_key(self):
-		"""Добавляет ключ подключения зеркала."""
+		"""Add mirror key to command model."""
 
+		self._internal_storage.is_mirror_available = True
 		self._model.base.add_key("--mirror", value_type = ValidableType.Domain, description = "Source mirror to requests.")

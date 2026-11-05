@@ -24,21 +24,18 @@ class Parameters(T_SingleParserRequired):
 	is_target_chapter: bool
 
 class CommandProcessor(CommandProcessorTemplate[Parameters]):
-	"""Обработчик команды."""
-
-	#==========================================================================================#
-	# >>>>> OVERRIDABLE METHODS <<<<< #
-	#==========================================================================================#
+	"""Command processor."""
 
 	@override
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
-		Генерирует модель команды.
+		Build commands model.
 
-		:param model: Шаблон модели команды.
-		:type model: Command
-		:return: Модель команды.
-		:rtype: CommandModel
+		Args:
+			model (CommandModel): Commands model.
+
+		Returns:
+			CommandModel: Commands model.
 		"""
 
 		position = model.create_position("FILE", "Title filename with or without type.", important = True)
@@ -58,10 +55,10 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	@override
 	def _export_description(self) -> str:
 		"""
-		Возвращает описание команды.
+		Export command description.
 
-		:return: Описание команды.
-		:rtype: str
+		Returns:
+			str: Description.
 		"""
 
 		return "Refrersh chapter content from source."
@@ -69,14 +66,14 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	@override
 	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> Parameters:
 		"""
-		Парсит данные обработанной команды в структуру **dataclass**.
+		Parse command parameters.
 
-		:param entity: Сущность команды.
-		:type entity: CommandEntity
-		:param prepared_data: Подготовленные шаблонные параметры команды.
-		:type prepared_data: PreparedData
-		:return: Структура **dataclass**.
-		:rtype: Parameters
+		Args:
+			entity (CommandEntity): Command entity.
+			prepared_data (PreparedData): Prepared from templates data.
+
+		Returns:
+			PARAMS: Command parameters.
 		"""
 
 		filename: str = entity.get_position_value("FILE", expected_type = str, important = True)
@@ -96,14 +93,15 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		)
 
 	@override
-	def _process(self, parameters: Parameters) -> bool:
+	def _process(self, parameters: Parameters) -> bool | None:
 		"""
-		Выполняет команду.
+		Process command.
 
-		:param parameters: Required by command processor parameters.
-		:type parameters: Parameters
-		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
-		:rtype: bool
+		Args:
+			parameters (Parameters): Required by command parameters.
+
+		Returns:
+			bool | None: `False` if processing failed.
 		"""
 
 		source_operator = self._launch_source_operator(parameters.required_parser)
@@ -117,7 +115,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		if not typing_result.slug or not typing_result.content_type:
 			raise exceptions.parsing.ParsingError("Unprocessable title.")
 
-		# TODO: Support force mode.
+		# TODO: Support force mode for images.
 		parser = source_operator.launch_parser(typing_result.content_type, images_level = parameters.images_level)
 		title = parser.init_empty_title(typing_result.slug)
 
@@ -134,5 +132,3 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		saving_result = parser.save()
 		self.printer.templates.parsing.saving_result(saving_result)
-
-		return True

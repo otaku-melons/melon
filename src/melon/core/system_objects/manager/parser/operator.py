@@ -35,7 +35,7 @@ class ParserOperator:
 	def is_installed(self) -> bool:
 		"""Состояние: установлен ли парсер."""
 
-		return self.__Parsers.is_installed(self.__Name, exception = False)
+		return self.__Parsers.is_installed(self.__Name, raise_error = False)
 
 	@property
 	def name(self) -> str:

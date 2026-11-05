@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 	from ...base.structs import PreparedData
 
 class CommandProcessor(BaseCommandProcessor[BaseParameters]):
-	"""Обработчик команды."""
+	"""Command processor."""
 
 	#==========================================================================================#
 	# >>>>> OVERRIDABLE METHODS <<<<< #
@@ -21,12 +21,13 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 	@override
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
-		Генерирует модель команды.
+		Build commands model.
 
-		:param model: Шаблон модели команды.
-		:type model: Command
-		:return: Модель команды.
-		:rtype: CommandModel
+		Args:
+			model (CommandModel): Commands model.
+
+		Returns:
+			CommandModel: Commands model.
 		"""
 
 		return model
@@ -34,10 +35,10 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 	@override
 	def _export_description(self) -> str:
 		"""
-		Возвращает описание команды.
+		Export command description.
 
-		:return: Описание команды.
-		:rtype: str
+		Returns:
+			str: Description.
 		"""
 
 		return "Show list of repositories."
@@ -68,14 +69,15 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 		return BaseParameters()
 
 	@override
-	def _process(self, parameters: BaseParameters) -> bool:
+	def _process(self, parameters: BaseParameters) -> bool | None:
 		"""
-		Выполняет команду.
+		Process command.
 
-		:param parameters: Required by command processor parameters.
-		:type parameters: BaseParameters
-		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
-		:rtype: bool
+		Args:
+			parameters (BaseParameters): Required by command parameters.
+
+		Returns:
+			bool | None: `False` if processing failed.
 		"""
 
 		installed_parsers: list[str] = self.system_objects.manager.parsers.installed
@@ -91,5 +93,3 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 			table.add_row(parser_name, status, repository_url)
 
 		self.printer.table(table)
-
-		return True

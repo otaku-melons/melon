@@ -7,18 +7,19 @@ if TYPE_CHECKING:
 
 @dataclass
 class _InternalStorage:
-	"""Внутренние данные обработчика."""
+	"""Command processor internal data."""
 
 	mirror: str | None = None
 	source_operators: dict[str, "BaseSourceOperator"] = field(default_factory = dict)
 
 	is_json_output: bool = False
 	is_force_mode: bool = False
+	is_mirror_available: bool = False
 	is_multiple_parsers_allowed: bool = False
 
 @dataclass(frozen = True)
 class PreparedData:
-	"""Подготовленные шаблонные параметры команды."""
+	"""Prepared from templates data."""
 
 	required_parsers: tuple["ParserOperator", ...]
 	force_mode: bool
@@ -26,6 +27,6 @@ class PreparedData:
 
 @dataclass(frozen = True)
 class ProcessorOptions:
-	"""Настройки обработчика."""
+	"""Processor options."""
 
 	use_timer: bool = True

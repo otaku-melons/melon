@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 	from dublib.cli.terminalyzer import CommandEntity, CommandModel
 
 class CommandProcessor(CommandProcessorTemplate[BaseParameters]):
-	"""Обработчик команды."""
+	"""Command processor."""
 
 	#==========================================================================================#
 	# >>>>> PRIVATE METHODS <<<<< #
@@ -63,12 +63,13 @@ class CommandProcessor(CommandProcessorTemplate[BaseParameters]):
 	@override
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
-		Генерирует модель команды.
+		Build commands model.
 
-		:param model: Шаблон модели команды.
-		:type model: Command
-		:return: Модель команды.
-		:rtype: CommandModel
+		Args:
+			model (CommandModel): Commands model.
+
+		Returns:
+			CommandModel: Commands model.
 		"""
 
 		return model
@@ -76,10 +77,10 @@ class CommandProcessor(CommandProcessorTemplate[BaseParameters]):
 	@override
 	def _export_description(self) -> str:
 		"""
-		Возвращает описание команды.
+		Export command description.
 
-		:return: Описание команды.
-		:rtype: str
+		Returns:
+			str: Description.
 		"""
 
 		return "Initialize new parser."
@@ -117,14 +118,15 @@ class CommandProcessor(CommandProcessorTemplate[BaseParameters]):
 		self.__kbi_msg: str = "[red]Cancelled.[/]"
 
 	@override
-	def _process(self, parameters: BaseParameters) -> bool:
+	def _process(self, parameters: BaseParameters) -> bool | None:
 		"""
-		Выполняет команду.
+		Process command.
 
-		:param parameters: Required by command processor parameters.
-		:type parameters: Parameters
-		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
-		:rtype: bool
+		Args:
+			parameters (BaseParameters): Required by command parameters.
+
+		Returns:
+			bool | None: `False` if processing failed.
 		"""
 
 		self.printer.emit("[i]Press [Ctrl + C] to cancel initialization.[/]")
@@ -139,5 +141,3 @@ class CommandProcessor(CommandProcessorTemplate[BaseParameters]):
 		assistant = Assistant(self._system_objects)
 
 		assistant.initialize_parser(data)
-
-		return True

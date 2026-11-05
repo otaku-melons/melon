@@ -6,30 +6,30 @@ if TYPE_CHECKING:
 
 @dataclass(frozen = True)
 class BaseParameters:
-	"""Базовые требуемые параметры."""
+	"""Base parameters."""
 
 	pass
 
 @dataclass(frozen = True)
 class T_ForceModeRequired(BaseParameters):
-	"""Шаблон: присутствует режим перезаписи."""
+	"""Template: force mode available."""
 
 	force_mode: bool
 
 @dataclass(frozen = True)
 class T_MultipleParsersRequired(BaseParameters):
-	"""Шаблон: требуется несколько парсеров."""
+	"""Template: multiple parsers selection available."""
 
 	required_parsers: tuple["ParserOperator", ...]
 
 @dataclass(frozen = True)
 class T_OptionalSingleParser(BaseParameters):
-	"""Шаблон: возможен один необязательный парсер."""
+	"""Template: single optional parser required."""
 
 	required_parser: "ParserOperator | None"
 
 @dataclass(frozen = True)
 class T_SingleParserRequired(BaseParameters):
-	"""Шаблон: требуется один парсер."""
+	"""Template: single parser required."""
 
 	required_parser: "ParserOperator"

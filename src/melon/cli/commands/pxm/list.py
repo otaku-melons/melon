@@ -11,21 +11,18 @@ if TYPE_CHECKING:
 	from ...base.structs import PreparedData
 
 class CommandProcessor(BaseCommandProcessor[BaseParameters]):
-	"""Обработчик команды."""
-
-	#==========================================================================================#
-	# >>>>> OVERRIDABLE METHODS <<<<< #
-	#==========================================================================================#
+	"""Command processor."""
 
 	@override
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
-		Генерирует модель команды.
+		Build commands model.
 
-		:param model: Шаблон модели команды.
-		:type model: Command
-		:return: Модель команды.
-		:rtype: CommandModel
+		Args:
+			model (CommandModel): Commands model.
+
+		Returns:
+			CommandModel: Commands model.
 		"""
 
 		return model
@@ -33,10 +30,10 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 	@override
 	def _export_description(self) -> str:
 		"""
-		Возвращает описание команды.
+		Export command description.
 
-		:return: Описание команды.
-		:rtype: str
+		Returns:
+			str: Description.
 		"""
 
 		return "List installed parsers."
@@ -70,12 +67,13 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 	@override
 	def _process(self, parameters: BaseParameters) -> bool:
 		"""
-		Выполняет команду.
+		Process command.
 
-		:param parameters: Required by command processor parameters.
-		:type parameters: BaseParameters
-		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
-		:rtype: bool
+		Args:
+			parameters (BaseParameters): Required by command parameters.
+
+		Returns:
+			bool | None: `False` if processing failed.
 		"""
 
 		parsers_rows: list[ParsersTableRow] = []

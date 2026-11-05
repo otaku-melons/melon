@@ -31,7 +31,7 @@ class Statistics:
 		return self.total - self.skipped - self.errors - self.warnings
 
 class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
-	"""Обработчик команды."""
+	"""Command processor."""
 
 	#==========================================================================================#
 	# >>>>> PRIVATE METHODS <<<<< #
@@ -113,12 +113,13 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 	@override
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
-		Генерирует модель команды.
+		Build commands model.
 
-		:param model: Шаблон модели команды.
-		:type model: Command
-		:return: Модель команды.
-		:rtype: CommandModel
+		Args:
+			model (CommandModel): Commands model.
+
+		Returns:
+			CommandModel: Commands model.
 		"""
 
 		self._add_parser_position()
@@ -128,10 +129,10 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 	@override
 	def _export_description(self) -> str:
 		"""
-		Возвращает описание команды.
+		Export command description.
 
-		:return: Описание команды.
-		:rtype: str
+		Returns:
+			str: Description.
 		"""
 
 		return "Lint parser."
@@ -156,12 +157,13 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 	@override
 	def _process(self, parameters: T_SingleParserRequired) -> bool:
 		"""
-		Выполняет команду.
+		Process command.
 
-		:param parameters: Required by command processor parameters.
-		:type parameters: T_SingleParserRequired
-		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
-		:rtype: bool
+		Args:
+			parameters (T_SingleParserRequired): Required by command parameters.
+
+		Returns:
+			bool | None: `False` if processing failed.
 		"""
 
 		linting_results = parameters.required_parser.lint()
@@ -178,4 +180,3 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 		self.__print_statistics(statistics)
 
 		return not bool(statistics.errors)
-

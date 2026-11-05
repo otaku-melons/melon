@@ -10,21 +10,18 @@ if TYPE_CHECKING:
 	from ...base.structs import PreparedData
 
 class CommandProcessor(CommandProcessorTemplate[T_MultipleParsersRequired]):
-	"""Обработчик команды."""
-
-	#==========================================================================================#
-	# >>>>> OVERRIDABLE METHODS <<<<< #
-	#==========================================================================================#
+	"""Command processor."""
 
 	@override
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
 		"""
-		Генерирует модель команды.
+		Build commands model.
 
-		:param model: Шаблон модели команды.
-		:type model: Command
-		:return: Модель команды.
-		:rtype: CommandModel
+		Args:
+			model (CommandModel): Commands model.
+
+		Returns:
+			CommandModel: Commands model.
 		"""
 
 		self._add_parser_position(key = "--use", multiple = True)
@@ -34,10 +31,10 @@ class CommandProcessor(CommandProcessorTemplate[T_MultipleParsersRequired]):
 	@override
 	def _export_description(self) -> str:
 		"""
-		Возвращает описание команды.
+		Export command description.
 
-		:return: Описание команды.
-		:rtype: str
+		Returns:
+			str: Description.
 		"""
 
 		return "Run ID-slug caching."
@@ -58,14 +55,15 @@ class CommandProcessor(CommandProcessorTemplate[T_MultipleParsersRequired]):
 		return T_MultipleParsersRequired(prepared_data.required_parsers)
 
 	@override
-	def _process(self, parameters: T_MultipleParsersRequired) -> bool:
+	def _process(self, parameters: T_MultipleParsersRequired) -> bool | None:
 		"""
-		Выполняет команду.
+		Process command.
 
-		:param parameters: Required by command processor parameters.
-		:type parameters: T_MultipleParsersRequired
-		:return: Возвращает `True`, если выполнение успешно и прерывание не требуется.
-		:rtype: bool
+		Args:
+			parameters (T_MultipleParsersRequired): Required by command parameters.
+
+		Returns:
+			bool | None: `False` if processing failed.
 		"""
 
 		for parser_operator in parameters.required_parsers:
@@ -74,5 +72,3 @@ class CommandProcessor(CommandProcessorTemplate[T_MultipleParsersRequired]):
 
 			result = Cacher.cache_parser_output()
 			self.printer.templates.cacher.result(result)
-
-		return True
