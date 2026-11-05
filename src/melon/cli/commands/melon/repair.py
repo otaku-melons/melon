@@ -115,8 +115,8 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		if not typing_result.slug or not typing_result.content_type:
 			raise exceptions.parsing.ParsingError("Unprocessable title.")
 
-		# TODO: Support force mode for images.
-		parser = source_operator.launch_parser(typing_result.content_type, images_level = parameters.images_level)
+		force_mode: bool = True if parameters.images_level is ImagesLevel.ALL else False
+		parser = source_operator.launch_parser(typing_result.content_type, force_mode = force_mode, images_level = parameters.images_level)
 		title = parser.init_empty_title(typing_result.slug)
 
 		if title.load(parameters.filename, By.Filename):
