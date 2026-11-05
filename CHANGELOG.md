@@ -10,6 +10,8 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 ## [1.0.0-rc.7]
 
 ### ✨ Added
+- Print original and new parser version while `pxm update`.
+- Manifest update method.
 - Print warning if repository for installed parser not found.
 - Exception `ParserNotInstalled` if parser required, not installed, but found in repositories.
 - Module `sdk` to improve parsers developers experience.

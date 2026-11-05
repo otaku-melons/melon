@@ -5,8 +5,11 @@ from ...base import BaseCommandProcessor
 from ...base.templates import T_ForceModeRequired, T_SingleParserRequired
 
 if TYPE_CHECKING:
+	from packaging.version import Version
+
 	from dublib.cli.terminalyzer import CommandEntity, CommandModel
 
+	from ....core.base.parser.components.manifest import ParserManifest
 	from ...base.structs import PreparedData
 
 @dataclass(frozen = True)
@@ -77,9 +80,19 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 		"""
 
 		repository_url: str = self.system_objects.manager.repositories.get(parameters.required_parser.name, exception = True)
-		self.printer.emit(f"Repository: [i]{repository_url}[/].")
+		manifest: ParserManifest = parameters.required_parser.load_manifest()
+		original_version: Version | None = manifest.version
 
-		IsUpdated: bool = parameters.required_parser.update(force_mode = parameters.force_mode)
+		self.printer.emit(f"Repository: [i]{repository_url}[/i].")
+		if original_version: self.printer.emit(f"Current version: [b]{original_version}[/b].")
 
-		if IsUpdated: self.printer.emit("Updated.")
-		else: self.printer.emit("No changes.")
+		is_updated: bool = parameters.required_parser.update(force_mode = parameters.force_mode)
+
+		if is_updated:
+			manifest.update()
+			self.printer.emit("Updated.")
+			version: Version | None = manifest.version
+			if original_version: self.printer.emit(f"Installed version: [b]{version}[/b].")
+
+		else:
+			self.printer.emit("No changes.")

@@ -32,10 +32,7 @@ class ParserManifest:
 		self.__system_objects: SystemObjects = system_objects
 		self.__parser_name: str = parser_name
 
-		self.__manifest: ManifestModel = self.__load()
-		self.__content_types: tuple[ContentType, ...] = self.__get_supported_content_types()
-		self.__version: Version | None = self.__get_version()
-		self.__mirror: str | None = None
+		self.update()
 
 	def set_mirror(self, mirror: str | None):
 		"""
@@ -48,6 +45,14 @@ class ParserManifest:
 		"""
 
 		self.__mirror = mirror
+
+	def update(self):
+		"""Update manifest."""
+
+		self.__manifest: ManifestModel = self.__load()
+		self.__content_types: tuple[ContentType, ...] = self.__get_supported_content_types()
+		self.__version: Version | None = self.__get_version()
+		self.__mirror: str | None = None
 
 	@property
 	def parser_name(self) -> str:
@@ -133,7 +138,8 @@ class ParserManifest:
 
 		try:
 			parser_tags = porcelain.tag_list(f"parsers/{self.__parser_name}")
-		except errors.NotGitRepository: pass
+		except errors.NotGitRepository:
+			pass
 
 		if parser_tags:
 			last_tag: str = parser_tags[-1].decode()
