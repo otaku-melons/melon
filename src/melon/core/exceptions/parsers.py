@@ -46,25 +46,38 @@ class ParserAlreadyExistsError(Exception):
 		return self.__parser_name
 
 class ParserNotFoundError(Exception):
-	"""Исключение: парсер не найден."""
+	"""Exception: parser not found."""
 
 	def __init__(self, parser_name: str):
 		"""
-		Исключение: парсер не найден.
+		Exception: parser not found.
 
-		:param parser_name: Имя парсера.
-		:type parser_name: str
+		Args:
+			parser_name (str): Parser name.
+		"""
+
+		super().__init__(parser_name)
+
+class ParserNotInstalledError(Exception):
+	"""Exception: parser found in repositories, but not installed."""
+
+	def __init__(self, parser_name: str):
+		"""
+		Exception: parser found in repositories, but not installed.
+
+		Args:
+			parser_name (str): Parser name.
 		"""
 
 		super().__init__(parser_name)
 
 class TitleNotSetError(Exception):
-	"""Исключение: не задан тайтл."""
+	"""Exception: title not set."""
 
 	def __init__(self):
-		"""Исключение: не задан тайтл."""
+		"""Exception: title not set."""
 
-		super().__init__("Open title before using methods, that it requires.")
+		super().__init__("Title required, but not set for parser.")
 
 class RepositoryError(Exception):
 	"""Исключение: ошибка работы с репозиториями."""
