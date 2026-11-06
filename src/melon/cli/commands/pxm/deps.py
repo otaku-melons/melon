@@ -6,7 +6,6 @@ from ...base.templates import T_MultipleParsersRequired
 if TYPE_CHECKING:
 	from dublib.cli.terminalyzer import CommandEntity, CommandModel
 
-	from ....core.system_objects.manager.parser.operator import DependencyError
 	from ...base.structs import PreparedData
 
 class CommandProcessor(BaseCommandProcessor[T_MultipleParsersRequired]):
@@ -68,14 +67,5 @@ class CommandProcessor(BaseCommandProcessor[T_MultipleParsersRequired]):
 			bool | None: `False` if processing failed.
 		"""
 
-		has_errors: bool = False
-
-		for parser_operator in parameters.required_parsers:
-			dependency_error: DependencyError | None = parser_operator.check_dependencies()
-
-			if dependency_error:
-				has_errors = True
-				self.printer.templates.manager.dependency_error(dependency_error)
-
-		if not has_errors:
+		if self._check_dependencies(parameters.required_parsers):
 			self.printer.emit("All dependencies satisfied.")

@@ -15,6 +15,7 @@ class Parameters(T_SingleParserRequired):
 	"""Required by command processor parameters."""
 
 	config_strategy: ExportStrategy
+	is_install_parent: bool
 
 class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	"""Command processor."""
@@ -33,6 +34,8 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		self._add_parser_position()
 		self._add_settings_export_strategy_position()
+
+		model.base.add_flag("-no-parent", description = "Disable parent automatic installation.")
 
 		return model
 
@@ -69,6 +72,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		return Parameters(
 			required_parser = prepared_data.required_parsers[0],
 			config_strategy = ExportStrategy(strategy),
+			is_install_parent = not entity.check_flag("-no-parent"),
 		)
 
 	@override
@@ -91,3 +95,38 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		result = parameters.required_parser.export_settings(parameters.config_strategy)
 		self.printer.templates.manager.exported(result)
+
+		if parameters.is_install_parent:
+			self.__install_parent(parameters)
+
+		self._check_dependencies((parameters.required_parser,))
+
+	def __install_parent(self, parameters: Parameters) -> bool | None:
+		"""
+		Install parent parser.
+
+		Args:
+			parameters (Parameters): Required by command parameters..
+
+		Returns:
+			bool | None: `False` if processing failed..
+		"""
+
+		manifest = parameters.required_parser.load_manifest()
+
+		if not manifest.parent:
+			return
+
+		is_parent_installed: bool = self.system_objects.manager.parsers.is_installed(manifest.parent, raise_error = False)
+
+		if is_parent_installed:
+			self.printer.emit(f"Parent [b]{manifest.parent}[/b] already installed.")
+			return
+
+		if not self.system_objects.manager.repositories.get(manifest.parent, exception = False):
+			self.printer.warning(f"Repository for parent parser [b]{manifest.parent}[/b] not found. Parent installation skipped.")
+			return
+
+		parent_operator = self.system_objects.manager.parsers.get_operator(manifest.parent, require_installation = False)
+		parent_operator.install()
+		self.printer.emit("Parent installed.")
