@@ -88,13 +88,13 @@ class CommandProcessor(CommandProcessorTemplate[BaseParameters]):
 	@override
 	def _export_options(self) -> ProcessorOptions:
 		"""
-		Возвращает настройки обработчика.
+		Export processor options.
 
-		:return: Настройки обработчика.
-		:rtype: ProcessorOptions
+		Returns:
+			ProcessorOptions: Processor options.
 		"""
 
-		return ProcessorOptions(use_timer = False)
+		return ProcessorOptions(use_timer = False, require_installed_parsers = False)
 
 	@override
 	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> BaseParameters:

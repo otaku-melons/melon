@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, NoReturn, overload
 
 from packaging.version import Version
 from rich.table import Table
@@ -9,7 +9,7 @@ from ...manager.parser.enums import ExportResult
 from ._base import _BaseTemplatesSection
 
 if TYPE_CHECKING:
-	from collections.abc import Sequence
+	from collections.abc import Callable, Sequence
 
 	from ...manager.parser.operator import DependencyError
 
@@ -26,29 +26,40 @@ class ParsersTableRow:
 class ManagerTemplates(_BaseTemplatesSection):
 	"""Extended output templates: manager."""
 
-	def dependency_error(self, dependency_error: "DependencyError"):
+	@overload
+	def dependency_error(self, dependency_error: "DependencyError", critical: Literal[True]) -> NoReturn: ...
+	@overload
+	def dependency_error(self, dependency_error: "DependencyError", critical: Literal[False] = False): ...
+
+	def dependency_error(self, dependency_error: "DependencyError", critical: bool = False) -> NoReturn | None:
 		"""
 		Emit message: dependency error.
 
 		Args:
 			dependency_error (DependencyError): Dependency error.
+			critical (bool): Condition: is error critical and Melon must be stopped.
 		"""
 
+		printers: dict[bool, Callable] = {
+			True: self.printer.critical,
+			False: self.printer.emit,
+		}
+
 		if not dependency_error.is_installed:
-			self.printer.error(
+			printers[critical](
 				text = f"Dependency [b]{dependency_error.required_literal}[/b] isn't installed.",
 				origin = dependency_error.parser_name,
 			)
 			return
 
 		if not dependency_error.installed_version:
-			self.printer.error(
+			printers[critical](
 				text = f"Undetermined version of [b]{dependency_error.required_name}[/b], required [b]{dependency_error.required_version}[/b].",
 				origin = dependency_error.parser_name,
 			)
 			return
 
-		self.printer.error(
+		printers[critical](
 			text = f"Unsolvable dependency: required [b]{dependency_error.required_literal}[/b], installed [b]{dependency_error.installed_literal}[/b].",
 			origin = dependency_error.parser_name,
 		)

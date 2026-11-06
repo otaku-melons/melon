@@ -27,6 +27,18 @@ class PreparedData:
 
 @dataclass(frozen = True)
 class ProcessorOptions:
-	"""Processor options."""
+	"""
+	Processor options.
+
+	If `require_installed_parsers` disabled, `check_parsers_dependencies` also will be disabled by default.
+	"""
 
 	use_timer: bool = True
+	require_installed_parsers: bool = True
+	check_parsers_dependencies: bool = True
+
+	def __post_init__(self):
+		"""Run after instance initialization."""
+
+		if not self.require_installed_parsers:
+			object.__setattr__(self, "check_parsers_dependencies", False)

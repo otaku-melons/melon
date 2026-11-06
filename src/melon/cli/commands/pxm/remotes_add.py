@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, override
 from dublib.validators import ValidableType
 
 from ...base import BaseCommandProcessor
+from ...base.structs import ProcessorOptions
 from ...base.templates import BaseParameters
 
 if TYPE_CHECKING:
@@ -47,6 +48,17 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 		"""
 
 		return "Add parser repository."
+
+	@override
+	def _export_options(self) -> ProcessorOptions:
+		"""
+		Export processor options.
+
+		Returns:
+			ProcessorOptions: Processor options.
+		"""
+
+		return ProcessorOptions(require_installed_parsers = False)
 
 	@override
 	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> Parameters:

@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 	from ...core.base.source_operator import BaseSourceOperator
 	from ...core.system_objects import SystemObjects
 	from ...core.system_objects.manager.parser import ParserOperator
+	from ...core.system_objects.manager.parser.operator import DependencyError
 	from ...core.system_objects.printer import Printer
 	from .templates import BaseParameters
 
@@ -282,10 +283,19 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 
 		self._check_required_parsers(parsers_names)
 
-		return tuple(
-			self.system_objects.manager.parsers.get_operator(Name, require_installation = False)
+		parsers_operators: tuple[ParserOperator, ...] = tuple(
+			self.system_objects.manager.parsers.get_operator(Name, require_installation = self.options.require_installed_parsers)
 			for Name in parsers_names
 		)
+
+		if self.options.check_parsers_dependencies:
+			for parser_operator in parsers_operators:
+				dependency_error: DependencyError | None = parser_operator.check_dependencies()
+
+				if dependency_error:
+					self.printer.templates.manager.dependency_error(dependency_error, critical = True)
+
+		return parsers_operators
 
 	@abstractmethod
 	def _parse_parameters(self, entity: "CommandEntity", prepared_data: PreparedData) -> PARAMS:

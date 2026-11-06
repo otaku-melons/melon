@@ -60,10 +60,10 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	@override
 	def _export_options(self) -> ProcessorOptions:
 		"""
-		Возвращает настройки обработчика.
+		Export processor options.
 
-		:return: Настройки обработчика.
-		:rtype: ProcessorOptions
+		Returns:
+			ProcessorOptions: Processor options.
 		"""
 
 		return ProcessorOptions(use_timer = False)

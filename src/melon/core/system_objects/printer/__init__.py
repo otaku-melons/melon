@@ -33,11 +33,11 @@ class Printer:
 		self.__templates: Templates = Templates(self)
 
 	@overload
-	def critical(self, text: str, origin: str | None = None, end_work: Literal[True] = ...) -> NoReturn: ...
+	def critical(self, text: str, origin: str | None = None, end_work: Literal[False] = ...): ...
 	@overload
-	def critical(self, text: str, origin: str | None = None, end_work: Literal[False] = False): ...
+	def critical(self, text: str, origin: str | None = None, end_work: Literal[True] = True) -> NoReturn: ...
 
-	def critical(self, text: str, origin: str | None = None, end_work: bool = False):
+	def critical(self, text: str, origin: str | None = None, end_work: bool = True):
 		"""
 		Emit critical error message.
 

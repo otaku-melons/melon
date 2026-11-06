@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, override
 
 from ...base import BaseCommandProcessor
+from ...base.structs import ProcessorOptions
 from ...base.templates import T_SingleParserRequired
 
 if TYPE_CHECKING:
@@ -37,6 +38,17 @@ class CommandProcessor(BaseCommandProcessor[T_SingleParserRequired]):
 		"""
 
 		return "Remove parser repository."
+
+	@override
+	def _export_options(self) -> ProcessorOptions:
+		"""
+		Export processor options.
+
+		Returns:
+			ProcessorOptions: Processor options.
+		"""
+
+		return ProcessorOptions(require_installed_parsers = False)
 
 	@override
 	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> T_SingleParserRequired:
