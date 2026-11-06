@@ -10,6 +10,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 ## [1.0.0-rc.7]
 
 ### ✨ Added
+- Dependencies check mechanism and `pxm deps` command.
 - Print original and new parser version while `pxm update`.
 - Manifest update method.
 - Print warning if repository for installed parser not found.

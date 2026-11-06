@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 	from ....core.system_objects import SystemObjects
 
 class Temper:
-	"""Дескриптор временных каталогов и объектов."""
+	"""Temporary data operator."""
 
 	@property
 	def system_objects(self) -> "SystemObjects":

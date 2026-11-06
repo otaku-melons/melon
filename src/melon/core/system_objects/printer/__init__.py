@@ -83,11 +83,14 @@ class Printer:
 			parse_mode (Literal["html", "rich"] | None): Parse mode to create ANSI styles.
 		"""
 
-		match parse_mode:
-			case "html": text = self.__styler.convert_from_html(text)
-			case "rich": text = self.__styler.convert(text)
+		if parse_mode == "html":
+			text = self.__styler.convert_from_html(text)
 
-		message_text: str = generate_message(text, message_type, origin).lstrip()
+		message_text: str = generate_message(text, message_type, origin, colorize = "rich" if parse_mode else None)
+
+		if parse_mode:
+			message_text = self.styler.convert(message_text)
+
 		print(message_text, end = "\n" if end_line else "", flush = flush)
 
 	def error(self, text: str, origin: str | None = None):

@@ -1,5 +1,6 @@
 import importlib
 import shutil
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -15,92 +16,117 @@ from .extensions import ExtensionsOperator
 from .linter import CheckResult, Linter
 
 if TYPE_CHECKING:
+	from packaging.specifiers import SpecifierSet
+	from packaging.version import Version
+
 	from ....base.source_operator import BaseSourceOperator
 	from . import Parsers
 
+@dataclass(frozen = True)
+class DependencyError:
+	"""Dependency error."""
+
+	parser_name: str
+
+	required_name: str
+	required_version: "SpecifierSet | None"
+
+	is_installed: bool
+	installed_version: "Version | None"
+
+	@property
+	def installed_literal(self) -> str:
+		"""Installed literal."""
+
+		if self.installed_version:
+			return f"{self.required_name}=={self.installed_version}"
+
+		return self.required_name
+
+	@property
+	def required_literal(self) -> str:
+		"""Required literal."""
+
+		if self.required_version:
+			return f"{self.required_name}{self.required_version}"
+
+		return self.required_name
+
 class ParserOperator:
-	"""Оператор парсера."""
-
-	#==========================================================================================#
-	# >>>>> PROPERTIES <<<<< #
-	#==========================================================================================#
-
-	@property
-	def extensions(self) -> ExtensionsOperator:
-		"""Extensions operator."""
-
-		return self.__extensions_operator
-
-	@property
-	def is_installed(self) -> bool:
-		"""Состояние: установлен ли парсер."""
-
-		return self.__Parsers.is_installed(self.__Name, raise_error = False)
-
-	@property
-	def name(self) -> str:
-		"""Имя парсера."""
-
-		return self.__Name
-
-	@property
-	def path(self) -> Path:
-		"""Путь к директории парсера."""
-
-		return self.__Parsers.root / self.__Name
-
-	@property
-	def repository(self) -> str | None:
-		"""URL удалённого репозитория."""
-
-		return self.__Parsers.manager.repositories.get(self.__Name)
-
-	@property
-	def requirements_path(self) -> Path:
-		"""Путь к файлу зависимостей если."""
-
-		return self.path / "requirements.txt"
-
-	@property
-	def temp_directory(self) -> Path:
-		"""Parser temp directory path."""
-
-		return self.__Parsers.manager.system_objects.temper.get_parser_temp_directory(self.__Name)
-
-	#==========================================================================================#
-	# >>>>> НАСЛЕДУЕМЫЕ ВАЛИДАТОРЫ <<<<< #
-	#==========================================================================================#
-
-	def _RequireInstallation(self):
-		"""
-		Проверяет, установлен ли парсер. Служит для использования в декораторе `run_before_method()`.
-
-		:raises ParserNotFoundError: Парсер не установлен.
-		"""
-
-		self.__Parsers.is_installed(self.__Name)
-
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS <<<<< #
-	#==========================================================================================#
+	"""Parser operator."""
 
 	def __init__(self, parsers: "Parsers", name: str):
 		"""
-		Менеджер парсеров.
+		Parser operator.
 
-		:param parsers: Менеджер парсеров.
-		:type parsers: Parsers
-		:param name: Имя парсера.
-		:type name: str
+		Args:
+			parsers (Parsers): Parsers manager.
+			name (str): Parser name.
 		"""
 
-		self.__Parsers = parsers
-		self.__Name = name
+		self.__parsers_manager: Parsers = parsers
+		self.__name: str = name
 
-		self.__extensions_operator: ExtensionsOperator = ExtensionsOperator(self, self.__Parsers.manager)
+		self.__extensions_operator: ExtensionsOperator = ExtensionsOperator(self, self.__parsers_manager.manager)
 		self.__linter: Linter = Linter()
 
-	@run_before_method("_RequireInstallation")
+	def check_dependencies(self) -> DependencyError | None:
+		"""
+		Check is parser dependencies satisfied.
+
+		Returns:
+			DependencyError | None: Dependency error or `None` if all satisfied.
+		"""
+
+		manifest: ParserManifest = self.load_manifest()
+		platform_version: Version = self.__parsers_manager.manager.system_objects.platform_version
+
+		if manifest.platform and platform_version not in manifest.platform:
+			return DependencyError(
+				parser_name = manifest.parser_name,
+				required_name = "melon",
+				required_version = manifest.platform,
+				is_installed = True,
+				installed_version = platform_version,
+			)
+
+		if not manifest.parent:
+			return
+
+		if not self.__parsers_manager.is_installed(manifest.parent, raise_error = False):
+			return DependencyError(
+				parser_name = manifest.parser_name,
+				required_name = manifest.parent,
+				required_version = manifest.parent_version,
+				is_installed = False,
+				installed_version = None,
+			)
+
+		if not manifest.parent_version:
+			return
+
+		parent_operator: ParserOperator = self.__parsers_manager.get_operator(manifest.parent)
+		parent_manifest: ParserManifest = parent_operator.load_manifest()
+
+		if not parent_manifest.version:
+			return DependencyError(
+				parser_name = manifest.parser_name,
+				required_name = manifest.parent,
+				required_version = manifest.parent_version,
+				is_installed = True,
+				installed_version = None,
+			)
+
+		if parent_manifest.version not in manifest.parent_version:
+			return DependencyError(
+				parser_name = manifest.parser_name,
+				required_name = manifest.parent,
+				required_version = manifest.parent_version,
+				is_installed = True,
+				installed_version = parent_manifest.version,
+			)
+
+	@run_before_method("_require_installation")
 	def export_settings(self, strategy: ExportStrategy = ExportStrategy.Skip) -> ExportResult:
 		"""
 		Экспортирует настройки парсера.
@@ -111,13 +137,13 @@ class ParserOperator:
 		:rtype: ExportResult
 		"""
 
-		BaseConfig: dict = ParserSettings.get_base_settings(self.__Parsers.manager.system_objects, self.__Name)
+		BaseConfig: dict = ParserSettings.get_base_settings(self.__parsers_manager.manager.system_objects, self.__name)
 		PresetFile = self.path / "settings.json"
-		StorageFile = self.__Parsers.manager.system_objects.options.CONFIGS_DIR / f"{self.__Name}.json"
+		StorageFile = self.__parsers_manager.manager.system_objects.options.CONFIGS_DIR / f"{self.__name}.json"
 
 		if PresetFile.exists():
 			Buffer: dict = json.read(PresetFile)
-			Config = dictionary.deep_merge(BaseConfig, Buffer, uniqueness = self.__Parsers.manager.system_objects.options.JSON_ATOMIC_WRITE)
+			Config = dictionary.deep_merge(BaseConfig, Buffer, uniqueness = self.__parsers_manager.manager.system_objects.options.JSON_ATOMIC_WRITE)
 		else:
 			return ExportResult.Missing
 
@@ -128,16 +154,16 @@ class ParserOperator:
 					return ExportResult.AlreadyExists
 
 				case ExportStrategy.Overwrite:
-					json.write(StorageFile, Config, atomic = self.__Parsers.manager.system_objects.options.JSON_ATOMIC_WRITE)
+					json.write(StorageFile, Config, atomic = self.__parsers_manager.manager.system_objects.options.JSON_ATOMIC_WRITE)
 					return ExportResult.Overwtitten
 
 				case ExportStrategy.Merge:
 					CurrentConfig: dict = json.read(StorageFile)
-					Config = dictionary.deep_merge(Config, CurrentConfig, uniqueness = self.__Parsers.manager.system_objects.options.JSON_ATOMIC_WRITE)
-					json.write(StorageFile, Config, atomic = self.__Parsers.manager.system_objects.options.JSON_ATOMIC_WRITE)
+					Config = dictionary.deep_merge(Config, CurrentConfig, uniqueness = self.__parsers_manager.manager.system_objects.options.JSON_ATOMIC_WRITE)
+					json.write(StorageFile, Config, atomic = self.__parsers_manager.manager.system_objects.options.JSON_ATOMIC_WRITE)
 					return ExportResult.Merged
 
-		json.write(StorageFile, Config, atomic = self.__Parsers.manager.system_objects.options.JSON_ATOMIC_WRITE)
+		json.write(StorageFile, Config, atomic = self.__parsers_manager.manager.system_objects.options.JSON_ATOMIC_WRITE)
 
 		return ExportResult.Installed
 
@@ -150,13 +176,13 @@ class ParserOperator:
 		"""
 
 		if self.is_installed:
-			raise exceptions.parsers.ParserAlreadyExistsError(self.__Name, is_installed = True)
+			raise exceptions.parsers.ParserAlreadyExistsError(self.__name, is_installed = True)
 
 		self.path.mkdir(exist_ok = True)
 
-		self.__Parsers.manager.packager.clone(
+		self.__parsers_manager.manager.packager.clone(
 			directory = self.path,
-			remote = self.__Parsers.manager.repositories.get(self.__Name, exception = True),
+			remote = self.__parsers_manager.manager.repositories.get(self.__name, exception = True),
 		)
 
 		self.install_requirements()
@@ -166,9 +192,9 @@ class ParserOperator:
 
 		RequirementsFile = self.path / "requirements.txt"
 		if RequirementsFile.exists():
-			self.__Parsers.manager.packager.install_requirements(RequirementsFile)
+			self.__parsers_manager.manager.packager.install_requirements(RequirementsFile)
 
-	@run_before_method("_RequireInstallation")
+	@run_before_method("_require_installation")
 	def launch(self) -> "BaseSourceOperator":
 		"""
 		Инициализирует оператор источника.
@@ -183,12 +209,12 @@ class ParserOperator:
 		if not ParserMain.exists():
 			raise FileNotFoundError(ParserMain)
 
-		Module = importlib.import_module(f"parsers.{self.__Name}")
+		Module = importlib.import_module(f"parsers.{self.__name}")
 		ParserManifest = self.load_manifest()
 
-		return Module.SourceOperator(self.__Parsers.manager.system_objects, ParserManifest)
+		return Module.SourceOperator(self.__parsers_manager.manager.system_objects, ParserManifest)
 
-	@run_before_method("_RequireInstallation")
+	@run_before_method("_require_installation")
 	def lint(self) -> tuple[CheckResult, ...]:
 		"""
 		Run parser linting.
@@ -199,7 +225,7 @@ class ParserOperator:
 
 		return self.__linter.check(self)
 
-	@run_before_method("_RequireInstallation")
+	@run_before_method("_require_installation")
 	def load_manifest(self) -> ParserManifest:
 		"""
 		Загружает манифест парсера.
@@ -214,9 +240,9 @@ class ParserOperator:
 		if not ManifestFile.exists():
 			raise FileNotFoundError(ManifestFile)
 
-		return ParserManifest(self.__Parsers.manager.system_objects, self.__Name)
+		return ParserManifest(self.__parsers_manager.manager.system_objects, self.__name)
 
-	@run_before_method("_RequireInstallation")
+	@run_before_method("_require_installation")
 	def uninstall(self, clear: bool = False):
 		"""
 		Удаляет парсер.
@@ -229,8 +255,8 @@ class ParserOperator:
 
 		if clear:
 			ElementToRemove += [
-				self.__Parsers.manager.system_objects.options.CONFIGS_DIR / f"{self.__Name}.json",
-				self.__Parsers.manager.system_objects.options.TEMP_DIR / self.__Name,
+				self.__parsers_manager.manager.system_objects.options.CONFIGS_DIR / f"{self.__name}.json",
+				self.__parsers_manager.manager.system_objects.options.TEMP_DIR / self.__name,
 			]
 
 		for Element in ElementToRemove:
@@ -238,7 +264,7 @@ class ParserOperator:
 				if Element.is_dir(): shutil.rmtree(Element)
 				else: Element.unlink()
 
-	@run_before_method("_RequireInstallation")
+	@run_before_method("_require_installation")
 	def update(self, requirements: bool = True, force_mode: bool = False) -> bool:
 		"""
 		Обновляет парсер.
@@ -251,15 +277,66 @@ class ParserOperator:
 		:rtype: bool
 		"""
 
-		if not force_mode and self.__Parsers.manager.packager.has_changes(self.path):
+		if not force_mode and self.__parsers_manager.manager.packager.has_changes(self.path):
 			raise exceptions.parsers.RepositoryError("Local changes detected.")
 
-		IsStateChanged: bool = self.__Parsers.manager.packager.pull(
+		IsStateChanged: bool = self.__parsers_manager.manager.packager.pull(
 			repository = self.path,
-			remote = self.__Parsers.manager.repositories.get(self.__Name, exception = True),
+			remote = self.__parsers_manager.manager.repositories.get(self.__name, exception = True),
 			force_mode = force_mode,
 		)
 
 		if IsStateChanged and requirements: self.install_requirements()
 
 		return IsStateChanged
+
+	def _require_installation(self):
+		"""
+		Проверяет, установлен ли парсер. Служит для использования в декораторе `run_before_method()`.
+
+		:raises ParserNotFoundError: Парсер не установлен.
+		"""
+
+		self.__parsers_manager.is_installed(self.__name)
+
+	@property
+	def extensions(self) -> ExtensionsOperator:
+		"""Extensions operator."""
+
+		return self.__extensions_operator
+
+	@property
+	def is_installed(self) -> bool:
+		"""Состояние: установлен ли парсер."""
+
+		return self.__parsers_manager.is_installed(self.__name, raise_error = False)
+
+	@property
+	def name(self) -> str:
+		"""Имя парсера."""
+
+		return self.__name
+
+	@property
+	def path(self) -> Path:
+		"""Путь к директории парсера."""
+
+		return self.__parsers_manager.root / self.__name
+
+	@property
+	def repository(self) -> str | None:
+		"""URL удалённого репозитория."""
+
+		return self.__parsers_manager.manager.repositories.get(self.__name)
+
+	@property
+	def requirements_path(self) -> Path:
+		"""Путь к файлу зависимостей если."""
+
+		return self.path / "requirements.txt"
+
+	@property
+	def temp_directory(self) -> Path:
+		"""Parser temp directory path."""
+
+		return self.__parsers_manager.manager.system_objects.temper.get_parser_temp_directory(self.__name)

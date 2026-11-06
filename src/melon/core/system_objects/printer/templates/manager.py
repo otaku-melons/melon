@@ -11,6 +11,8 @@ from ._base import _BaseTemplatesSection
 if TYPE_CHECKING:
 	from collections.abc import Sequence
 
+	from ...manager.parser.operator import DependencyError
+
 @dataclass(frozen = True)
 class ParsersTableRow:
 	"""Parser table row."""
@@ -23,6 +25,33 @@ class ParsersTableRow:
 
 class ManagerTemplates(_BaseTemplatesSection):
 	"""Extended output templates: manager."""
+
+	def dependency_error(self, dependency_error: "DependencyError"):
+		"""
+		Emit message: dependency error.
+
+		Args:
+			dependency_error (DependencyError): Dependency error.
+		"""
+
+		if not dependency_error.is_installed:
+			self.printer.error(
+				text = f"Dependency [b]{dependency_error.required_literal}[/b] isn't installed.",
+				origin = dependency_error.parser_name,
+			)
+			return
+
+		if not dependency_error.installed_version:
+			self.printer.error(
+				text = f"Undetermined version of [b]{dependency_error.required_name}[/b], required [b]{dependency_error.required_version}[/b].",
+				origin = dependency_error.parser_name,
+			)
+			return
+
+		self.printer.error(
+			text = f"Unsolvable dependency: required [b]{dependency_error.required_literal}[/b], installed [b]{dependency_error.installed_literal}[/b].",
+			origin = dependency_error.parser_name,
+		)
 
 	def exported(self, result: ExportResult):
 		"""
