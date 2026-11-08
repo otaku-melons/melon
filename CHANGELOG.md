@@ -14,7 +14,9 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - All parsers now is Python packages and can be managed with packages managers.
 
 ### 🔥 Removed
-- CLI parsers packages manager (soma functions saved in `pm`).
+- CLI parsers packages manager (some functions saved in `pm`).
+- Assistant for elements initialization (planned to be separated into own package).
+- Linter (planned to be separated into own package).
 
 ## [1.0.0-rc.7] - 2026-11-07
 

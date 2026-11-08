@@ -29,7 +29,7 @@ class ParserSettings[T: BaseModel]:
 		self.__parser_name: str = parser_name
 
 		self.__adapter: TypeAdapter[SettingsModel] = TypeAdapter(SettingsModel)
-		self.__custom_model = BaseModel
+		self.__settings_preset_path: Path = Path(str(resources.files(self.__parser_name) / "settings" / "settings.json"))
 
 		self.reload()
 
@@ -93,6 +93,12 @@ class ParserSettings[T: BaseModel]:
 
 		return self.__network
 
+	@property
+	def preset_path(self) -> Path:
+		"""Settings preset path."""
+
+		return self.__settings_preset_path
+
 	def __read_raw_data(self) -> dict:
 		"""
 		Read raw settings from configs directory and parser defaults and merge.
@@ -104,7 +110,7 @@ class ParserSettings[T: BaseModel]:
 		base_settings: dict = self.__adapter.dump_python(SettingsModel())
 
 		settings_paths: tuple[Path, Path] = (
-			Path(str(resources.files(self.__parser_name) / "settings" / "settings.json")),
+			self.preset_path,
 			self.__system_objects.options.CONFIGS_DIR / f"{self.__parser_name}.json",
 		)
 

@@ -1,9 +1,16 @@
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+
+from pydantic import TypeAdapter
+
+from dublib.functions.data import dictionary
+from dublib.functions.filesystem import json
 
 from ...base.parser.components.manifest import ParserManifest
 from ...base.parser.components.settings import ParserSettings
+from ...base.parser.components.settings.models import SettingsModel
 from ...base.source_operator import BaseSourceOperator
+from .enums import ExportResult, ExportStrategy
 from .extensions_manager import ExtensionsManager
 
 if TYPE_CHECKING:
@@ -32,6 +39,48 @@ class ParserOperator:
 
 		self.__manifest: ParserManifest = ParserManifest(self.system_objects, self.name)
 		self.__settings: ParserSettings = ParserSettings(self.system_objects, self.name)
+
+	def export_settings(self, strategy: ExportStrategy = ExportStrategy.Skip) -> ExportResult:
+		"""
+		Export parser settings into configs directory.
+
+		Args:
+			strategy (ExportStrategy): Settings export strategy.
+
+		Returns:
+			ExportResult: Export result.
+		"""
+
+		adapter: TypeAdapter[SettingsModel] = TypeAdapter(SettingsModel)
+		config: dict[str, Any] = adapter.dump_python(SettingsModel())
+		storage_path: Path = self.__parsers_manager.system_objects.options.CONFIGS_DIR / f"{self.name}.json"
+
+		if self.settings.preset_path.exists():
+			buffer: dict[str, Any] = json.read(self.settings.preset_path)
+			config = dictionary.deep_merge(config, buffer, uniqueness = True)
+
+		else:
+			return ExportResult.Missing
+
+		if storage_path.exists():
+
+			match strategy:
+				case ExportStrategy.Skip:
+					return ExportResult.AlreadyExists
+
+				case ExportStrategy.Overwrite:
+					json.write(storage_path, config, atomic = self.__parsers_manager.system_objects.options.JSON_ATOMIC_WRITE)
+					return ExportResult.Overwtitten
+
+				case ExportStrategy.Merge:
+					CurrentConfig: dict = json.read(storage_path)
+					Config = dictionary.deep_merge(config, CurrentConfig, uniqueness = True)
+					json.write(storage_path, Config, atomic = self.__parsers_manager.system_objects.options.JSON_ATOMIC_WRITE)
+					return ExportResult.Merged
+
+		json.write(storage_path, config, atomic = self.__parsers_manager.system_objects.options.JSON_ATOMIC_WRITE)
+
+		return ExportResult.Installed
 
 	def launch(self) -> "BaseSourceOperator":
 		"""
