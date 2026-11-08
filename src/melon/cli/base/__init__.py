@@ -9,17 +9,12 @@ from ...utils.timer import Timer
 from .structs import PreparedData, ProcessorOptions, _InternalStorage
 
 if TYPE_CHECKING:
-	from collections.abc import Sequence
-
 	from dublib.cli.terminalyzer.commands.group import ModelsGroup
 	from dublib.cli.terminalyzer.parser.entities import CommandEntity
 
 	from ...core.base.source_operator import BaseSourceOperator
 	from ...core.system_objects import SystemObjects
-	from ...core.system_objects.manager.parser.operator import (
-		DependencyError,
-		ParserOperator,
-	)
+	from ...core.system_objects.manager.parser_operator import ParserOperator
 	from ...core.system_objects.printer import Printer
 	from .templates import BaseParameters
 
@@ -157,29 +152,6 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 
 		return model
 
-	def _check_dependencies(self, parsers_operators: "Sequence[ParserOperator]", critical: bool = False) -> bool:
-		"""
-		Check is dparser dependencies satisfied.
-
-		Args:
-			parsers_operators (Sequence[ParserOperator]): Parsers operators.
-			critical (bool): Condition: is error critical and Melon must be stopped.
-
-		Returns:
-			bool: `True` if not errors.
-		"""
-
-		has_errors: bool = False
-
-		for parser_operator in parsers_operators:
-			dependency_error: DependencyError | None = parser_operator.check_dependencies()
-
-			if dependency_error:
-				has_errors = True
-				self.printer.templates.manager.dependency_error(dependency_error, critical)
-
-		return not has_errors
-
 	def _check_required_parsers(self, parsers_names: tuple[str, ...]):
 		"""
 		Check is required parsers available.
@@ -194,22 +166,8 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 		if not parsers_names:
 			return
 
-		installed_parsers: tuple[str, ...] = tuple(self.system_objects.manager.parsers.installed)
-		parsers_in_repositories: tuple[str, ...] = self.system_objects.manager.repositories.available_parsers
-
-		for parser in parsers_names:
-
-			if parser in installed_parsers:
-
-				if parser not in parsers_in_repositories:
-					self.printer.warning(f"Repository not found for parser [b]{parser}[/b].")
-
-				continue
-
-			if parser in parsers_in_repositories:
-				continue
-
-			raise exceptions.parsers.ParserNotFoundError(parser)
+		for parser_name in parsers_names:
+			self.system_objects.manager.is_installed(parser_name)
 
 	@abstractmethod
 	def _export_description(self) -> str:
@@ -303,7 +261,7 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 			if self.system_objects.options.DEBUG:
 				self.printer.debug("Parsers not selected. All installed will be loaded.")
 
-			parsers_names = tuple(self.system_objects.manager.parsers.installed)
+			parsers_names = self.system_objects.manager.installed_parsers_names
 
 		if not self._internal_storage.is_multiple_parsers_allowed and len(parsers_names) > 1:
 			raise exceptions.cli.MultipleParsersDeniedForCommandError(data.model.name)
@@ -311,12 +269,9 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 		self._check_required_parsers(parsers_names)
 
 		parsers_operators: tuple[ParserOperator, ...] = tuple(
-			self.system_objects.manager.parsers.get_operator(Name, require_installation = self.options.require_installed_parsers)
+			self.system_objects.manager.get_operator(Name)
 			for Name in parsers_names
 		)
-
-		if self.options.check_parsers_dependencies:
-			self._check_dependencies(parsers_operators, critical = True)
 
 		return parsers_operators
 
@@ -400,9 +355,6 @@ class BaseCommandProcessor[PARAMS: "BaseParameters"](ABC):
 
 		except exceptions.parsers.ParserNotFoundError as exception:
 			self.printer.error(f"Parser [b]{exception}[/b] not found.")
-
-		except exceptions.parsers.RepositoryError as exception:
-			self.printer.error(f"Repository [b]{exception}[/b] not found.")
 
 		return False
 

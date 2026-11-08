@@ -11,7 +11,7 @@ from ...base.templates import T_SingleParserRequired
 if TYPE_CHECKING:
 	from dublib.cli.terminalyzer import CommandEntity, CommandModel
 
-	from ....core.system_objects.manager.parser.extensions import ExtensionsOperator
+	from ....core.system_objects.manager.extension_operator import ExtensionOperator
 	from ...base.structs import PreparedData
 
 @dataclass(frozen = True)
@@ -57,7 +57,7 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 	# >>>>> PRIVATE METHODS <<<<< #
 	#==========================================================================================#
 
-	def __run_tui(self, extensions_operator: "ExtensionsOperator"):
+	def __run_tui(self, extensions_operator: "ExtensionOperator"):
 		"""
 		Run TUI for switching extensions activation states.
 

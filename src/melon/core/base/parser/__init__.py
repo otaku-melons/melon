@@ -56,7 +56,7 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 	def temp_directory(self) -> Path:
 		"""Путь ко временному каталогу парсера."""
 
-		return self._source_operator.system_objects.temper.get_parser_temp_directory(self.manifest.parser_name)
+		return self._source_operator.system_objects.temper.get_parser_temp_directory(self._source_operator.parser_name)
 
 	@property
 	def portals(self) -> "Portals":

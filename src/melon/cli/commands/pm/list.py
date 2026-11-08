@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, override
 
+from ....core.system_objects.printer.templates.manager import ParsersTableRow
 from ...base import BaseCommandProcessor
 from ...base.structs import ProcessorOptions
 from ...base.templates import BaseParameters
@@ -35,7 +36,7 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 			str: Description.
 		"""
 
-		return "Upgrade Melon."
+		return "List installed parsers."
 
 	@override
 	def _export_options(self) -> ProcessorOptions:
@@ -46,25 +47,25 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 			ProcessorOptions: Processor options.
 		"""
 
-		return ProcessorOptions(require_installed_parsers = False)
+		return ProcessorOptions(use_timer = False, check_parsers_dependencies = False)
 
 	@override
 	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> BaseParameters:
 		"""
-		Парсит данные обработанной команды в структуру **dataclass**.
+		Parse command parameters.
 
-		:param entity: Сущность команды.
-		:type entity: CommandEntity
-		:param prepared_data: Подготовленные шаблонные параметры команды.
-		:type prepared_data: PreparedData
-		:return: Структура **dataclass**.
-		:rtype: BaseParameters
+		Args:
+			entity (CommandEntity): Command entity.
+			prepared_data (PreparedData): Prepared from templates data.
+
+		Returns:
+			BaseParameters: Command parameters.
 		"""
 
 		return BaseParameters()
 
 	@override
-	def _process(self, parameters: BaseParameters) -> bool | None:
+	def _process(self, parameters: BaseParameters) -> bool:
 		"""
 		Process command.
 
@@ -75,5 +76,22 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 			bool | None: `False` if processing failed.
 		"""
 
-		self.printer.emit(f"Repository: [i]{self.system_objects.options.REPOS}[/i]")
-		self.system_objects.manager.upgrade()
+		parsers_rows: list[ParsersTableRow] = []
+
+		for entry_point in self.system_objects.manager.entry_points:
+			parser_operator = self.system_objects.manager.get_operator(entry_point.name)
+			source_operator = parser_operator.launch()
+
+			buffer = ParsersTableRow(
+				name = entry_point.name,
+				version = entry_point.dist.version if entry_point.dist else None,
+				content_types = source_operator.manifest.content_types,
+				domain = source_operator.manifest.domain,
+				collect = source_operator.is_collector_implemented,
+			)
+
+			parsers_rows.append(buffer)
+
+		self.printer.templates.manager.parsers_table(parsers_rows)
+
+		return True

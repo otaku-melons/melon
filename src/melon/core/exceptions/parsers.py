@@ -58,19 +58,6 @@ class ParserNotFoundError(Exception):
 
 		super().__init__(parser_name)
 
-class ParserNotInstalledError(Exception):
-	"""Exception: parser found in repositories, but not installed."""
-
-	def __init__(self, parser_name: str):
-		"""
-		Exception: parser found in repositories, but not installed.
-
-		Args:
-			parser_name (str): Parser name.
-		"""
-
-		super().__init__(parser_name)
-
 class TitleNotSetError(Exception):
 	"""Exception: title not set."""
 
@@ -78,19 +65,6 @@ class TitleNotSetError(Exception):
 		"""Exception: title not set."""
 
 		super().__init__("Title required, but not set for parser.")
-
-class RepositoryError(Exception):
-	"""Исключение: ошибка работы с репозиториями."""
-
-	def __init__(self, message: str):
-		"""
-		Исключение: ошибка работы с репозиториями.
-
-		:param message: Сообщение об ошибке.
-		:type message: str
-		"""
-
-		super().__init__(message)
 
 class UnsupportedContentError(Exception):
 	"""Исключение: неподдерживаемый тип контента."""

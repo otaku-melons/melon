@@ -1,24 +1,22 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, override
 
-from ...base import BaseCommandProcessor
-from ...base.templates import T_ForceModeRequired, T_SingleParserRequired
+from ....core.system_objects.manager.enums import ExportStrategy
+from ...base.templates import T_SingleParserRequired
+from ._base import CommandProcessorTemplate
 
 if TYPE_CHECKING:
-	from packaging.version import Version
-
 	from dublib.cli.terminalyzer import CommandEntity, CommandModel
 
-	from ....core.base.parser.components.manifest import ParserManifest
 	from ...base.structs import PreparedData
 
 @dataclass(frozen = True)
-class Parameters(T_ForceModeRequired, T_SingleParserRequired):
+class Parameters(T_SingleParserRequired):
 	"""Required by command processor parameters."""
 
-	pass
+	config_strategy: ExportStrategy
 
-class CommandProcessor(BaseCommandProcessor[Parameters]):
+class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	"""Command processor."""
 
 	@override
@@ -34,7 +32,7 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 		"""
 
 		self._add_parser_position()
-		self._add_force_mode_flag()
+		self._add_settings_export_strategy_position()
 
 		return model
 
@@ -47,7 +45,7 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 			str: Description.
 		"""
 
-		return "Update parser."
+		return "Export and merge parser config."
 
 	@override
 	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> Parameters:
@@ -62,9 +60,12 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 			PARAMS: Command parameters.
 		"""
 
+		strategy: str | None = entity.get_position_value("STRATEGY", expected_type = str)
+		if not strategy: strategy = "-s"
+
 		return Parameters(
-			required_parser =  prepared_data.required_parsers[0],
-			force_mode = prepared_data.force_mode,
+			required_parser = prepared_data.required_parsers[0],
+			config_strategy = ExportStrategy(strategy),
 		)
 
 	@override
@@ -79,20 +80,5 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 			bool | None: `False` if processing failed.
 		"""
 
-		repository_url: str = self.system_objects.manager.repositories.get(parameters.required_parser.name, exception = True)
-		manifest: ParserManifest = parameters.required_parser.load_manifest()
-		original_version: Version | None = manifest.version
-
-		self.printer.emit(f"Repository: [i]{repository_url}[/i].")
-		if original_version: self.printer.emit(f"Current version: [b]{original_version}[/b].")
-
-		is_updated: bool = parameters.required_parser.update(force_mode = parameters.force_mode)
-
-		if is_updated:
-			manifest.update()
-			self.printer.emit("Updated.")
-			version: Version | None = manifest.version
-			if original_version: self.printer.emit(f"Installed version: [b]{version}[/b].")
-
-		else:
-			self.printer.emit("No changes.")
+		result = parameters.required_parser.export_settings(parameters.config_strategy)
+		self.printer.templates.manager.exported(result)

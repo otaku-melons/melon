@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "melon"
-version = "1.0.0-rc.7"
+version = "1.0.0-rc.8"
 description = "Modular parsers management system."
 readme = "README.md"
 authors = [
@@ -28,7 +28,7 @@ dependencies = [
 
 [project.scripts]
 melon = "melon:main"
-pxm = "melon:main"
+pm = "melon:main"
 urun = "melon:main"
 
 [dependency-groups]

@@ -124,7 +124,7 @@ class ImagesDownloader:
 		:rtype: Path
 		"""
 
-		ImageDirectory: Path = Path(directory) if directory else self.__Temper.get_parser_temp_directory(self.__SourceOperator.manifest.parser_name)
+		ImageDirectory: Path = Path(directory) if directory else self.__Temper.get_parser_temp_directory(self.__SourceOperator.parser_name)
 		ImagePath = ImageDirectory / self.build_target_filename(url, filename, is_full_filename)
 
 		return ImagePath
@@ -147,7 +147,7 @@ class ImagesDownloader:
 		:rtype: ImageDownloadingResult
 		"""
 
-		TempDirectory = self.__Temper.get_parser_temp_directory(self.__SourceOperator.manifest.parser_name)
+		TempDirectory = self.__Temper.get_parser_temp_directory(self.__SourceOperator.parser_name)
 		ImageDirectory = Path(directory) if directory else TempDirectory
 		ImageFilename = self.build_target_filename(url, filename, is_full_filename)
 		ImagePath = ImageDirectory / ImageFilename
@@ -266,7 +266,7 @@ class ImagesDownloader:
 			return FilteredBy.Resolution
 
 		MinImageSize = self.__SourceOperator.settings.filters.images.min_size
-		if len(image) < MinImageSize:
+		if MinImageSize and len(image) < MinImageSize:
 			return FilteredBy.Size
 
 		Signatures = self.__SourceOperator.settings.filters.images.signatures
@@ -323,7 +323,7 @@ class ImagesDownloader:
 		:raises FileNotFoundError: Не найден оригинальный файл.
 		"""
 
-		ImageOriginalDirectory = self.__Temper.get_parser_temp_directory(self.__SourceOperator.manifest.parser_name)
+		ImageOriginalDirectory = self.__Temper.get_parser_temp_directory(self.__SourceOperator.parser_name)
 		ImageOriginalFilename = original_filename
 		ImageOriginalPath = ImageOriginalDirectory / ImageOriginalFilename
 

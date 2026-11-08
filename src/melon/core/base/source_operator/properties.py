@@ -3,9 +3,9 @@ from dataclasses import dataclass
 @dataclass(frozen = True)
 class SourceProperties:
 	"""
-	Свойства источника.
+	Source properties.
 
-	- **one_cover** – указывает, являются ли все изображения обложек модификациями одного изображения. Если включено, при фильтрации одной обложки будут удалены все изображения.
+	- **one_cover**: Is source provides always only one cover or it's resized versions. If enabled all images will be removed if one of them filtered.
 	"""
 
 	one_cover: bool

@@ -1,108 +1,83 @@
 from typing import TYPE_CHECKING, cast
 
-from pydantic import BaseModel
-from pydantic_core import ValidationError
-
-from .cli import BaseExtensionCLI
+from pydantic import BaseModel, TypeAdapter
 
 if TYPE_CHECKING:
 	from pathlib import Path
 
 	from ....core.system_objects import SystemObjects
 	from ....core.system_objects.printer import Portals
+	from ...system_objects.manager.extension_operator import ExtensionOperator
 	from ..source_operator import BaseSourceOperator, ParserManifest
 
-class ModelStub(BaseModel):
-	"""Extension options model stub"""
+class EmptySettingsModel(BaseModel):
+	"""Extension empty settings model."""
 
 	pass
 
 class BaseExtension[SO: "BaseSourceOperator", EO: BaseModel = BaseModel]:
-	"""Базовое расширение."""
+	"""Base extension."""
 
-	#==========================================================================================#
-	# >>>>> PROPERTIES <<<<< #
-	#==========================================================================================#
+	def __init__(self, extension_operator: "ExtensionOperator", source_operator: SO):
+		"""
+		Base extension.
 
-	@property
-	def cli(self) -> BaseExtensionCLI:
-		"""Оператор CLI расширения."""
+		Args:
+			extension_operator (ExtensionOperator): Extension manager.
+			source_operator (SO): Source operator.
+		"""
 
-		return self._cli
+		self._extension_operator: ExtensionOperator = extension_operator
+		self._source_operator: SO = source_operator
+
+		self._settings: EO = self._parse_settings()
+
+		self._post_init()
 
 	@property
 	def manifest(self) -> "ParserManifest":
-		"""Манифест парсера."""
+		"""Parser manifest."""
 
 		return self._source_operator.manifest
 
 	@property
 	def name(self) -> str:
-		"""Имя расширения."""
+		"""Extension name."""
 
-		return self._name
+		return self._extension_operator.name
 
 	@property
-	def options(self) -> EO:
-		"""Настройки расширения."""
+	def settings(self) -> EO:
+		"""Extension settings."""
 
-		return self._options
+		return self._settings
 
 	@property
 	def portals(self) -> "Portals":
-		"""Порталы вывода парсера."""
+		"""Extension output portals."""
 
 		return self._source_operator.portals
 
 	@property
 	def source_operator(self) -> SO:
-		"""Оператор источника."""
+		"""Source operator."""
 
 		return self._source_operator
 
 	@property
 	def system_objects(self) -> "SystemObjects":
-		"""Коллекция системных объектов."""
+		"""System objects collection."""
 
 		return self._source_operator.system_objects
 
 	@property
 	def temp_directory(self) -> "Path":
-		"""Путь ко временной директории расширения."""
+		"""Extension temp directory path."""
 
-		return self._temp_directory
+		return self._extension_operator.temp_directory
 
-	#==========================================================================================#
-	# >>>>> PROTECTED METHODS <<<<< #
-	#==========================================================================================#
-
-	def _parse_options(self) -> EO:
-		"""
-		Парсит настройки расширения.
-
-		В случае ошибоки валидации словаря настроек выводит подробности в терминал и завершает работу.
-
-		:return: Настройки расширения.
-		:rtype: EO
-		"""
-
-		try:
-			return self.source_operator.settings.extensions.get(self._name, self._export_options_model())
-
-		except ValidationError as exception:
-
-			for error in exception.errors():
-				error_type: str = error["type"].lower()
-				field: str = "/".join(str(key) for key in error["loc"])
-				self.portals.printer.error(f"Field [b]{field}[/] error: [i]{error_type}[/i].", origin = self._name)
-
-			self.portals.printer.critical("Unable parse extension options.", end_work = True)
-
-	#==========================================================================================#
-	# >>>>> OVERRIDABLE METHODS <<<<< #
-	#==========================================================================================#
-
-	def _export_options_model(self) -> type[EO]:
+	# OVERRIDABLE
+	def _export_settings_model(self) -> type[EO]:
 		"""
 		Export extension options [pydantic](https://github.com/pydantic/pydantic) model.
 
@@ -110,43 +85,24 @@ class BaseExtension[SO: "BaseSourceOperator", EO: BaseModel = BaseModel]:
 		:rtype: type[BaseModel]
 		"""
 
-		return cast("type[EO]", ModelStub)
+		# TODO: Resolve cast using.
+		return cast("type[EO]", EmptySettingsModel)
 
+	def _parse_settings(self) -> EO:
+		"""
+		Parse extension settings with **pydantic** model.
+
+		Returns:
+			EO: Extension settings.
+		"""
+
+		settings_model: type[EO] = self._export_settings_model()
+		adapter: TypeAdapter[EO] = TypeAdapter(settings_model)
+
+		return adapter.validate_python(self._extension_operator.raw_settings)
+
+	# OVERRIDABLE
 	def _post_init(self):
 		"""Execute after instance initialization."""
 
 		pass
-
-	def _provide_cli(self) -> type[BaseExtensionCLI]:
-		"""
-		Export CLI processing class.
-
-		:return: CLI processing class.
-		:rtype: type[CLI]
-		"""
-
-		return BaseExtensionCLI
-
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS <<<<< #
-	#==========================================================================================#
-
-	def __init__(self, source_operator: SO):
-		"""
-		Базовое расширение.
-
-		:param source_operator: Оператор источника.
-		:type source_operator: BaseSourceOperator
-		:param name: Имя расширения.
-		:type name: str
-		:raises FileNotFoundError: Каталог расширения не найден.
-		"""
-
-		self._source_operator: SO = source_operator
-		self._name: str = self.__module__.split(".")[-1]
-
-		self._cli: BaseExtensionCLI = self._provide_cli()(self)
-		self._options: EO = self._parse_options()
-		self._temp_directory: Path = self._source_operator.system_objects.temper.get_extension_temp_directory(self._source_operator.parser_name, self._name)
-
-		self._post_init()
