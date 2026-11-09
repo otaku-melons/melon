@@ -40,12 +40,15 @@ class ExtensionsManager:
 		self.__entry_points: dict[str, EntryPoint] = {point.name: point for point in entry_points(group = f"melon.parsers.{self.__parser_operator.name}.extensions")}
 		self.__registrators: dict[str, Registrator] = {}
 
+		self.__states_path: Path = self.__parser_operator.temp_directory / "extensions" / "states.json"
+		self.__states: dict[str, bool] = json.read(self.__states_path) if self.__states_path.exists() else {}
+
 	def export_settings(self, extension_package_name: str, strategy: ExportStrategy = ExportStrategy.Skip) -> ExportResult:
 		"""
 		Export extension settings into configs directory.
 
 		Args:
-			extension_package_name (str): Extension name.
+			extension_package_name (str): Extension package name.
 			strategy (ExportStrategy): Settings export strategy.
 
 		Returns:
@@ -72,7 +75,7 @@ class ExtensionsManager:
 		Get extension methods registrator.
 
 		Args:
-			extension_package_name (str): Extension name.
+			extension_package_name (str): Extension package name.
 
 		Returns:
 			Registrator: Extension methods registrator.
@@ -88,7 +91,7 @@ class ExtensionsManager:
 		Check is extension installed and enabled.
 
 		Args:
-			extension_package_name (str): Extension name.
+			extension_package_name (str): Extension package name.
 
 		Returns:
 			bool: Extension available status.
@@ -99,26 +102,27 @@ class ExtensionsManager:
 
 		return bool(self.is_enabled(extension_package_name))
 
-	def is_enabled(self, extension_package_name: str) -> bool | None:  # noqa: ARG002
+	def is_enabled(self, extension_package_name: str) -> bool | None:
 		"""
 		Check is extension enabled.
 
 		Args:
-			extension_package_name (str): Extension name.
+			extension_package_name (str): Extension package name.
 
 		Returns:
 			bool | None: Extension state or `None` if extension not found.
 		"""
 
-		# TODO: Get from extension settings.
-		return True
+		extension_name: str = extension_package_name.split("_", maxsplit = 1)[-1]
+
+		return self.__states.get(extension_name, True)
 
 	def is_installed(self, extension_package_name: str, raise_error: bool = True) -> bool:
 		"""
 		Check is extension installed.
 
 		Args:
-			extension_package_name (str): Extension name.
+			extension_package_name (str): Extension package name.
 			raise_error (bool): Condition: raise error if extension not installed.
 
 		Returns:
@@ -165,6 +169,28 @@ class ExtensionsManager:
 		for registrator in self.__registrators.values():
 			for method in registrator.get_step_methods(step):
 				self.__run_method(method, parser)
+
+	def set_state(self, extension_package_name: str, state: bool) -> bool:
+		"""
+		Set extension activation state.
+
+		Args:
+			extension_package_name (str): Extension package name.
+			state (bool): Activation state.
+
+		Returns:
+			bool: Description.
+		"""
+
+		extension_name: str = extension_package_name.split("_", maxsplit = 1)[-1]
+
+		if state == self.__states.get(extension_name, True):
+			return False
+
+		self.__states[extension_name] = state
+		json.write(self.__states_path, self.__states, atomic = self.system_objects.options.JSON_ATOMIC_WRITE)
+
+		return True
 
 	@property
 	def entry_points(self) -> tuple[EntryPoint, ...]:

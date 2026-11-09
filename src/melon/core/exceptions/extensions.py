@@ -5,7 +5,7 @@ class ExtensionNotFoundError(Exception):
 		"""
 		Exception: extension not found.
 
-		:param extension_package_name: Extension name.
+		:param extension_package_name: Extension package name.
 		:type extension_package_name: str
 		"""
 
@@ -18,7 +18,7 @@ class ExtensionAlreadyExistsError(Exception):
 		"""
 		Exception: extension already exists.
 
-		:param extension_package_name: Extension name.
+		:param extension_package_name: Extension package name.
 		:type extension_package_name: str
 		"""
 
