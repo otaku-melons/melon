@@ -1,8 +1,15 @@
 import inspect
+from importlib import resources
 from importlib.metadata import EntryPoint, entry_points
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from dublib.functions.data import dictionary
+from dublib.functions.filesystem import json
+
 from .... import exceptions
+from ..enums import ExportResult, ExportStrategy
+from ..functions import export_package_settings
 from .enums import ParsingStep
 from .registrator import Registrator
 
@@ -32,6 +39,33 @@ class ExtensionsManager:
 
 		self.__entry_points: dict[str, EntryPoint] = {point.name: point for point in entry_points(group = f"melon.parsers.{self.__parser_operator.name}.extensions")}
 		self.__registrators: dict[str, Registrator] = {}
+
+	def export_settings(self, extension_name: str, strategy: ExportStrategy = ExportStrategy.Skip) -> ExportResult:
+		"""
+		Export extension settings into configs directory.
+
+		Args:
+			extension_name (str): Extension name.
+			strategy (ExportStrategy): Settings export strategy.
+
+		Returns:
+			ExportResult: Export result.
+
+		Raises:
+			ExtensionNotFoundError: Extension not found.
+		"""
+
+		if extension_name not in self.__entry_points:
+			raise exceptions.extensions.ExtensionNotFoundError(extension_name)
+
+		preset_path: Path = Path(str(resources.files(extension_name) / "settings" / "settings.json"))
+		base_settings: dict[str, Any] = {}
+
+		if preset_path.exists():
+			buffer: dict[str, Any] = json.read(preset_path)
+			base_settings = dictionary.deep_merge(base_settings, buffer, uniqueness = True)
+
+		return export_package_settings(self.system_objects, extension_name, base_settings, strategy)
 
 	def get_extension_registrator(self, extension_name: str) -> Registrator:
 		"""

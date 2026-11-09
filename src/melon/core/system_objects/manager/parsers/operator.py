@@ -12,6 +12,7 @@ from ....base.parser.components.settings.models import SettingsModel
 from ....base.source_operator import BaseSourceOperator
 from ..enums import ExportResult, ExportStrategy
 from ..extensions.manager import ExtensionsManager
+from ..functions import export_package_settings
 
 if TYPE_CHECKING:
 	from importlib.metadata import EntryPoint
@@ -52,35 +53,13 @@ class ParserOperator:
 		"""
 
 		adapter: TypeAdapter[SettingsModel] = TypeAdapter(SettingsModel)
-		config: dict[str, Any] = adapter.dump_python(SettingsModel())
-		storage_path: Path = self.__parsers_manager.system_objects.options.CONFIGS_DIR / f"{self.name}.json"
+		base_settings: dict[str, Any] = adapter.dump_python(SettingsModel())
 
 		if self.settings.preset_path.exists():
 			buffer: dict[str, Any] = json.read(self.settings.preset_path)
-			config = dictionary.deep_merge(config, buffer, uniqueness = True)
+			base_settings = dictionary.deep_merge(base_settings, buffer, uniqueness = True)
 
-		else:
-			return ExportResult.Missing
-
-		if storage_path.exists():
-
-			match strategy:
-				case ExportStrategy.Skip:
-					return ExportResult.AlreadyExists
-
-				case ExportStrategy.Overwrite:
-					json.write(storage_path, config, atomic = self.__parsers_manager.system_objects.options.JSON_ATOMIC_WRITE)
-					return ExportResult.Overwtitten
-
-				case ExportStrategy.Merge:
-					CurrentConfig: dict = json.read(storage_path)
-					Config = dictionary.deep_merge(config, CurrentConfig, uniqueness = True)
-					json.write(storage_path, Config, atomic = self.__parsers_manager.system_objects.options.JSON_ATOMIC_WRITE)
-					return ExportResult.Merged
-
-		json.write(storage_path, config, atomic = self.__parsers_manager.system_objects.options.JSON_ATOMIC_WRITE)
-
-		return ExportResult.Exported
+		return export_package_settings(self.system_objects, self.name, base_settings, strategy)
 
 	def launch(self) -> "BaseSourceOperator":
 		"""
