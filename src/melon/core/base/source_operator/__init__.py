@@ -26,7 +26,6 @@ if TYPE_CHECKING:
 	from pydantic import BaseModel
 
 	from ...system_objects import SystemObjects
-	from ...system_objects.manager.extensions_manager import ExtensionsManager
 	from ...system_objects.manager.parser_operator import ParserOperator
 	from ...system_objects.printer import Portals
 	from ...system_objects.temper import SharedData
@@ -54,30 +53,30 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		self._properties: SourceProperties = self._export_source_properties()
 		self._requestor: WebRequestor = self._initialize_requestor()
 		self._shared_data: SharedData = self.system_objects.temper.load_parser_shared_data(self.parser_name)
-
 		self._portals: Portals = self.system_objects.printer.get_parser_portals(self.parser_name)
 
 		try:
 			self._authorize()
-		except TokenExpiredError as ExceptionData:
-			self.portals.printer.error(f"Token expired: {ExceptionData}.")
+		except TokenExpiredError as exception:
+			self.portals.printer.error(f"Token expired: {exception}.")
 
 		self._images_downloader: ImagesDownloader = ImagesDownloader(self)
+
+		self._parser_operator.extensions.register_methods(self)
 
 		self._post_init()
 
 	def collect_slugs(self, period: int | None = None, filters: str | None = None, pages: int | None = None) -> tuple[str, ...]:
 		"""
-		Собирает список алиасов тайтлов по заданным параметрам.
+		Collect slugs by parameters.
 
-		:param period: Количество часов до текущего момента, составляющее период получения данных.
-		:type period: int | None
-		:param filters: Строка, описывающая параметры фильтрации.
-		:type filters: str | None
-		:param pages: Requested pages count.
-		:type pages: int | None
-		:return: Набор собранных алиасов.
-		:rtype: tuple[str, ...]
+		Args:
+			period (int | None): Period in hours.
+			filters (str | None): Filters, specified by parser.
+			pages (int | None, optional): Catalog pages count.
+
+		Returns:
+			tuple[str, ...]: Collected slugs.
 		"""
 
 		return tuple(self._collect_slugs(period, filters, pages))
@@ -88,22 +87,19 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		filename: str | None = None,
 		is_full_filename: bool = False,
 		force_mode: bool = False,
-	) -> ImageDownloadingResult:
+		) -> ImageDownloadingResult:
 		"""
-		Скачивает изображение.
+		Download image.
 
-		:param url: Ссылка на изображение.
-		:type url: str
-		:param directory: Путь к каталогу, в который нужно сохранить файл. По умолчанию будет использован временный каталог парсера.
-		:type directory: str | PathLike[str] | None
-		:param filename: Имя файла. По умолчанию будет сгенерировано на основе URL.
-		:type filename: str | None
-		:param is_full_filename: Указывает, является ли имя файла полным. Если имя неполное, то расширение для файла будет сгенерировано автоматически (например, для имени *image* будет создан файл *image.jpg* на основе ссылки), в ином случае имя файла задаётся жёстко.
-		:type is_full_filename: bool
-		:param force_mode: Переключает режим перезаписи существующих изображений.
-		:type force_mode: bool
-		:return: Результат скачивания изображения.
-		:rtype: ImageDownloadingResult
+		Args:
+			url (str): Image URL.
+			directory (str | PathLike[str] | None): Directory for image saving. By default parser temporary directory.
+			filename (str | None): Image filename.
+			is_full_filename (bool): Condition: is given full filename. If disabled suffix will be received from URL.
+			force_mode (bool): Condition: is image overwriting enabled.
+
+		Returns:
+			ImageDownloadingResult: Image downloading result.
 		"""
 
 		url = types.URL.parse(url)
@@ -145,14 +141,28 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 			error_message = None,
 		)
 
+	def extract_slug_from_string(self, string: str) -> str | None:
+		"""
+		Extract title slug from string.
+
+		Args:
+			string (str): String data.
+
+		Returns:
+			str | None: Title slug.
+		"""
+
+		return self._extract_slug_from_string(string)
+
 	def get_content_type_by_file(self, filename: str) -> TitleDescriptor:
 		"""
-		Определяет тип контента по файлу.
+		Get content type by file.
 
-		:param filename: Имя файла с расширением или без него.
-		:type filename: str
-		:return: Дескриптор тайтла.
-		:rtype: TitleDescriptor
+		Args:
+			filename (str): Title filename.
+
+		Returns:
+			TitleDescriptor: Title descriptor.
 		"""
 
 		if not filename.endswith(".json"):
@@ -184,12 +194,13 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 
 	def is_title_exists(self, slug: str) -> bool | None:
 		"""
-		Проверяет, существует ли тайтл на сервере.
+		Check is title exists.
 
-		:param slug: Алиас тайтла.
-		:type slug: str
-		:return: Возвращает статус существования файла на сервере или `None` при невозможности проверки.
-		:rtype: bool | None
+		Args:
+			slug (str): Title slug.
+
+		Returns:
+			bool | None: Title existing status or `None` if unable check.
 		"""
 
 		return self._is_title_exists(slug)
@@ -211,18 +222,6 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		parser_type: type[BaseParser[Self, BaseModel, BaseTitleController]] = module.Parser
 
 		return parser_type(self, force_mode, images_level)
-
-	def parse_slug_from_string(self, string: str) -> str | None:
-		"""
-		Парсит алиас тайтла из переданной строки. Может использоваться для обработки тайтлов по ссылкам.
-
-		:param string: Строка, из которой требуется получить алиас.
-		:type string: str
-		:return: Алиас или `None` в случае неудачи или отсутствия имплементации.
-		:rtype: str | None
-		"""
-
-		return self._extract_slug_from_string(string)
 
 	def set_mirror(self, mirror: str | None) -> bool:
 		"""
@@ -246,12 +245,6 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		self._post_mirror_changing(mirror)
 
 		return True
-
-	@property
-	def extensions_manager(self) -> "ExtensionsManager":
-		"""Extensions manager."""
-
-		return self._parser_operator.extensions
 
 	@property
 	def images_downloader(self) -> ImagesDownloader:
@@ -336,16 +329,15 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 
 	def _collect_slugs(self, period: int | None = None, filters: str | None = None, pages: int | None = None) -> Sequence[str]:  # noqa: ARG002
 		"""
-		Collect titles slug by parameters.
+		Collect slugs by parameters.
 
-		:param period: Number of hours until the current moment, which constitutes the data parsing period.
-		:type period: int | None
-		:param filters: Filtering parameters. For more details see parser *README.md*.
-		:type filters: str | None
-		:param pages: Requested pages count.
-		:type pages: int | None
-		:return: Number of requested catalog pages.
-		:rtype: Sequence[str]
+		Args:
+			period (int | None): Period in hours.
+			filters (str | None): Filters, specified by parser.
+			pages (int | None, optional): Catalog pages count.
+
+		Returns:
+			Sequence[str]: Collected slugs.
 		"""
 
 		return ()
@@ -355,8 +347,8 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		"""
 		Export custom parser settings [pydantic](https://github.com/pydantic/pydantic) model.
 
-		:return: Custom parser settings model.
-		:rtype: type[BaseModel]
+		Returns:
+			type[BaseModel]: Custom parser settings model.
 		"""
 
 		pass
@@ -366,8 +358,8 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		"""
 		Export source properties.
 
-		:return: Source properties.
-		:rtype: SourceProperties
+		Returns:
+			SourceProperties: Source properties.
 		"""
 
 		return SourceProperties(
@@ -377,12 +369,13 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 	# OVERRIDABLE
 	def _extract_slug_from_string(self, string: str) -> str | None:
 		"""
-		Extract title slug from string. Can be used to extract slugs from links.
+		Extract title slug from string.
 
-		:param string: String to extraction.
-		:type string: str
-		:return: Title slug or `None` if extracting failed or not implemented.
-		:rtype: str | None
+		Args:
+			string (str): String data.
+
+		Returns:
+			str | None: Title slug.
 		"""
 
 		return string
@@ -406,8 +399,8 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		"""
 		Initialize requests operator.
 
-		:return: Requests operator.
-		:rtype: WebRequestor
+		Returns:
+			WebRequestor: Requests operator.
 		"""
 
 		Config = WebConfig()
@@ -428,12 +421,13 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 	# OVERRIDABLE
 	def _is_title_exists(self, slug: str) -> bool | None:  # noqa: ARG002
 		"""
-		Check if title exists in source.
+		Check is title exists.
 
-		:param slug: Title slug.
-		:type slug: str
-		:return: Return `True` if title exists in source or `None` if checking failed or not implemented.
-		:rtype: bool | None
+		Args:
+			slug (str): Title slug.
+
+		Returns:
+			bool | None: Title existing status or `None` if unable check.
 		"""
 
 		return None
@@ -460,12 +454,12 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		"""
 		Download image into parser temporary directory.
 
-		:param url: Link to image.
-		:type url: str
-		:param force_mode: Enable images overwriting mode.
-		:type force_mode: bool
-		:return: Image downloading result.
-		:rtype: ImageDownloadingResult
+		Args:
+			url (str): Image URL.
+			force_mode (bool): Condition: is image overwriting enabled.
+
+		Returns:
+			ImageDownloadingResult: Image downloading result.
 		"""
 
 		return self.images_downloader.temp_image(url, force_mode = force_mode)

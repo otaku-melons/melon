@@ -229,7 +229,7 @@ class PassingTarget_Slug(_BaseParserTarget):
 		"""
 
 		Slug: str = self._Data.get_position_value("TARGET", expected_type = str, important = True)
-		TargetSlug: str | None = self._SourceOperator.parse_slug_from_string(Slug)
+		TargetSlug: str | None = self._SourceOperator.extract_slug_from_string(Slug)
 		if TargetSlug: return [TargetSlug]
 		else: self._Printer.warning("Unable to parse title slug from target.")
 

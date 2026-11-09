@@ -11,7 +11,7 @@ from ...base.parser.components.settings import ParserSettings
 from ...base.parser.components.settings.models import SettingsModel
 from ...base.source_operator import BaseSourceOperator
 from .enums import ExportResult, ExportStrategy
-from .extensions_manager import ExtensionsManager
+from .extensions.manager import ExtensionsManager
 
 if TYPE_CHECKING:
 	from importlib.metadata import EntryPoint
