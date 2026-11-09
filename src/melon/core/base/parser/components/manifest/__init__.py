@@ -1,3 +1,4 @@
+from importlib import resources
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -12,7 +13,6 @@ from .models import ManifestModel
 
 if TYPE_CHECKING:
 	from dulwich.refs import Ref
-	from packaging.specifiers import SpecifierSet
 
 	from ......core.system_objects import SystemObjects
 
@@ -31,8 +31,17 @@ class ParserManifest:
 
 		self.__system_objects: SystemObjects = system_objects
 		self.__parser_name: str = parser_name
+		self.__manifest_path: Path = Path(str(resources.files(parser_name) / "manifest.json"))
 
-		self.update()
+		self.reload()
+
+	def reload(self):
+		"""Reload manifest."""
+
+		self.__manifest: ManifestModel = self.__load()
+		self.__content_types: tuple[ContentType, ...] = self.__get_supported_content_types()
+		self.__version: Version | None = self.__get_version()
+		self.__mirror: str | None = None
 
 	def set_mirror(self, mirror: str | None):
 		"""
@@ -46,31 +55,11 @@ class ParserManifest:
 
 		self.__mirror = mirror
 
-	def update(self):
-		"""Update manifest."""
-
-		self.__manifest: ManifestModel = self.__load()
-		self.__content_types: tuple[ContentType, ...] = self.__get_supported_content_types()
-		self.__version: Version | None = self.__get_version()
-		self.__mirror: str | None = None
-
 	@property
-	def parser_name(self) -> str:
-		"""Parser name."""
+	def content_types(self) -> tuple[ContentType, ...]:
+		"""Supported content types."""
 
-		return self.__parser_name
-
-	@property
-	def original_domain(self) -> str:
-		"""Original source domain."""
-
-		return self.__manifest.domain
-
-	@property
-	def mirror(self) -> str | None:
-		"""Mirror domain."""
-
-		return self.__mirror
+		return self.__content_types
 
 	@property
 	def domain(self) -> str:
@@ -79,34 +68,22 @@ class ParserManifest:
 		return self.__mirror or self.original_domain
 
 	@property
-	def content_types(self) -> tuple[ContentType, ...]:
-		"""Supported content types."""
+	def mirror(self) -> str | None:
+		"""Mirror domain."""
 
-		return self.__content_types
-
-	@property
-	def parent(self) -> str | None:
-		"""Parent parser name."""
-
-		return self.__manifest.parent
+		return self.__mirror
 
 	@property
-	def parent_version(self) -> "SpecifierSet | None":
-		"""Parent parser required versions range."""
+	def original_domain(self) -> str:
+		"""Original source domain."""
 
-		return self.__manifest.parent_version
-
-	@property
-	def version(self) -> Version | None:
-		"""Parser version."""
-
-		return self.__version
+		return self.__manifest.domain
 
 	@property
-	def platform(self) -> "SpecifierSet | None":
-		"""Melon supported versions range."""
+	def parser_name(self) -> str:
+		"""Parser name."""
 
-		return self.__manifest.platform
+		return self.__parser_name
 
 	def __get_supported_content_types(self) -> tuple[ContentType, ...]:
 		"""
@@ -153,6 +130,6 @@ class ParserManifest:
 		:rtype: ManifestModel
 		"""
 
-		data: dict = json.read(f"parsers/{self.__parser_name}/manifest.json")
+		data: dict = json.read(self.__manifest_path)
 
 		return TypeAdapter(ManifestModel).validate_python(data)

@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from os import PathLike
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal, Self, overload
+from typing import TYPE_CHECKING, Self
 
 from dublib.functions.filesystem import json
 from dublib.validators import types
@@ -26,10 +26,9 @@ if TYPE_CHECKING:
 	from pydantic import BaseModel
 
 	from ...system_objects import SystemObjects
-	from ...system_objects.manager.parser.extensions import ExtensionsOperator
+	from ...system_objects.manager.parsers.operator import ParserOperator
 	from ...system_objects.printer import Portals
 	from ...system_objects.temper import SharedData
-	from ..extensions import BaseExtension
 	from ..formats.base_format.controller import BaseTitleController
 	from ..parser import BaseParser
 
@@ -38,53 +37,46 @@ __all__ = ["BaseSourceOperator", "SourceProperties"]
 class BaseSourceOperator[CSM: "BaseModel"](ABC):
 	"""Base source operator."""
 
-	def __init__(self, system_objects: "SystemObjects", manifest: "ParserManifest"):
+	def __init__(self, parser_operator: "ParserOperator"):
 		"""
-		Базовый оператор источника.
+		Base source operator.
 
-		:param system_objects: Коллекция системных объектов.
-		:type system_objects: SystemObjects
-		:param manifest: Манифест парсера.
-		:type manifest: ParserManifest
+		Args:
+			parser_operator (ParserOperator): Parser operator.
 		"""
 
-		self._SystemObjects = system_objects
-		self._Manifest = manifest
+		self._parser_operator: ParserOperator = parser_operator
 
-		self._Printer = self._SystemObjects.printer
-		self._Temper = self._SystemObjects.temper
+		self._settings: ParserSettings[CSM] = ParserSettings(self.system_objects, self.parser_name)
+		self._settings.parse_custom_settings(self._export_custom_settings_model())
 
-		self._Settings: ParserSettings[CSM] = ParserSettings(self._SystemObjects, self._Manifest.parser_name)
-		self._Settings.parse_custom_settings(self._export_custom_settings_model())
-
-		self._Properties = self._export_source_properties()
-		self._Requestor = self._initialize_requestor()
+		self._properties: SourceProperties = self._export_source_properties()
+		self._requestor: WebRequestor = self._initialize_requestor()
+		self._shared_data: SharedData = self.system_objects.temper.load_parser_shared_data(self.parser_name)
+		self._portals: Portals = self.system_objects.printer.get_parser_portals(self.parser_name)
 
 		try:
 			self._authorize()
-		except TokenExpiredError as ExceptionData:
-			self._Printer.error(f"Token expired: {ExceptionData}.")
+		except TokenExpiredError as exception:
+			self.portals.printer.error(f"Token expired: {exception}.")
 
-		self._ImagesDownloader = ImagesDownloader(self)
-		self._Portals = self._SystemObjects.printer.get_parser_portals(self._Manifest.parser_name)
-		self._SharedData = self._SystemObjects.temper.load_parser_shared_data(self._Manifest.parser_name)
+		self._images_downloader: ImagesDownloader = ImagesDownloader(self)
 
-		self._parser_operator = self._SystemObjects.manager.parsers.get_operator(self.parser_name)
+		self._parser_operator.extensions.register_methods(self)
 
 		self._post_init()
 
 	def collect_slugs(self, period: int | None = None, filters: str | None = None, pages: int | None = None) -> tuple[str, ...]:
 		"""
-		Собирает список алиасов тайтлов по заданным параметрам.
+		Collect slugs by parameters.
 
-		:param period: Количество часов до текущего момента, составляющее период получения данных.
-		:type period: int | None
-		:param filters: Строка, описывающая параметры фильтрации.
-		:type filters: str | None
-		:param pages: Requested pages count.
-		:type pages: int | None
-		:return: Набор собранных алиасов.
-		:rtype: tuple[str, ...]
+		Args:
+			period (int | None): Period in hours.
+			filters (str | None): Filters, specified by parser.
+			pages (int | None, optional): Catalog pages count.
+
+		Returns:
+			tuple[str, ...]: Collected slugs.
 		"""
 
 		return tuple(self._collect_slugs(period, filters, pages))
@@ -95,26 +87,23 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		filename: str | None = None,
 		is_full_filename: bool = False,
 		force_mode: bool = False,
-	) -> ImageDownloadingResult:
+		) -> ImageDownloadingResult:
 		"""
-		Скачивает изображение.
+		Download image.
 
-		:param url: Ссылка на изображение.
-		:type url: str
-		:param directory: Путь к каталогу, в который нужно сохранить файл. По умолчанию будет использован временный каталог парсера.
-		:type directory: str | PathLike[str] | None
-		:param filename: Имя файла. По умолчанию будет сгенерировано на основе URL.
-		:type filename: str | None
-		:param is_full_filename: Указывает, является ли имя файла полным. Если имя неполное, то расширение для файла будет сгенерировано автоматически (например, для имени *image* будет создан файл *image.jpg* на основе ссылки), в ином случае имя файла задаётся жёстко.
-		:type is_full_filename: bool
-		:param force_mode: Переключает режим перезаписи существующих изображений.
-		:type force_mode: bool
-		:return: Результат скачивания изображения.
-		:rtype: ImageDownloadingResult
+		Args:
+			url (str): Image URL.
+			directory (str | PathLike[str] | None): Directory for image saving. By default parser temporary directory.
+			filename (str | None): Image filename.
+			is_full_filename (bool): Condition: is given full filename. If disabled suffix will be received from URL.
+			force_mode (bool): Condition: is image overwriting enabled.
+
+		Returns:
+			ImageDownloadingResult: Image downloading result.
 		"""
 
 		url = types.URL.parse(url)
-		ImageTargetPath = self._ImagesDownloader.build_target_path(url, directory, filename, is_full_filename)
+		ImageTargetPath = self.images_downloader.build_target_path(url, directory, filename, is_full_filename)
 		IsTargetPathExists: bool = ImageTargetPath.exists()
 
 		#---> Пропуск скачивания уже существующего изображения.
@@ -138,7 +127,7 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		#---> Перемещение изображения в целевой каталог.
 		#==========================================================================================#
 		if directory:
-			self._ImagesDownloader.move_from_temp(directory, Result.path.name, filename, is_full_filename, force_mode)
+			self.images_downloader.move_from_temp(directory, Result.path.name, filename, is_full_filename, force_mode)
 		else:
 			Result.path.replace(ImageTargetPath)
 
@@ -152,14 +141,28 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 			error_message = None,
 		)
 
+	def extract_slug_from_string(self, string: str) -> str | None:
+		"""
+		Extract title slug from string.
+
+		Args:
+			string (str): String data.
+
+		Returns:
+			str | None: Title slug.
+		"""
+
+		return self._extract_slug_from_string(string)
+
 	def get_content_type_by_file(self, filename: str) -> TitleDescriptor:
 		"""
-		Определяет тип контента по файлу.
+		Get content type by file.
 
-		:param filename: Имя файла с расширением или без него.
-		:type filename: str
-		:return: Дескриптор тайтла.
-		:rtype: TitleDescriptor
+		Args:
+			filename (str): Title filename.
+
+		Returns:
+			TitleDescriptor: Title descriptor.
 		"""
 
 		if not filename.endswith(".json"):
@@ -191,12 +194,13 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 
 	def is_title_exists(self, slug: str) -> bool | None:
 		"""
-		Проверяет, существует ли тайтл на сервере.
+		Check is title exists.
 
-		:param slug: Алиас тайтла.
-		:type slug: str
-		:return: Возвращает статус существования файла на сервере или `None` при невозможности проверки.
-		:rtype: bool | None
+		Args:
+			slug (str): Title slug.
+
+		Returns:
+			bool | None: Title existing status or `None` if unable check.
 		"""
 
 		return self._is_title_exists(slug)
@@ -214,55 +218,20 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 			BaseParser: Parser.
 		"""
 
-		module: ModuleType = importlib.import_module(f"parsers.{self._Manifest.parser_name}.{content_type.value}")
+		module: ModuleType = importlib.import_module(f"{self.parser_operator.entry_point.module}.{content_type.value}")
 		parser_type: type[BaseParser[Self, BaseModel, BaseTitleController]] = module.Parser
 
 		return parser_type(self, force_mode, images_level)
 
-	def parse_slug_from_string(self, string: str) -> str | None:
-		"""
-		Парсит алиас тайтла из переданной строки. Может использоваться для обработки тайтлов по ссылкам.
-
-		:param string: Строка, из которой требуется получить алиас.
-		:type string: str
-		:return: Алиас или `None` в случае неудачи или отсутствия имплементации.
-		:rtype: str | None
-		"""
-
-		return self._extract_slug_from_string(string)
-
-	@overload
-	def run_extension[E: "BaseExtension"](self, extension: type[E], force: Literal[False] = False) -> E | None: ...
-	@overload
-	def run_extension[E: "BaseExtension"](self, extension: type[E], force: Literal[True]) -> E: ...
-	@overload
-	def run_extension(self, extension: str, force: Literal[False] = False) -> "BaseExtension | None": ...
-	@overload
-	def run_extension(self, extension: str, force: Literal[True]) -> "BaseExtension": ...
-
-	def run_extension[E: "BaseExtension"](self, extension: type[E] | str, force: bool = False) -> "E | BaseExtension | None":
-		"""
-		Run extension.
-
-		Args:
-			extension (str | type[E]): Extension class or name.
-			force (bool): Ignore extension state.
-
-		Returns:
-			E | BaseExtension | None: Extension or `None` if disabled.
-		"""
-
-		return self.extensions.run(self, extension, force)
-
 	def set_mirror(self, mirror: str | None) -> bool:
 		"""
-		Задаёт домен зеркала, подменяя его в манифесте. Не сохраняет изменения в файл.
+		Set mirror in manifest instead domain. Don't save manifest file!
 
-		:param mirror: Домен зеркала.
-		:type mirror: str | None
-		:raises ValidationError: Некорректный домен зеркала.
-		:return: Возвращает `True`, если зеркало было изменено.
-		:rtype: bool
+		Args:
+			mirror (str | None): Mirror domain. If `None` default domain will be restored.
+
+		Returns:
+			bool: `True` if domain changed.
 		"""
 
 		if mirror:
@@ -272,82 +241,82 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 			return False
 
 		self.manifest.set_mirror(mirror)
-		self.requestor.config.headers.set("referer", f"https://{self._Manifest.domain}/")
+		self.requestor.config.headers.set("referer", f"https://{self.manifest.domain}/")
 		self._post_mirror_changing(mirror)
 
 		return True
 
 	@property
-	def extensions(self) -> "ExtensionsOperator":
-		"""Оператор расширений."""
-
-		return self._parser_operator.extensions
-
-	@property
 	def images_downloader(self) -> ImagesDownloader:
-		"""Оператор скачивания изображений."""
+		"""Images downloading operator."""
 
-		return self._ImagesDownloader
+		return self._images_downloader
 
 	@property
 	def is_collector_implemented(self) -> bool:
-		"""Состояние: переопределён ли метод `_CollectSlugs()`."""
+		"""Condition: is `_collect_slugs()` method overridden."""
 
 		return type(self)._collect_slugs is not BaseSourceOperator._collect_slugs
 
 	@property
 	def manifest(self) -> ParserManifest:
-		"""Манифест парсера."""
+		"""Parser manifest."""
 
-		return self._Manifest
+		return self._parser_operator.manifest
 
 	@property
 	def parser_name(self) -> str:
-		"""Имя парсера."""
+		"""Parser name."""
 
-		return self._Manifest.parser_name
+		return self._parser_operator.name
+
+	@property
+	def parser_operator(self) -> "ParserOperator":
+		"""Parser operator."""
+
+		return self._parser_operator
 
 	@property
 	def portals(self) -> "Portals":
-		"""Порталы вывода парсера."""
+		"""Parser output portals."""
 
-		return self._Portals
+		return self._portals
 
 	@property
 	def properties(self) -> SourceProperties:
-		"""Свойства источника."""
+		"""Source properties."""
 
-		return self._Properties
+		return self._properties
 
 	@property
 	def requestor(self) -> WebRequestor:
-		"""Менеджер запросов."""
+		"""Requests manager."""
 
-		return self._Requestor
+		return self._requestor
 
 	@property
 	def settings(self) -> ParserSettings[CSM]:
-		"""Настройки парсера."""
+		"""Parser settings."""
 
-		return self._Settings
+		return self._settings
 
 	@property
 	def shared_data(self) -> "SharedData":
-		"""Разделяемые в контексте сессий одного парсера данные."""
+		"""Parser shared data."""
 
-		return self._SharedData
+		return self._shared_data
 
 	@property
 	def system_objects(self) -> "SystemObjects":
-		"""Коллекция системных объектов."""
+		"""System objects collection."""
 
-		return self._SystemObjects
+		return self._parser_operator.system_objects
 
 	@property
 	def temp_directory(self) -> Path:
-		"""Путь ко временному каталогу парсера.."""
+		"""Path to parser temp directory."""
 
-		return self._Temper.get_parser_temp_directory(self._Manifest.parser_name)
+		return self._parser_operator.temp_directory
 
 	def _authorize(self):
 		"""
@@ -360,16 +329,15 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 
 	def _collect_slugs(self, period: int | None = None, filters: str | None = None, pages: int | None = None) -> Sequence[str]:  # noqa: ARG002
 		"""
-		Collect titles slug by parameters.
+		Collect slugs by parameters.
 
-		:param period: Number of hours until the current moment, which constitutes the data parsing period.
-		:type period: int | None
-		:param filters: Filtering parameters. For more details see parser *README.md*.
-		:type filters: str | None
-		:param pages: Requested pages count.
-		:type pages: int | None
-		:return: Number of requested catalog pages.
-		:rtype: Sequence[str]
+		Args:
+			period (int | None): Period in hours.
+			filters (str | None): Filters, specified by parser.
+			pages (int | None, optional): Catalog pages count.
+
+		Returns:
+			Sequence[str]: Collected slugs.
 		"""
 
 		return ()
@@ -379,8 +347,8 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		"""
 		Export custom parser settings [pydantic](https://github.com/pydantic/pydantic) model.
 
-		:return: Custom parser settings model.
-		:rtype: type[BaseModel]
+		Returns:
+			type[BaseModel]: Custom parser settings model.
 		"""
 
 		pass
@@ -390,8 +358,8 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		"""
 		Export source properties.
 
-		:return: Source properties.
-		:rtype: SourceProperties
+		Returns:
+			SourceProperties: Source properties.
 		"""
 
 		return SourceProperties(
@@ -401,12 +369,13 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 	# OVERRIDABLE
 	def _extract_slug_from_string(self, string: str) -> str | None:
 		"""
-		Extract title slug from string. Can be used to extract slugs from links.
+		Extract title slug from string.
 
-		:param string: String to extraction.
-		:type string: str
-		:return: Title slug or `None` if extracting failed or not implemented.
-		:rtype: str | None
+		Args:
+			string (str): String data.
+
+		Returns:
+			str | None: Title slug.
 		"""
 
 		return string
@@ -430,8 +399,8 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		"""
 		Initialize requests operator.
 
-		:return: Requests operator.
-		:rtype: WebRequestor
+		Returns:
+			WebRequestor: Requests operator.
 		"""
 
 		Config = WebConfig()
@@ -452,12 +421,13 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 	# OVERRIDABLE
 	def _is_title_exists(self, slug: str) -> bool | None:  # noqa: ARG002
 		"""
-		Check if title exists in source.
+		Check is title exists.
 
-		:param slug: Title slug.
-		:type slug: str
-		:return: Return `True` if title exists in source or `None` if checking failed or not implemented.
-		:rtype: bool | None
+		Args:
+			slug (str): Title slug.
+
+		Returns:
+			bool | None: Title existing status or `None` if unable check.
 		"""
 
 		return None
@@ -484,12 +454,12 @@ class BaseSourceOperator[CSM: "BaseModel"](ABC):
 		"""
 		Download image into parser temporary directory.
 
-		:param url: Link to image.
-		:type url: str
-		:param force_mode: Enable images overwriting mode.
-		:type force_mode: bool
-		:return: Image downloading result.
-		:rtype: ImageDownloadingResult
+		Args:
+			url (str): Image URL.
+			force_mode (bool): Condition: is image overwriting enabled.
+
+		Returns:
+			ImageDownloadingResult: Image downloading result.
 		"""
 
-		return self._ImagesDownloader.temp_image(url, force_mode = force_mode)
+		return self.images_downloader.temp_image(url, force_mode = force_mode)

@@ -58,14 +58,14 @@ class Temper:
 			elif Descriptor.is_dir():
 				shutil.rmtree(Descriptor.path)
 
-	def get_extension_temp_directory(self, parser_name: str, extension_name: str) -> Path:
+	def get_extension_temp_directory(self, parser_name: str, extension_package_name: str) -> Path:
 		"""
 		Возвращает путь ко временной директории расширения и автоматически создаёт её.
 
 		:param parser_name: Имя парсера.
 		:type parser_name: str
-		:param extension_name: Имя расширения.
-		:type extension_name: str
+		:param extension_package_name: Имя расширения.
+		:type extension_package_name: str
 		:return: Путь ко временной директории расширения.
 		:rtype: Path
 		"""
@@ -73,7 +73,7 @@ class Temper:
 		ParserTemp: Path = self.get_parser_temp_directory(parser_name)
 		ExtensionsTemp: Path = ParserTemp / "extensions"
 		ExtensionsTemp.mkdir(exist_ok = True)
-		ExtensionTemp: Path = ExtensionsTemp / extension_name
+		ExtensionTemp: Path = ExtensionsTemp / extension_package_name
 		ExtensionTemp.mkdir(exist_ok = True)
 
 		return ExtensionTemp

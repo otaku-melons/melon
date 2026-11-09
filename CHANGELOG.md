@@ -7,7 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 For visual categorization of changes emojis are used in accordance with [gitmoji](https://gitmoji.dev).
 
-## [1.0.0-rc.7]
+## [1.0.0-rc.8]
+
+### 🎨 Changed
+- Settings reworked with [pydantic](https://github.com/pydantic/PYDANTIC) models.
+- All parsers and extensions now is Python packages and can be managed with packages managers.
+- Extensions now fully separated from parsers and can be run only on parsings steps through registered methods.
+
+### 🔥 Removed
+- CLI parsers packages manager (some functions saved in `pm`).
+- Assistant for elements initialization.
+- Linter.
+
+## [1.0.0-rc.7] - 2026-11-07
 
 ### ✨ Added
 - Dependencies check mechanism and `pxm deps` command.

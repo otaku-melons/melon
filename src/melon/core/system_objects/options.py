@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from pydantic import AnyHttpUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Options(BaseSettings):
@@ -17,8 +16,5 @@ class Options(BaseSettings):
 	DEBUG: bool = False
 	DEFAULT_OUTPUT_DIR: Path = Path("output")
 	JSON_ATOMIC_WRITE: bool = True
-	REPOS: AnyHttpUrl = AnyHttpUrl("https://github.com/otaku-melons/melon")
 	TEMP_DIR: Path = Path("temp")
-	TEMPLATE_REPOS: AnyHttpUrl = AnyHttpUrl("https://github.com/otaku-melons/.parser-template")
 	USE_CACHE: bool = True
-
