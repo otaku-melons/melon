@@ -199,6 +199,12 @@ class ExtensionsManager:
 		return tuple(self.__entry_points.values())
 
 	@property
+	def installed(self) -> tuple[str, ...]:
+		"""Installed extensions packages."""
+
+		return tuple(self.__entry_points.keys())
+
+	@property
 	def system_objects(self) -> "SystemObjects":
 		"""System objects collection."""
 
