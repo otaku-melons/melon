@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 	from collections.abc import Callable
 	from types import ModuleType
 
-	from ....base.extensions import BaseExtension
+	from ....base.extension import BaseExtension
 	from ....base.formats.base_format.controller import BaseTitleController
 	from ....base.parser import BaseParser
 	from ....base.source_operator import BaseSourceOperator
@@ -40,12 +40,12 @@ class ExtensionsManager:
 		self.__entry_points: dict[str, EntryPoint] = {point.name: point for point in entry_points(group = f"melon.parsers.{self.__parser_operator.name}.extensions")}
 		self.__registrators: dict[str, Registrator] = {}
 
-	def export_settings(self, extension_name: str, strategy: ExportStrategy = ExportStrategy.Skip) -> ExportResult:
+	def export_settings(self, extension_package_name: str, strategy: ExportStrategy = ExportStrategy.Skip) -> ExportResult:
 		"""
 		Export extension settings into configs directory.
 
 		Args:
-			extension_name (str): Extension name.
+			extension_package_name (str): Extension name.
 			strategy (ExportStrategy): Settings export strategy.
 
 		Returns:
@@ -55,56 +55,56 @@ class ExtensionsManager:
 			ExtensionNotFoundError: Extension not found.
 		"""
 
-		if extension_name not in self.__entry_points:
-			raise exceptions.extensions.ExtensionNotFoundError(extension_name)
+		if extension_package_name not in self.__entry_points:
+			raise exceptions.extensions.ExtensionNotFoundError(extension_package_name)
 
-		preset_path: Path = Path(str(resources.files(extension_name) / "settings" / "settings.json"))
+		preset_path: Path = Path(str(resources.files(extension_package_name) / "settings" / "settings.json"))
 		base_settings: dict[str, Any] = {}
 
 		if preset_path.exists():
 			buffer: dict[str, Any] = json.read(preset_path)
 			base_settings = dictionary.deep_merge(base_settings, buffer, uniqueness = True)
 
-		return export_package_settings(self.system_objects, extension_name, base_settings, strategy)
+		return export_package_settings(self.system_objects, extension_package_name, base_settings, strategy)
 
-	def get_extension_registrator(self, extension_name: str) -> Registrator:
+	def get_extension_registrator(self, extension_package_name: str) -> Registrator:
 		"""
 		Get extension methods registrator.
 
 		Args:
-			extension_name (str): Extension name.
+			extension_package_name (str): Extension name.
 
 		Returns:
 			Registrator: Extension methods registrator.
 		"""
 
-		if extension_name not in self.__registrators:
-			self.__registrators[extension_name] = Registrator(extension_name)
+		if extension_package_name not in self.__registrators:
+			self.__registrators[extension_package_name] = Registrator(extension_package_name)
 
-		return self.__registrators[extension_name]
+		return self.__registrators[extension_package_name]
 
-	def is_available(self, extension_name: str) -> bool:
+	def is_available(self, extension_package_name: str) -> bool:
 		"""
 		Check is extension installed and enabled.
 
 		Args:
-			extension_name (str): Extension name.
+			extension_package_name (str): Extension name.
 
 		Returns:
 			bool: Extension available status.
 		"""
 
-		if not self.is_installed(extension_name, raise_error = False):
+		if not self.is_installed(extension_package_name, raise_error = False):
 			return False
 
-		return bool(self.is_enabled(extension_name))
+		return bool(self.is_enabled(extension_package_name))
 
-	def is_enabled(self, extension_name: str) -> bool | None:  # noqa: ARG002
+	def is_enabled(self, extension_package_name: str) -> bool | None:  # noqa: ARG002
 		"""
 		Check is extension enabled.
 
 		Args:
-			extension_name (str): Extension name.
+			extension_package_name (str): Extension name.
 
 		Returns:
 			bool | None: Extension state or `None` if extension not found.
@@ -113,12 +113,12 @@ class ExtensionsManager:
 		# TODO: Get from extension settings.
 		return True
 
-	def is_installed(self, extension_name: str, raise_error: bool = True) -> bool:
+	def is_installed(self, extension_package_name: str, raise_error: bool = True) -> bool:
 		"""
 		Check is extension installed.
 
 		Args:
-			extension_name (str): Extension name.
+			extension_package_name (str): Extension name.
 			raise_error (bool): Condition: raise error if extension not installed.
 
 		Returns:
@@ -128,10 +128,10 @@ class ExtensionsManager:
 			ExtensionNotFoundError: Extension not found.
 		"""
 
-		is_installed: bool = extension_name in self.__entry_points
+		is_installed: bool = extension_package_name in self.__entry_points
 
 		if not is_installed and raise_error:
-			raise exceptions.extensions.ExtensionNotFoundError(extension_name)
+			raise exceptions.extensions.ExtensionNotFoundError(extension_package_name)
 
 		return is_installed
 

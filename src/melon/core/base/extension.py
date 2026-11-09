@@ -1,17 +1,18 @@
+from importlib import resources
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
 from pydantic import BaseModel, TypeAdapter
 
+from dublib.functions.data import dictionary
 from dublib.functions.filesystem import json
 
 if TYPE_CHECKING:
-	from pathlib import Path
-
-	from ....core.system_objects import SystemObjects
-	from ....core.system_objects.printer.portals import Portals
-	from ...system_objects.manager.extensions.registrator import Registrator
-	from ..parser.components.manifest import ParserManifest
-	from ..source_operator import BaseSourceOperator
+	from ...core.system_objects import SystemObjects
+	from ...core.system_objects.printer.portals import Portals
+	from ..system_objects.manager.extensions.registrator import Registrator
+	from .parser.components.manifest import ParserManifest
+	from .source_operator import BaseSourceOperator
 
 class EmptySettingsModel(BaseModel):
 	"""Extension empty settings model."""
@@ -34,7 +35,7 @@ class BaseExtension[SO: "BaseSourceOperator", EO: BaseModel = BaseModel]:
 		self._source_operator: SO = source_operator
 
 		self._system_objects: SystemObjects = self.source_operator.system_objects
-		self._temp_directory: Path = self._system_objects.temper.get_extension_temp_directory(self.source_operator.parser_name, self.name)
+		self._temp_directory: Path = self._system_objects.temper.get_extension_temp_directory(self.source_operator.parser_name, self.package_name)
 		self._settings: EO = self._parse_settings()
 
 		self._post_init()
@@ -45,22 +46,28 @@ class BaseExtension[SO: "BaseSourceOperator", EO: BaseModel = BaseModel]:
 		self._register()
 
 	@property
+	def identifier(self) -> str:
+		"""Extension identifier."""
+
+		return self.package_name.replace("_", ".", count = 1)
+
+	@property
 	def manifest(self) -> "ParserManifest":
 		"""Parser manifest."""
 
 		return self._source_operator.manifest
 
 	@property
-	def name(self) -> str:
-		"""Extension name."""
-
-		return self._registrator.extension_name
-
-	@property
 	def settings(self) -> EO:
 		"""Extension settings."""
 
 		return self._settings
+
+	@property
+	def package_name(self) -> str:
+		"""Extension package name."""
+
+		return self._registrator.extension_package_name
 
 	@property
 	def portals(self) -> "Portals":
@@ -131,12 +138,18 @@ class BaseExtension[SO: "BaseSourceOperator", EO: BaseModel = BaseModel]:
 			dict[str, Any]: Raw settings.
 		"""
 
-		settings_path = self.system_objects.options.CONFIGS_DIR / f"{self.name}.json"
+		base_settings: dict = {}
+		settings_paths: tuple[Path, Path] = (
+			Path(str(resources.files(self.package_name))) / "settings" / "settings.json",
+			self.system_objects.options.CONFIGS_DIR / f"{self.identifier}.json",
+		)
 
-		if not settings_path.exists():
-			return {}
+		for settings_path in settings_paths:
+			if settings_path.exists():
+				buffer: dict = json.read(settings_path)
+				base_settings = dictionary.deep_merge(base_settings, buffer, uniqueness = True)
 
-		return json.read(settings_path)
+		return base_settings
 
 	# OVERRIDABLE
 	def _register(self):

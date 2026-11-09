@@ -8,10 +8,15 @@ if TYPE_CHECKING:
 class Registrator:
 	"""Extension methods registrator."""
 
-	def __init__(self, extension_name: str):
-		"""Extension methods registrator."""
+	def __init__(self, extension_package_name: str):
+		"""
+		Extension methods registrator.
 
-		self.__extension_name: str = extension_name
+		Args:
+			extension_package_name (str): Extension package name.
+		"""
+
+		self.__extension_package_name: str = extension_package_name
 
 		self.__registrations: dict[ParsingStep, list[Callable]] = {}
 
@@ -42,9 +47,9 @@ class Registrator:
 		self.__registrations.setdefault(step, []).append(method)
 
 	@property
-	def extension_name(self) -> str:
-		"""Extension name."""
+	def extension_package_name(self) -> str:
+		"""Extension package name."""
 
-		return self.__extension_name
+		return self.__extension_package_name
 
 

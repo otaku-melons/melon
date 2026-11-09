@@ -86,10 +86,10 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 
 		parser_name: str = parameters.package_name.split("_", maxsplit = 1)[0]
-		extension_name: str | None = zerotify(parameters.package_name[len(parser_name) + 1:])
+		extension_package_name: str | None = zerotify(parameters.package_name[len(parser_name) + 1:])
 		parser_operator = self.system_objects.manager.get_operator(parser_name)
 
-		if extension_name:
+		if extension_package_name:
 			result = parser_operator.extensions.export_settings(parameters.package_name, parameters.config_strategy)
 
 		else:
