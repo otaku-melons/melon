@@ -1,6 +1,8 @@
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, override
 
-from ....core.system_objects.printer.templates.manager import ParsersTableRow
+from rich.table import Table
+
 from ...base import BaseCommandProcessor
 from ...base.structs import ProcessorOptions
 from ...base.templates import BaseParameters
@@ -10,7 +12,13 @@ if TYPE_CHECKING:
 
 	from ...base.structs import PreparedData
 
-class CommandProcessor(BaseCommandProcessor[BaseParameters]):
+@dataclass(frozen = True)
+class Parameters(BaseParameters):
+	"""Required by command processor parameters."""
+
+	is_extensions: bool
+
+class CommandProcessor(BaseCommandProcessor[Parameters]):
 	"""Command processor."""
 
 	@override
@@ -24,6 +32,8 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 		Returns:
 			CommandModel: Commands model.
 		"""
+
+		model.base.add_flag("-e", description = "Print extensions list.")
 
 		return model
 
@@ -50,7 +60,7 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 		return ProcessorOptions(use_timer = False, check_parsers_dependencies = False)
 
 	@override
-	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> BaseParameters:
+	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> Parameters:
 		"""
 		Parse command parameters.
 
@@ -59,39 +69,49 @@ class CommandProcessor(BaseCommandProcessor[BaseParameters]):
 			prepared_data (PreparedData): Prepared from templates data.
 
 		Returns:
-			BaseParameters: Command parameters.
+			Parameters: Command parameters.
 		"""
 
-		return BaseParameters()
+		return Parameters(
+			is_extensions = entity.check_flag("-e"),
+		)
 
 	@override
-	def _process(self, parameters: BaseParameters) -> bool:
+	def _process(self, parameters: Parameters) -> bool | None:
 		"""
 		Process command.
 
 		Args:
-			parameters (BaseParameters): Required by command parameters.
+			parameters (Parameters): Required by command parameters.
 
 		Returns:
 			bool | None: `False` if processing failed.
 		"""
 
-		parsers_rows: list[ParsersTableRow] = []
+		if parameters.is_extensions:
+			pass
+
+		else:
+			self.__print_parsers_table()
+
+	def __print_parsers_table(self):
+		"""Print parsers table."""
+
+		table = Table(box = None, header_style = "bold")
+
+		for column in ("Name", "Version", "Content", "Source", "collect"):
+			table.add_column(column)
 
 		for entry_point in self.system_objects.manager.entry_points:
 			parser_operator = self.system_objects.manager.get_operator(entry_point.name)
 			source_operator = parser_operator.launch()
 
-			buffer = ParsersTableRow(
-				name = entry_point.name,
-				version = entry_point.dist.version if entry_point.dist else None,
-				content_types = source_operator.manifest.content_types,
-				domain = source_operator.manifest.domain,
-				collect = source_operator.is_collector_implemented,
-			)
+			version: str | None = entry_point.dist.version if entry_point.dist else None
+			content: str = ", ".join(content_type.value[0] for content_type in parser_operator.manifest.content_types)
+			source: str = f"https://{parser_operator.manifest.domain}"
+			collect: str = "[green]true[/green]" if source_operator.is_collector_implemented else "[red]false[/red]"
 
-			parsers_rows.append(buffer)
+			table.add_row(entry_point.name, version, content, source, collect)
 
-		self.printer.templates.manager.parsers_table(parsers_rows)
+		self.printer.table(table)
 
-		return True

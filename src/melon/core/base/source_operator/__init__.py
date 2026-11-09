@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 	from pydantic import BaseModel
 
 	from ...system_objects import SystemObjects
-	from ...system_objects.manager.parser_operator import ParserOperator
+	from ...system_objects.manager.parsers.operator import ParserOperator
 	from ...system_objects.printer import Portals
 	from ...system_objects.temper import SharedData
 	from ..formats.base_format.controller import BaseTitleController

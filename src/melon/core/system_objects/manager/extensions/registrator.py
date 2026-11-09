@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from ..enums import ParsingStep
+from .enums import ParsingStep
 
 if TYPE_CHECKING:
 	from collections.abc import Callable, Sequence

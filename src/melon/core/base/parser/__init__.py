@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from ....core import exceptions
-from ...system_objects.manager.enums import ParsingStep
+from ...system_objects.manager.extensions.enums import ParsingStep
 from ..formats.base_format.branch import Branch
 from ..formats.base_format.data import BaseTitleData
 from .components.images_downloader import (

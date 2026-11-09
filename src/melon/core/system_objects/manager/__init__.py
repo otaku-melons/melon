@@ -1,3 +1,3 @@
-from .parsers_manager import ParsersManager
+from .parsers.manager import ParsersManager
 
 __all__ = ["ParsersManager"]

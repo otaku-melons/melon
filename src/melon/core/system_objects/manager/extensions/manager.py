@@ -3,7 +3,7 @@ from importlib.metadata import EntryPoint, entry_points
 from typing import TYPE_CHECKING, Any
 
 from .... import exceptions
-from ..enums import ParsingStep
+from .enums import ParsingStep
 from .registrator import Registrator
 
 if TYPE_CHECKING:
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 	from ....base.parser import BaseParser
 	from ....base.source_operator import BaseSourceOperator
 	from ... import SystemObjects
-	from ..parser_operator import ParserOperator
+	from ..parsers.operator import ParserOperator
 
 class ExtensionsManager:
 	"""Extensions manager."""

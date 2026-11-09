@@ -6,19 +6,19 @@ from pydantic import TypeAdapter
 from dublib.functions.data import dictionary
 from dublib.functions.filesystem import json
 
-from ...base.parser.components.manifest import ParserManifest
-from ...base.parser.components.settings import ParserSettings
-from ...base.parser.components.settings.models import SettingsModel
-from ...base.source_operator import BaseSourceOperator
-from .enums import ExportResult, ExportStrategy
-from .extensions.manager import ExtensionsManager
+from ....base.parser.components.manifest import ParserManifest
+from ....base.parser.components.settings import ParserSettings
+from ....base.parser.components.settings.models import SettingsModel
+from ....base.source_operator import BaseSourceOperator
+from ..enums import ExportResult, ExportStrategy
+from ..extensions.manager import ExtensionsManager
 
 if TYPE_CHECKING:
 	from importlib.metadata import EntryPoint
 	from types import ModuleType
 
-	from .. import SystemObjects
-	from . import ParsersManager
+	from ... import SystemObjects
+	from .manager import ParsersManager
 
 class ParserOperator:
 	"""Parser operator."""
@@ -80,7 +80,7 @@ class ParserOperator:
 
 		json.write(storage_path, config, atomic = self.__parsers_manager.system_objects.options.JSON_ATOMIC_WRITE)
 
-		return ExportResult.Installed
+		return ExportResult.Exported
 
 	def launch(self) -> "BaseSourceOperator":
 		"""

@@ -1,11 +1,11 @@
 from importlib.metadata import EntryPoint, entry_points
 from typing import TYPE_CHECKING
 
-from ... import exceptions
-from .parser_operator import ParserOperator
+from .... import exceptions
+from .operator import ParserOperator
 
 if TYPE_CHECKING:
-	from .. import SystemObjects
+	from ... import SystemObjects
 
 class ParsersManager:
 	"""Parsers manager."""
