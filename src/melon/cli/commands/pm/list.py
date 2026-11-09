@@ -89,15 +89,34 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 		"""
 
 		if parameters.is_extensions:
-			pass
+			self.__print_extensions_table()
 
 		else:
 			self.__print_parsers_table()
 
+	def __print_extensions_table(self):
+		"""Print extensions table."""
+
+		table = Table(box = None, header_style = "bold", pad_edge = False)
+
+		for column in ("Name", "Parser", "Version"):
+			table.add_column(column)
+
+		for parser_name in self.system_objects.manager.installed_parsers_names:
+			parser_operator = self.system_objects.manager.get_operator(parser_name)
+
+			for extension_data in parser_operator.extensions.entry_points:
+				name: str = extension_data.name.split("_", maxsplit = 1)[-1]
+				version: str | None = extension_data.dist.version if extension_data.dist else None
+
+				table.add_row(name, parser_name, version)
+
+		self.printer.table(table)
+
 	def __print_parsers_table(self):
 		"""Print parsers table."""
 
-		table = Table(box = None, header_style = "bold")
+		table = Table(box = None, header_style = "bold", pad_edge = False)
 
 		for column in ("Name", "Version", "Content", "Source", "collect"):
 			table.add_column(column)
