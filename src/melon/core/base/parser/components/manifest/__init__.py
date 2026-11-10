@@ -2,18 +2,13 @@ from importlib import resources
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dulwich import errors, porcelain
-from packaging.version import Version
 from pydantic import TypeAdapter
 
 from dublib.functions.filesystem import json
 
-from ...enums import ContentType
 from .models import ManifestModel
 
 if TYPE_CHECKING:
-	from dulwich.refs import Ref
-
 	from ......core.system_objects import SystemObjects
 
 class ParserManifest:
@@ -39,8 +34,6 @@ class ParserManifest:
 		"""Reload manifest."""
 
 		self.__manifest: ManifestModel = self.__load()
-		self.__content_types: tuple[ContentType, ...] = self.__get_supported_content_types()
-		self.__version: Version | None = self.__get_version()
 		self.__mirror: str | None = None
 
 	def set_mirror(self, mirror: str | None):
@@ -54,12 +47,6 @@ class ParserManifest:
 		"""
 
 		self.__mirror = mirror
-
-	@property
-	def content_types(self) -> tuple[ContentType, ...]:
-		"""Supported content types."""
-
-		return self.__content_types
 
 	@property
 	def domain(self) -> str:
@@ -84,43 +71,6 @@ class ParserManifest:
 		"""Parser name."""
 
 		return self.__parser_name
-
-	def __get_supported_content_types(self) -> tuple[ContentType, ...]:
-		"""
-		Get supported content types from parser modules.
-
-		:return: Supported content types.
-		:rtype: tuple[ContentType, ...]
-		"""
-
-		supported_types: set[ContentType] = set()
-
-		for content_type in ContentType:
-			module_path: Path = Path(f"parsers/{self.__parser_name}/{content_type.value}.py")
-
-			if module_path.exists():
-				supported_types.add(content_type)
-
-		return tuple(supported_types)
-
-	def __get_version(self) -> Version | None:
-		"""
-		Get parser version from latest Git tag.
-
-		:return: Parser version.
-		:rtype: packaging.version.Version | None
-		"""
-
-		parser_tags: list[Ref] = []
-
-		try:
-			parser_tags = porcelain.tag_list(f"parsers/{self.__parser_name}")
-		except errors.NotGitRepository:
-			pass
-
-		if parser_tags:
-			last_tag: str = parser_tags[-1].decode()
-			return Version(last_tag)
 
 	def __load(self) -> ManifestModel:
 		"""

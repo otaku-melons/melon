@@ -1,14 +1,10 @@
 from typing import Annotated
 
-from packaging.specifiers import SpecifierSet
 from pydantic import BaseModel
 
-from dublib.validators.types import Domain, VersionsRange
+from dublib.validators.types import Domain
 
 class ManifestModel(BaseModel):
 	"""Manifest model."""
 
 	domain: Annotated[str, Domain]
-	parent: str | None = None
-	parent_version: Annotated[SpecifierSet, VersionsRange] | None = None
-	platform: Annotated[SpecifierSet, VersionsRange] | None = None

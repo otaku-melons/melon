@@ -126,7 +126,7 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 			source_operator = parser_operator.launch()
 
 			version: str | None = entry_point.dist.version if entry_point.dist else None
-			content: str = ", ".join(content_type.value[0] for content_type in parser_operator.manifest.content_types)
+			content: str = ", ".join(content_type.value[0] for content_type in parser_operator.content_types)
 			source: str = f"https://{parser_operator.manifest.domain}"
 			collect: str = "[green]true[/green]" if source_operator.is_collector_implemented else "[red]false[/red]"
 

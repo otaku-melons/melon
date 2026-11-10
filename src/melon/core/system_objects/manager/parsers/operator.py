@@ -1,3 +1,4 @@
+from importlib import resources
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -9,6 +10,7 @@ from dublib.functions.filesystem import json
 from ....base.parser.components.manifest import ParserManifest
 from ....base.parser.components.settings import ParserSettings
 from ....base.parser.components.settings.models import SettingsModel
+from ....base.parser.enums import ContentType
 from ....base.source_operator import BaseSourceOperator
 from ..enums import ExportResult, ExportStrategy
 from ..extensions.manager import ExtensionsManager
@@ -40,6 +42,7 @@ class ParserOperator:
 
 		self.__manifest: ParserManifest = ParserManifest(self.system_objects, self.name)
 		self.__settings: ParserSettings = ParserSettings(self.system_objects, self.name)
+		self.__supported_content_types: tuple[ContentType, ...] = self.__get_supported_content_types()
 
 	def export_settings(self, strategy: ExportStrategy = ExportStrategy.Skip) -> ExportResult:
 		"""
@@ -79,6 +82,12 @@ class ParserOperator:
 			raise TypeError(f"Incorrect type of source operator: {source_operator_type}.")
 
 		return source_operator_type(self)
+
+	@property
+	def content_types(self) -> tuple[ContentType, ...]:
+		"""Supported content types."""
+
+		return self.__supported_content_types
 
 	@property
 	def entry_point(self) -> "EntryPoint":
@@ -130,3 +139,20 @@ class ParserOperator:
 			return
 
 		return self.__entry_point.dist.version
+
+	def __get_supported_content_types(self) -> tuple[ContentType, ...]:
+		"""
+		Get supported content types from parser modules.
+
+		:return: Supported content types.
+		:rtype: tuple[ContentType, ...]
+		"""
+
+		package_resources = resources.files(self.name)
+		supported_types: list[ContentType] = []
+
+		for content_type in ContentType:
+			if package_resources.joinpath(f"{content_type.value}.py").is_file():
+				supported_types.append(content_type)
+
+		return tuple(supported_types)
