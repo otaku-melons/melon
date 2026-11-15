@@ -16,6 +16,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Extensions now fully separated from parsers and can be run only on parsings steps through registered methods.
 
 ### 🔥 Removed
+- Current working directory import.
 - CLI parsers packages manager (some functions saved in `pm`).
 - Assistant for elements initialization.
 - Linter.
