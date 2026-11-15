@@ -5,15 +5,15 @@ from .enums import Case, ClassificatorType, Directive
 
 @dataclass
 class WorkData:
-	"""Данные процесса обработки скрипта."""
+	"""Script parsing process data."""
 
 	current_type: ClassificatorType | None = None
 	current_case: Case | None = None
 	is_delete: bool = False
 
 @dataclass(frozen = True)
-class ClassificationResult:
-	"""Результат обработки классификатора."""
+class ProcessingResult:
+	"""Classificator processing result."""
 
 	is_operation_found: bool = False
 	name: str | None = None
@@ -23,10 +23,10 @@ class ClassificationResult:
 
 	def to_dict(self) -> dict:
 		"""
-		Возвращает словарное представление объекта.
+		Generate dictionary representation of data.
 
-		:return: Словарное представление объекта.
-		:rtype: dict
+		Returns:
+			dict: Dictionary representation of data..
 		"""
 
 		return {
@@ -39,7 +39,7 @@ class ClassificationResult:
 
 @dataclass(frozen = True)
 class ExecutableLine:
-	"""Исполняемая строка скрипта."""
+	"""Script executable line."""
 
 	file: Path
 	number: int
@@ -47,18 +47,19 @@ class ExecutableLine:
 
 	@property
 	def is_operation(self) -> bool:
-		"""Состояние: представляет ли строка операцию."""
+		"""Condition: is line operation."""
 
-		return self.value.startswith("*")
+		return not self.is_directive()
 
 	def is_directive(self, directive: Directive | None = None) -> bool:
 		"""
-		Проверяет, представляет ли исполняемая строка скрипта директиву.
+		Check is executable line is directive.
 
-		:param directive: Тип директивы для конкретизации проверки. По умолчанию любая директива.
-		:type directive: Directive | None
-		:return: Возвращает `True`, если строка представляет соответствующую директиву.
-		:rtype: bool
+		Args:
+			directive (Directive | None): Target direcrive to check.
+
+		Returns:
+			bool: `True` if line is representation of directive.
 		"""
 
 		if directive:
@@ -68,7 +69,7 @@ class ExecutableLine:
 
 @dataclass(frozen = True)
 class Operation:
-	"""Представление операции над классификатором."""
+	"""Classificator processing operation."""
 
 	name: str
 	type: ClassificatorType | None
@@ -93,15 +94,15 @@ class Operation:
 			return self.rename
 
 		match self.case:
-			case Case.Low: return value.lower()
-			case Case.Title: return value.title()
-			case Case.Up: return value.upper()
+			case Case.low: return value.lower()
+			case Case.title: return value.title()
+			case Case.up: return value.upper()
 
 		return value
 
 @dataclass(frozen = True)
-class ScriptValidationError:
-	"""Данные ошибки валидации скрипта."""
+class ScriptValidationErrorData:
+	"""Script validation error data."""
 
 	line: ExecutableLine
 	message: str

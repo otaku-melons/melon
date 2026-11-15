@@ -2,28 +2,28 @@ from dataclasses import dataclass
 from enum import Enum
 
 class Case(Enum):
-	"""Перечисление приведений регистра."""
+	"""Letters case."""
 
-	Low = "low"
-	Up = "up"
-	Title = "title"
+	low = "low"
+	up = "up"
+	title = "title"
 
 class ClassificatorType(Enum):
-	"""Перечисление типов классификаторов."""
+	"""Classificator type."""
 
-	Franchise = "franchises"
-	Genre = "genres"
-	Person = "persons"
-	Tag = "tags"
+	franchise = "franchises"
+	genre = "genres"
+	person = "persons"
+	tag = "tags"
 
 @dataclass(frozen = True)
 class _DirectiveValidationData:
 	"""
-	Данные валидации директивы.
+	Directive validation data
 
-	* **values** – последовательность принимаемых значений или `None` для любого значения;
-	* **allow_list** – разрешено ли указание нескольких значений;
-	* **allow_empty** – разрешено ли не указывать значения.
+	- **values** – allowed values sequence or `None` for any value;
+	* **allow_list** – condition: is multiple values allowed
+	* **allow_empty** – condition: is directive without value allowed.
 	"""
 
 	values: tuple[str, ...] | None
@@ -31,10 +31,10 @@ class _DirectiveValidationData:
 	allow_empty: bool
 
 class Directive(Enum):
-	"""Перечисление директив."""
+	"""Classification script directive."""
 
-	DELETE = _DirectiveValidationData(values = None, allow_list = False, allow_empty = True)
-	DROP = _DirectiveValidationData(values = ("case", "delete", "type"), allow_list = True, allow_empty = True)
-	CASE = _DirectiveValidationData(values = ("low", "title", "up"), allow_list = False, allow_empty = True)
-	INCLUDE = _DirectiveValidationData(values = None, allow_list = False, allow_empty = False)
-	TYPE = _DirectiveValidationData(values = ("franchises", "genres", "persons", "tags"), allow_list = False, allow_empty = False)
+	delete = _DirectiveValidationData(values = None, allow_list = False, allow_empty = True)
+	drop = _DirectiveValidationData(values = ("case", "delete", "type"), allow_list = True, allow_empty = True)
+	case = _DirectiveValidationData(values = ("low", "title", "up"), allow_list = False, allow_empty = True)
+	include = _DirectiveValidationData(values = None, allow_list = False, allow_empty = False)
+	type = _DirectiveValidationData(values = ("franchises", "genres", "persons", "tags"), allow_list = False, allow_empty = False)
