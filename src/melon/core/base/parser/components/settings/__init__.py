@@ -111,7 +111,7 @@ class ParserSettings[T: BaseModel]:
 
 		settings_paths: tuple[Path, Path] = (
 			self.preset_path,
-			self.__system_objects.options.CONFIGS_DIR / f"{self.__parser_name}.json",
+			self.__system_objects.options.CONFIGS_DIR / self.__parser_name / f"{self.__parser_name}.json",
 		)
 
 		for settings_path in settings_paths:

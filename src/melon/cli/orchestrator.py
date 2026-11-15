@@ -1,6 +1,7 @@
 import importlib
 import sys
 from importlib import resources
+from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
 from dublib.cli.terminalyzer import ModelsGroup, Terminalyzer
@@ -80,9 +81,8 @@ class CommandsOrchestrator:
 
 		package: str = f"{__package__}.commands.{module_name}"
 		commands_submodules_names: list[str] = [
-			file.name[:-3]
+			Path(file.name).stem
 			for file in resources.files(package).iterdir()
-			if file.name.endswith(".py")
 		]
 
 		if "_base" in commands_submodules_names:

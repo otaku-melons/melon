@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 def export_package_settings(
 	system_objects: "SystemObjects",
-	package_mame: str,
+	package_name: str,
 	base_settings: dict,
 	strategy: ExportStrategy = ExportStrategy.Skip,
 	) -> ExportResult:
@@ -21,7 +21,7 @@ def export_package_settings(
 
 	Args:
 		system_objects (SystemObjects): System objects collection.
-		package_mame (str): Package name.
+		package_name (str): Package name.
 		base_settings (dict): Base settings
 		strategy (ExportStrategy): Settings export strategy.
 
@@ -33,8 +33,16 @@ def export_package_settings(
 		return ExportResult.Missing
 
 	is_atomic_write: bool = system_objects.options.JSON_ATOMIC_WRITE
-	package_mame = package_mame.replace("_", ".")
-	storage_path: Path = system_objects.options.CONFIGS_DIR / f"{package_mame}.json"
+
+	# Create only if default directory.
+	if system_objects.options.CONFIGS_DIR.as_posix() == "configs":
+		system_objects.options.CONFIGS_DIR.mkdir(exist_ok = True)
+
+	if "_" in package_name:
+		parser_name, extension_name = package_name.split("_", maxsplit = 1)
+		storage_path: Path = system_objects.options.CONFIGS_DIR / parser_name / f"{extension_name}.json"
+	else:
+		storage_path: Path = system_objects.options.CONFIGS_DIR / package_name / f"{package_name}.json"
 
 	if storage_path.exists():
 

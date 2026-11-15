@@ -58,6 +58,12 @@ class BaseExtension[SO: "BaseSourceOperator", EO: BaseModel = BaseModel]:
 		return self._source_operator.manifest
 
 	@property
+	def name(self) -> str:
+		"""Extension name."""
+
+		return self.identifier.split(".", maxsplit = 1)[-1]
+
+	@property
 	def settings(self) -> EO:
 		"""Extension settings."""
 
@@ -141,7 +147,7 @@ class BaseExtension[SO: "BaseSourceOperator", EO: BaseModel = BaseModel]:
 		base_settings: dict = {}
 		settings_paths: tuple[Path, Path] = (
 			Path(str(resources.files(self.package_name))) / "settings" / "settings.json",
-			self.system_objects.options.CONFIGS_DIR / f"{self.identifier}.json",
+			self.system_objects.options.CONFIGS_DIR / self.source_operator.parser_name / f"{self.name}.json",
 		)
 
 		for settings_path in settings_paths:

@@ -9,7 +9,7 @@ from dublib.validators import ValidableType
 from .....core import exceptions
 from .....core.base.parser.enums import ContentType, ImagesLevel
 from .....core.system_objects.printer.templates.parsing import ParsingStatistics
-from .....utils.classificator import Classificator
+# from .....utils.classificator import ClassificatorsProcessor
 from ....base.templates import T_ForceModeRequired, T_SingleParserRequired
 from .._base import CommandProcessorTemplate
 from . import targets
@@ -111,7 +111,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			is_sorting_enabled = entity.check_flag("-sort"),
 			is_amending_enabled = not entity.check_flag("-no-amend"),
 			images_level = image_level,
-			is_classificator_enabled = not entity.check_flag("--no-classificator"),
+			is_classificator_enabled = not entity.check_flag("-no-classificator"),
 			is_cold_saving = not entity.check_flag("-no-cold-save"),
 		)
 
@@ -119,7 +119,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	def _post_init(self):
 		"""Execute after instance initialization."""
 
-		self.__classificator = Classificator()
+		# self.__classificator = Classificator()
 
 	@override
 	def _process(self, parameters: Parameters) -> bool | None:
