@@ -186,7 +186,7 @@ class CommandsOrchestrator:
 
 		if entity is None:
 			self.printer.critical("Command not found.", end_work = False)
-			self.printer.emit(f"Execute [b]{module_name} help[/] to show commands list.")
+			self.printer.emit(f"Execute [b]{module_name} help[/b] to show commands list.")
 			sys.exit(1)
 
 		if entity.model.name == "help":

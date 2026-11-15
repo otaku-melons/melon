@@ -319,7 +319,7 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 
 	@abstractmethod
 	def _parse(self):
-		"""Parse title data witchout chapters content."""
+		"""Parse title data without chapters content."""
 
 		pass
 

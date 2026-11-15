@@ -430,14 +430,14 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			else:
 				self.printer.emit("Amending skipped by flag.")
 
-		except exceptions.parsing.AuthorizationRequiredError:
-			return ParsingSignal.Break
+		# except exceptions.parsing.AuthorizationRequiredError:
+		# 	return ParsingSignal.Break
 
-		except exceptions.parsing.ParsingError:
-			return ParsingSignal.Error
+		# except exceptions.parsing.ParsingError:
+		# 	return ParsingSignal.Error
 
-		except exceptions.parsing.TitleNotFoundError:
-			return ParsingSignal.NotFound
+		# except exceptions.parsing.TitleNotFoundError:
+		# 	return ParsingSignal.NotFound
 
 		except (JSONDecodeError, exceptions.parsers.UnsupportedFormatError):
 			self.printer.error("Unsupported JSON format or decoding error.")

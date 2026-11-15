@@ -10,6 +10,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 ## [1.0.0-rc.8]
 
 ### 🎨 Changed
+- Chapters types renamed with lower case.
 - Settings reworked with [pydantic](https://github.com/pydantic/PYDANTIC) models.
 - All parsers and extensions now is Python packages and can be managed with packages managers.
 - Extensions now fully separated from parsers and can be run only on parsings steps through registered methods.
