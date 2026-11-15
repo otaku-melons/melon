@@ -2,9 +2,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, override
 
-from .... import utils
-from ....core import exceptions
-from ...base.templates import BaseParameters
+from ....utils.classificator import ClassificatorsProcessor
+from ...base.templates import T_SingleParserRequired
 from ..melon._base import CommandProcessorTemplate
 
 if TYPE_CHECKING:
@@ -13,7 +12,7 @@ if TYPE_CHECKING:
 	from ...base.structs import PreparedData
 
 @dataclass(frozen = True)
-class Parameters(BaseParameters):
+class Parameters(T_SingleParserRequired):
 	"""Required by command processor parameters."""
 
 	target: str
@@ -40,6 +39,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		position = model.create_position("VALUE", "Input value to classification.", important = True)
 		position.set_argument()
 
+		self._add_parser_position("--use")
 		self._add_json_output_flag()
 
 		model.base.add_flag("-i", aliases = ("--ignorecase",), description = "Ignore characters case in procedures searching.")
@@ -71,6 +71,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 
 		return Parameters(
+			required_parser = prepared_data.required_parsers[0],
 			target = entity.get_position_value("VALUE", expected_type = str, important = True),
 			is_output_json = entity.check_flag("-j"),
 			file_to_write =  entity.get_key_value("--file", expected_type = Path),
@@ -89,29 +90,20 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			bool | None: `False` if processing failed.
 		"""
 
-		script_work_dir: Path = self.system_objects.options.CONFIGS_DIR / "classificator"
-		script_work_dir.mkdir(exist_ok = True)
+		entry_point: Path = self.system_objects.options.CONFIGS_DIR / parameters.required_parser.name / "classificator" / "main.mcs"
 
 		try:
-			classificator = utils.Classificator(script_work_dir)
+			classificator = ClassificatorsProcessor(entry_point)
 		except FileNotFoundError as exception_data:
-			self.printer.critical(f"Script file \"{exception_data}\" doesn't exists.")
+			self.printer.critical(f"Script entry point \"{exception_data}\" doesn't exists.")
 
-		executable_lines = classificator.read_script()
-		validation_errors = classificator.validate_script(executable_lines)
+		if validation_errors := classificator.load():
+			for error_data in validation_errors:
+				self.printer.error(f"[{error_data.line.file.name}:{error_data.line.number}] {error_data.message}")
 
-		for error_data in validation_errors:
-			self.printer.error(f"[{error_data.line.file.name}:{error_data.line.number}] {error_data.message}")
-
-		if validation_errors:
 			self.printer.critical("Script failure due to validation errors.")
 
-		try:
-			procedures = classificator.parse_operations(executable_lines)
-		except exceptions.utils.classificator.ScriptRuntimeError as exception_data:
-			self.printer.critical(str(exception_data))
-
-		classification_result = classificator.classify(parameters.target, procedures, ignore_case = parameters.is_ignore_case)
+		classification_result = classificator.classify(parameters.target, ignore_case = parameters.is_ignore_case)
 
 		if parameters.is_output_json:
 			self.printer.json(classification_result.to_dict())

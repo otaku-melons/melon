@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, override
 
-from .... import utils
+from ....utils.cacher import Cacher
 from ...base.templates import T_MultipleParsersRequired
 from ..melon._base import CommandProcessorTemplate
 
@@ -68,7 +68,7 @@ class CommandProcessor(CommandProcessorTemplate[T_MultipleParsersRequired]):
 
 		for parser_operator in parameters.required_parsers:
 			self.printer.emit(f"Caching titles for [b]{parser_operator.name}[/]…")
-			Cacher = utils.Cacher(self._launch_source_operator(parser_operator))
+			cacher = Cacher(self._launch_source_operator(parser_operator))
 
-			result = Cacher.cache_parser_output()
+			result = cacher.cache_parser_output()
 			self.printer.templates.cacher.result(result)

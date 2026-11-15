@@ -1,4 +1,4 @@
-from .....utils.timer import Timer
+from .....cli.base.timer import Timer
 from ....base.parser.components.images_downloader import (
 	FilteredBy,
 	ImageDownloadingResult,

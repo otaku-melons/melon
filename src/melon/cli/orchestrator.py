@@ -85,8 +85,9 @@ class CommandsOrchestrator:
 			for file in resources.files(package).iterdir()
 		]
 
-		if "_base" in commands_submodules_names:
-			commands_submodules_names.remove("_base")
+		for filtered_value in ("_base", "__pycache__"):
+			if filtered_value in commands_submodules_names:
+				commands_submodules_names.remove(filtered_value)
 
 		return tuple(commands_submodules_names)
 

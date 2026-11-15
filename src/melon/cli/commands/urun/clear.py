@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, override
 
 from dublib.functions.filesystem import clear_directory
 
-from .... import utils
+from ....utils.collector import Collector
 from ...base.templates import T_SingleParserRequired
 from ..melon._base import CommandProcessorTemplate
 
@@ -113,10 +113,10 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 
 		SourceOperator = self._launch_source_operator(parameters.required_parser)
-		Collector = utils.Collector(SourceOperator)
+		collector = Collector(SourceOperator)
 		self.printer.emit("Search broken files…", flush = True)
 
-		Result = Collector.collect_broken()
+		Result = collector.collect_broken()
 		FilesToRemove: tuple[str, ...] = tuple(Descriptor.full_filename for Descriptor in Result.descriptors if Descriptor.full_filename)
 		RemovedFilesCount: int = self.__remove_files_form_directory(SourceOperator.settings.directories.titles, FilesToRemove)
 
@@ -136,14 +136,14 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 
 		SourceOperator = self._launch_source_operator(parameters.required_parser)
-		Collector = utils.Collector(SourceOperator, parameters.collection_file)
+		collector = Collector(SourceOperator, parameters.collection_file)
 
-		if not Collector.is_collection_file_exists:
+		if not collector.is_collection_file_exists:
 			self.printer.error("Collection not found.")
 			return False
 
-		SlugsCount: int = Collector.load()
-		Slugs = Collector.slugs
+		SlugsCount: int = collector.load()
+		Slugs = collector.slugs
 		self.printer.emit(f"Slugs in collection: {SlugsCount}.")
 		if not Slugs: return True
 
@@ -177,10 +177,10 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 
 		SourceOperator = self._launch_source_operator(parameters.required_parser)
-		Collector = utils.Collector(SourceOperator)
+		collector = Collector(SourceOperator)
 		self.printer.emit("Check titles existing…", flush = True)
 
-		Result = Collector.collect_not_found(callback = self.__callback_not_found)
+		Result = collector.collect_not_found(callback = self.__callback_not_found)
 		FilesToRemove: tuple[str, ...] = tuple(Descriptor.full_filename for Descriptor in Result.descriptors if Descriptor.full_filename)
 		RemovedFilesCount: int = self.__remove_files_form_directory(SourceOperator.settings.directories.titles, FilesToRemove)
 

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, override
 
 from dublib.validators import ValidableType
 
-from .... import utils
+from ....utils.collector import Collector
 from ...base.templates import T_ForceModeRequired, T_SingleParserRequired
 from ._base import CommandProcessorTemplate
 
@@ -46,7 +46,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	# >>>>> PRIVATE METHODS <<<<< #
 	#==========================================================================================#
 
-	def __collect_from_source(self, collector: utils.Collector, parameters: Parameters) -> int:
+	def __collect_from_source(self, collector: Collector, parameters: Parameters) -> int:
 		"""
 		Собирает алиасы тайтлов: с сервера источника по заданным параметрам.
 
@@ -63,7 +63,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		return collector.add(slugs)
 
-	def __collect_local(self, collector: utils.Collector) -> int:
+	def __collect_local(self, collector: Collector) -> int:
 		"""
 		Собирает алиасы тайтлов: локальные файлы.
 
@@ -77,7 +77,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		return collector.collect_local().added
 
-	def __collect_not_found(self, collector: utils.Collector) -> int:
+	def __collect_not_found(self, collector: Collector) -> int:
 		"""
 		Собирает алиасы тайтлов: не найденные на сервере источника тайтлы.
 
@@ -178,7 +178,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 
 		source_operator = self._launch_source_operator(parameters.required_parser)
-		collector = utils.Collector(source_operator, parameters.file)
+		collector = Collector(source_operator, parameters.file)
 
 		if not parameters.force_mode:
 			collector.load()

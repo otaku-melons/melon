@@ -3,17 +3,17 @@ from typing import TYPE_CHECKING
 from ._base import _BaseTemplatesSection
 
 if TYPE_CHECKING:
-	from .....utils.classificator.structs import ClassificationResult
+	from .....utils.classificator.structs import ProcessingResult
 
 class ClassificatorTemplates(_BaseTemplatesSection):
 	"""Расширенные шаблоны вывода: оператор обработки классификаторов."""
 
-	def result(self, result: "ClassificationResult"):
+	def result(self, result: "ProcessingResult"):
 		"""
 		Шаблон вывода: оператор обработки классификаторов.
 
 		:param result: Результат обработки классификатора.
-		:type result: ClassificationResult
+		:type result: ProcessingResult
 		"""
 
 		if not result.is_operation_found:

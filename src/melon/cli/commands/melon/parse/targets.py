@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
-from ..... import utils
+from .....utils.collector import Collector
 
 if TYPE_CHECKING:
 	from dublib.cli.terminalyzer import CommandEntity
@@ -93,9 +93,9 @@ class PassingTarget_Collection(BaseParserTarget):
 
 		Filename: str | None = self._Data.get_key_value("--collection", expected_type = str)
 		if Filename == ".": Filename = None
-		Collector = utils.Collector(self._SourceOperator, Filename)
-		Collector.load()
-		Slugs = list(Collector.slugs)
+		collector = Collector(self._SourceOperator, Filename)
+		collector.load()
+		Slugs = list(collector.slugs)
 		self._Printer.emit(f"Titles in collection: {len(Slugs)}.")
 
 		return Slugs
@@ -180,9 +180,9 @@ class PassingTarget_Local(BaseParserTarget):
 		:rtype: list[str]
 		"""
 
-		Collector = utils.Collector(self._SourceOperator)
+		collector = Collector(self._SourceOperator)
 		self._SourceOperator.portals.printer.templates.collector.start()
-		ScanningResult = Collector.collect_local()
+		ScanningResult = collector.collect_local()
 		self._Printer.templates.collector.collected(ScanningResult.added)
 
 		return list(ScanningResult.slugs)

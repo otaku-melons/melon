@@ -189,7 +189,7 @@ class ClassificatorsProcessor:
 		for line in script:
 
 			if line.is_operation:
-				operation_line: str = line.value[1:]
+				operation_line: str = line.value
 				parts: list[str] = shlex.split(operation_line)
 				rename: str | None = None
 

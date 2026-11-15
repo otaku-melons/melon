@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, override
 from dublib.functions.filesystem import json
 from dublib.validators import ValidableType
 
-from .... import utils
+from ....utils.unstubber import SignatureVersion, Unstubber
 from ...base.templates import T_OptionalSingleParser
 from ..melon._base import CommandProcessorTemplate
 
@@ -20,7 +20,7 @@ class Parameters(T_OptionalSingleParser):
 	"""Required by command processor parameters."""
 
 	image: Path
-	signature_version: utils.unstubber.SignatureVersion
+	signature_version: SignatureVersion
 
 class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	"""Command processor."""
@@ -118,7 +118,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		version_key: str = entity.get_position_value("VERSION", expected_type = str, important = True)
 		version_key = version_key.lstrip("-")
-		version = utils.unstubber.SignatureVersion[version_key]
+		version = SignatureVersion[version_key]
 
 		return Parameters(
 			required_parser = prepared_data.required_parsers[0] if prepared_data.required_parsers else None,
@@ -138,10 +138,10 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			bool | None: `False` if processing failed.
 		"""
 
-		Unstubber = utils.Unstubber()
-		Image = Unstubber.load_image(parameters.image)
-		Signature: str = Unstubber.generate_signature(Image, parameters.signature_version)
-		self.printer.emit(f"Signature: [i]{Signature}[/]")
+		unstubber = Unstubber()
+		Image = unstubber.load_image(parameters.image)
+		Signature: str = unstubber.generate_signature(Image, parameters.signature_version)
+		self.printer.emit(f"Signature: [i]{Signature}[/i]")
 
 		if parameters.required_parser:
 			return self.__export_signature(Signature, parameters.required_parser)

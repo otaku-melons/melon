@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING
 from dublib.cli.terminalyzer import CommandModel
 
 from ...core import exceptions
-from ...utils.timer import Timer
 from .structs import PreparedData, ProcessorOptions, _InternalStorage
+from .timer import Timer
 
 if TYPE_CHECKING:
 	from dublib.cli.terminalyzer.commands.group import ModelsGroup
