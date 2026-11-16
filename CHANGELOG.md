@@ -11,6 +11,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 
 ### ✨ Added
 - Parsers and extensions configs separated by directories.
+- Classificators register.
 
 ### 🎨 Changed
 - Util `ClassificatorsProcessor` refactored to work with parsers scripts instead global.

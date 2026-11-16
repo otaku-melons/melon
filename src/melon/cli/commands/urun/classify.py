@@ -2,7 +2,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, override
 
-from ....utils.classificator import ClassificatorsProcessor
+from dublib.validators import ValidableType
+
+from ....utils.classificator import ClassificatorsProcessor, ProcessingResult
 from ...base.templates import T_SingleParserRequired
 from ..melon._base import CommandProcessorTemplate
 
@@ -17,8 +19,8 @@ class Parameters(T_SingleParserRequired):
 
 	target: str
 	is_output_json: bool
-	file_to_write: Path | None
 	is_ignore_case: bool
+	register: Path | None
 
 class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	"""Command processor."""
@@ -43,6 +45,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		self._add_json_output_flag()
 
 		model.base.add_flag("-i", aliases = ("--ignorecase",), description = "Ignore characters case in procedures searching.")
+		model.base.add_key("--register", value_type = ValidableType.ExistingFilePath, description = "Classificators register file.")
 
 		return model
 
@@ -74,8 +77,8 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			required_parser = prepared_data.required_parsers[0],
 			target = entity.get_position_value("VALUE", expected_type = str, important = True),
 			is_output_json = entity.check_flag("-j"),
-			file_to_write =  entity.get_key_value("--file", expected_type = Path),
 			is_ignore_case = entity.check_flag("-i"),
+			register = entity.get_key_value("--register", expected_type = Path),
 		)
 
 	@override
@@ -99,13 +102,46 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		if validation_errors := classificator.load():
 			for error_data in validation_errors:
-				self.printer.error(f"[{error_data.line.file.name}:{error_data.line.number}] {error_data.message}")
+				origin: str = f"{error_data.line.file.name}:{error_data.line.number}"
+				self.printer.error(f"{error_data.message}", origin = origin)
 
 			self.printer.critical("Script failure due to validation errors.")
+
+		if parameters.register:
+			classificator.load_register(parameters.register)
 
 		classification_result = classificator.classify(parameters.target, ignore_case = parameters.is_ignore_case)
 
 		if parameters.is_output_json:
 			self.printer.json(classification_result.to_dict())
 		else:
-			self.printer.templates.classificator.result(classification_result)
+			self.__print_result(classification_result)
+
+	def __print_result(self, result: "ProcessingResult"):
+		"""
+		Print result.
+
+		Args:
+			result (ProcessingResult): Classificator processing result.
+		"""
+
+		if not result.is_operation_found:
+			self.printer.error("Operation not found.")
+			return
+
+		if result.is_found_in_register is not None:
+			self.printer.debug("Register checked.")
+
+		if result.is_found_in_register is False:
+			self.printer.error("Classificator not found in gerister.")
+			return
+
+		if result.delete:
+			self.printer.emit("Classificator must be deleted.")
+			return
+
+		self.printer.emit(f"Name: [i]{result.name}[/i]")
+		is_renamed: str = str(result.is_renamed).lower()
+		self.printer.emit(f"Renamed: {is_renamed}")
+		classificator_type :str = result.type.name.lower() if result.type else "[red]null[/red]"
+		self.printer.emit(f"Type: {classificator_type}")

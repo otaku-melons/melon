@@ -16,6 +16,7 @@ class ProcessingResult:
 	"""Classificator processing result."""
 
 	is_operation_found: bool = False
+	is_found_in_register: bool | None = None
 	name: str | None = None
 	type: ClassificatorType | None = None
 	delete: bool | None = None
@@ -31,6 +32,7 @@ class ProcessingResult:
 
 		return {
 			"is_operation_found": self.is_operation_found,
+			"is_found_in_register": self.is_found_in_register,
 			"name": self.name,
 			"type": self.type.name.lower() if self.type else None,
 			"delete": self.delete,

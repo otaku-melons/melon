@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING
 
 from .cacher import CacherTemplates
-from .classificator import ClassificatorTemplates
 from .collector import CollectorTemplates
 from .images import ImagesTemplates
 from .manager import ManagerTemplates
@@ -18,12 +17,6 @@ class Templates:
 		"""Расширенные шаблоны вывода: оператор кэширования пар ID-алиас."""
 
 		return self.__Cacher
-
-	@property
-	def classificator(self) -> ClassificatorTemplates:
-		"""Расширенные шаблоны вывода: оператор обработки классификаторов."""
-
-		return self.__Classificator
 
 	@property
 	def collector(self) -> CollectorTemplates:
@@ -60,7 +53,6 @@ class Templates:
 		self.__Printer = printer
 
 		self.__Cacher = CacherTemplates(self.__Printer)
-		self.__Classificator = ClassificatorTemplates(self.__Printer)
 		self.__Collector = CollectorTemplates(self.__Printer)
 		self.__Images = ImagesTemplates(self.__Printer)
 		self.__Manager = ManagerTemplates(self.__Printer)

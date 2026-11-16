@@ -4,7 +4,7 @@ from os import PathLike
 from pathlib import Path
 from typing import cast
 
-from dublib.functions.filesystem import text
+from dublib.functions.filesystem import json, text
 
 from ...core import exceptions
 from .enums import Case, ClassificatorType, Directive
@@ -30,6 +30,7 @@ class ClassificatorsProcessor:
 		self.__entry_point: Path = Path(entry_point)
 
 		self.__operations: tuple[Operation, ...] = ()
+		self.__register: dict[ClassificatorType, tuple[str, ...]] = {}
 
 		self.__check_entry_point()
 
@@ -60,6 +61,7 @@ class ClassificatorsProcessor:
 
 		return ProcessingResult(
 			is_operation_found = True,
+			is_found_in_register = self.__search_in_register(target_operation.type, name),
 			name = name,
 			type = target_operation.type,
 			delete = target_operation.delete,
@@ -68,18 +70,33 @@ class ClassificatorsProcessor:
 
 	def load(self) -> tuple[ScriptValidationErrorData, ...] | None:
 		"""
-		Load and validate script.
+		Load and validate script.  Also clear exists operations data.
 
 		Returns:
 			tuple[ScriptValidationErrorData, ...] | None: Script validation errors or `None` if no errors.
 		"""
 
+		self.__operations = ()
 		script: tuple[ExecutableLine, ...] = tuple(self.__read_script_file(self.entry_point, entry_point = True))
 
 		if errors := self.__validate_script(script):
 			return errors
 
 		self.__operations = self.__parse_operations(script)
+
+	def load_register(self, file: PathLike[str] | str):
+		"""
+		Loag classificators register. Also clear exists register data.
+
+		Args:
+			file (PathLike[str] | str): Path to register file.
+		"""
+
+		data: dict[str, list[str]] = json.read(file)
+		self.__register.clear()
+
+		for classificator_type in ClassificatorType:
+			self.__register[classificator_type] = tuple(data[classificator_type.value])
 
 	@property
 	def entry_point(self) -> Path:
@@ -154,11 +171,7 @@ class ClassificatorsProcessor:
 		"""
 
 		filename: str = self.__extract_directive_values(line)[0]
-
-		if not filename.endswith(".ini"):
-			filename += ".ini"
-
-		script_file: Path = self.work_directory / filename
+		script_file: Path = self.work_directory / f"{filename}.mcs"
 
 		if not script_file.exists():
 			raise FileNotFoundError(script_file)
@@ -329,6 +342,30 @@ class ClassificatorsProcessor:
 			executable_lines.append(ExecutableLine(script_file, -1, drop_directive))
 
 		return executable_lines
+
+	def __search_in_register(self, classificator_type: ClassificatorType | None, name: str | None) -> bool | None:
+		"""
+		Search classificator in register.
+
+		Args:
+			classificator_type (ClassificatorType | None): Classificator type.
+			name (str | None): Classificator name.
+
+		Returns:
+			bool | None: `True` if found in register.
+		"""
+
+		if not name or not self.__register:
+			return
+
+		if classificator_type:
+			return name in self.__register[classificator_type]
+
+		for classificator_type in ClassificatorType:
+			if name in self.__register[classificator_type]:
+				return True
+
+		return False
 
 	def __validate_directive(self, line: ExecutableLine) -> list[ScriptValidationErrorData]:
 		"""
