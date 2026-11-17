@@ -98,6 +98,16 @@ class ImageData:
 
 		return resolution
 
+	def rename(self, name: str):
+		"""
+		Use another name for image file.
+
+		Args:
+			name (str): New image file name.
+		"""
+
+		self._filename = name
+
 	def set_file_path(self, file: PathLike[str] | str):
 		"""
 		Set file path in images directory of title.

@@ -12,6 +12,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 ### ✨ Added
 - Parsers and extensions configs separated by directories.
 - Classificators register.
+- Image can be renamed in struct.
 
 ### 🎨 Changed
 - Util `ClassificatorsProcessor` refactored to work with parsers scripts instead global.
@@ -25,6 +26,9 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - CLI parsers packages manager (some functions saved in `pm`).
 - Assistant for elements initialization.
 - Linter.
+
+### 🐛 Fixed
+- Identical footnotes ID.
 
 ## [1.0.0-rc.7] - 2026-11-07
 

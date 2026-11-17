@@ -88,14 +88,14 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 		:rtype: int
 		"""
 
-		DataBuffer: dict | None = self._load_data(self._slug)
+		data: dict | None = self._load_data(self._slug)
 
-		if not DataBuffer:
+		if not data:
 			return 0
 
 		#---> Слияние размеров обложек.
 		#==========================================================================================#
-		CoversData: list[dict] = DataBuffer["covers"]
+		CoversData: list[dict] = data["covers"]
 
 		for CoverData in CoversData:
 			Link = CoverData["link"]
@@ -106,7 +106,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 
 		#---> Слияние размеров портретов персонажей.
 		#==========================================================================================#
-		PersonsData: list[dict] | None = DataBuffer.get("persons")
+		PersonsData: list[dict] | None = data.get("persons")
 
 		if PersonsData:
 			for PersonData in PersonsData:
@@ -122,7 +122,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 
 		#---> Слияние контента глав.
 		#==========================================================================================#
-		ContentData: dict[str, dict] = DataBuffer["content"]
+		ContentData: dict[str, dict] = data["content"]
 		MergedChaptersCount: int = 0
 
 		for BranchKey in ContentData.keys():

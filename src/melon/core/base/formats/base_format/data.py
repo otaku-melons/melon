@@ -784,11 +784,11 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 		self._covers.clear()
 
-		for CoverData in self._data["covers"]:
-			CoverData: dict
-			Buffer = ImageData(CoverData["link"], ImageType.Cover)
-			Buffer.create_resolution(CoverData.get("width"), CoverData.get("height"))
-			self._covers.append(Buffer)
+		for cover_data in self._data["covers"]:
+			cover_data: dict
+			buffer = ImageData(cover_data["link"], ImageType.Cover)
+			buffer.create_resolution(cover_data.get("width"), cover_data.get("height"))
+			self._covers.append(buffer)
 
 	def _parse_persons(self):
 		"""Parse persons data from dictionaries."""

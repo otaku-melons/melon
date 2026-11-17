@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
@@ -16,7 +16,7 @@ class Footnote:
 	"""
 
 	elements: tuple["Paragraph | ImageData", ...]
-	id: str = str(uuid4())
+	id: str = field(default_factory=lambda: str(uuid4()))
 
 	@property
 	def images(self) -> tuple["ImageData", ...]:
