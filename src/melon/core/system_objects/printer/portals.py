@@ -12,199 +12,177 @@ if TYPE_CHECKING:
 	from . import Printer
 
 class Portals:
-	"""Порталы вывода парсера."""
+	"""Output portals."""
 
-	#==========================================================================================#
-	# >>>>> PROPERTIES <<<<< #
-	#==========================================================================================#
-
-	@property
-	def printer(self) -> "Printer":
-		"""Оператор вывода."""
-
-		return self.__Printer
-
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS <<<<< #
-	#==========================================================================================#
-
-	def __init__(self, printer: "Printer", parser_name: str):
+	def __init__(self, printer: "Printer", package_identifier: str):
 		"""
-		Порталы вывода парсера.
+		Output portals.
 
-		:param printer: Оператор вывода.
-		:type printer: Printer
-		:param parser_name: Имя парсера.
-		:type parser_name: str
+		Args:
+			printer (Printer): Output operator.
+			package_identifier (str): Package identifier.
 		"""
 
-		self.__Printer = printer
-		self.__ParserName = parser_name
-
-	#==========================================================================================#
-	# >>>>> ШАБЛОНЫ ОШИБОК <<<<< #
-	#==========================================================================================#
+		self.__printer: Printer = printer
+		self.__identifier: str = package_identifier
 
 	@overload
-	def authorization_required(self, text: str | None = None, exception: Literal[True] = True) -> NoReturn: ...
+	def authorization_required(self, text: str | None = None, raise_error: Literal[True] = True) -> NoReturn: ...
 	@overload
-	def authorization_required(self, text: str | None = None, exception: Literal[False] = ...): ...
+	def authorization_required(self, text: str | None = None, raise_error: Literal[False] = ...): ...
 
-	def authorization_required(self, text: str | None = None, exception: bool = True):
+	def authorization_required(self, text: str | None = None, raise_error: bool = True):
 		"""
-		Портал ошибки: требуется авторизация.
+		Error portal: authorization required.
 
-		:param text: Описание ошибки. Следует указать краткую инструкцию по авторизации, если таковая поддерживается.
-		:type text: str | None
-		:param exception: Указывает, выбрасывать ли исключение.
-		:type exception: bool
-		:raises ParsingError: Активирована опция выброса исключения.
+		Args:
+			text (str | None): Error message.
+			raise_error (bool): Condition: raise exception.
+
+		Raises:
+			AuthorizationRequiredError: Parser authorization method should be used.
 		"""
 
 		if not text:
-			text = "Should use authorization method for selected parser."
+			text = "Parser authorization method should be used."
 
-		self.__Printer.critical(text)
+		self.printer.critical(text)
 
-		if exception:
+		if raise_error:
 			raise exceptions.parsing.AuthorizationRequiredError(text)
 
-	@overload
-	def request_error(self, response: WebResponse, text: str | None = None, exception: Literal[True] = True) -> NoReturn: ...
-	@overload
-	def request_error(self, response: WebResponse, text: str | None = None, exception: Literal[False] = ...): ...
-
-	def request_error(self, response: WebResponse, text: str | None = None, exception: bool = True):
+	def chapter_not_found(self, chapter: "BaseChapter", raise_error: bool = True):
 		"""
-		Портал ошибки: неудачный запрос.
+		Warning: chapter not found.
 
-		:param response: Контейнер ответа.
-		:type response: WebResponse
-		:param text: Описание ошибки.
-		:type text: str | None
-		:param exception: Указывает, выбрасывать ли исключение.
-		:type exception: bool
-		:raises ParsingError: Выбрасывается при активации соответствующего аргумента.
+		Args:
+			chapter (BaseChapter): Chapter.
+			raise_error (bool): Condition: raise exception.
+
+		Raises:
+			ChapterNotFoundError: Chapter not found.
 		"""
 
-		if not text: text = "Request error."
+		text: str = f"Chapter {chapter.id} not found."
+		self.printer.error(text)
 
-		Text = f"{text} Response code: {response.status_code}."
-		self.__Printer.error(Text)
-
-		if self.printer.system_objects.options.DEBUG and response.json:
-			self.printer.debug(str(response.json))
-
-		if exception:
-			raise exceptions.parsing.ParsingError(text)
-
-	def unsupported_format(self, title_format: str | None = None, exception: bool = True):
-		"""
-		Шаблон предупреждения: неподдерживаемый формат JSON.
-
-		:param format: Имя формата.
-		:type format: str | Non
-		:param exception: Указывает, следует ли выбросить исключение.
-		:type exception: bool
-		:raises UnsupportedFormatError: Выбрасывается при активации соответствующего аргумента.
-		"""
-
-		Format = f": \"{title_format}\"" if title_format else ""
-		Text = f"Unsupported JSON format{Format}."
-
-		self.__Printer.error(Text)
-
-		if exception:
-			raise exceptions.parsers.UnsupportedFormatError(Text)
-
-	#==========================================================================================#
-	# >>>>> ШАБЛОНЫ ПРЕДУПРЕЖДЕНИЙ <<<<< #
-	#==========================================================================================#
-
-	def chapter_not_found(self, chapter: "BaseChapter", exception: bool = True):
-		"""
-		Портал предупреждения: глава не найдена.
-
-		:param chapter: Данные главы.
-		:type chapter: BaseChapter
-		:param exception: Указывает, выбрасывать ли исключение.
-		:type exception: bool
-		:raise ChapterNotFoundError: Выбрасывается в качестве исключения портала.
-		"""
-
-		Text = f"Chapter {chapter.id} not found."
-		self.__Printer.error(Text)
-
-		if exception:
+		if raise_error:
 			raise exceptions.parsing.ChapterNotFoundError(chapter.id, chapter.slug)
-
-	def title_not_found(self, title_data: "BaseTitleData", exception: bool = True):
-		"""
-		Портал предупреждения: тайтл не найден.
-
-		:param title_data: Данные тайтла.
-		:type title_data: BaseTitleData
-		:param exception: Указывает, следует ли выбросить исключение.
-		:type exception: bool
-		:raises TitleNotFoundError: Выбрасывается в качестве исключения портала.
-		"""
-
-		NoteID = f" (ID: {title_data.id})" if title_data.id else ""
-		Text = f"Title: \"{title_data.slug}\"{NoteID}. Not found."
-
-		self.__Printer.warning(Text)
-
-		if exception:
-			raise exceptions.parsing.TitleNotFoundError(title_data)
-
-	#==========================================================================================#
-	# >>>>> ШАБЛОНЫ СООБЩЕНИЙ <<<<< #
-	#==========================================================================================#
 
 	def chapter_skipped(self, chapter: "BaseChapter", comment: str | None = None):
 		"""
-		Портал сообщения: дополнение главы пропущено.
+		Message: chapter skipped.
 
-		:param chapter: Данные главы.
-		:type chapter: BaseChapter
-		:param comment: Комментарий о причине пропуска.
-		:type comment: str | None
+		Args:
+			chapter (BaseChapter): Chapter.
+			comment (str | None): Comment text. Will be added as sentence at message end.
 		"""
 
-		ChapterType = "Paid chapter " if chapter.is_paid else "Chapter "
-		ChapterIdentifier = ""
+		chapter_type_note: str = "Paid chapter " if chapter.is_paid else "Chapter "
+		chapter_identifier: str = ""
 
 		if chapter.id:
-			ChapterIdentifier = str(chapter.id)
+			chapter_identifier = str(chapter.id)
 		elif chapter.slug:
-			ChapterIdentifier = f"\"{chapter.slug}\""
+			chapter_identifier = f"\"{chapter.slug}\""
 
 		comment = f" {comment}" if comment else ""
-		Text = f"{ChapterType}{ChapterIdentifier} skipped.{comment}"
-
-		self.__Printer.emit(Text)
+		text: str = f"{chapter_type_note}{chapter_identifier} skipped.{comment}"
+		self.printer.emit(text)
 
 	def collect_progress_by_page(self, page: int):
 		"""
-		Портал сообщения: индикация прогресса сбора коллекции.
+		Message: slugs collecting progress by page.
 
-		:param page: Номер страницы каталога, с которого собраны данные.
-		:type page: int
+		Args:
+			page (int): Processed catalog page.
 		"""
 
-		self.__Printer.emit(f"Titles on page {page} collected.")
+		self.printer.emit(f"Titles on catalog page {page} collected.")
 
 	def covers_unstubbed(self, title: "BaseTitleController[BaseTitleData]"):
 		"""
-		Портал сообщения: обложки отфильтрованы, так как являются заглушками.
+		Message: covers unstubbed.
 
-		Также полностью удаляет данные обложек и их директорию.
-
-		:param title: Тайтл.
-		:type title: BaseTitleController
+		Args:
+			title (BaseTitleController[BaseTitleData]): Title controller.
 		"""
 
 		title.data.clear_covers()
 		title.remove_images_type_directory(ImageType.Cover)
 
-		self.__Printer.emit("Stubs detected. Covers data cleared.")
+		self.printer.emit("Stubs detected. Covers data cleared.")
+
+	def title_not_found(self, title_data: "BaseTitleData", raise_error: bool = True):
+		"""
+		Warning: title not found.
+
+		Args:
+			title_data (BaseTitleData): Title data.
+			raise_error (bool): Condition: raise exception.
+
+		Raises:
+			TitleNotFoundError: Title not found.
+		"""
+
+		note_id: str = f" (ID: {title_data.id})" if title_data.id else ""
+		text: str = f"Title: \"{title_data.slug}\"{note_id}. Not found."
+		self.printer.warning(text)
+
+		if raise_error:
+			raise exceptions.parsing.TitleNotFoundError(title_data)
+
+	@overload
+	def request_error(self, response: WebResponse, text: str | None = None, raise_error: Literal[True] = True) -> NoReturn: ...
+	@overload
+	def request_error(self, response: WebResponse, text: str | None = None, raise_error: Literal[False] = ...): ...
+
+	def request_error(self, response: WebResponse, text: str | None = None, raise_error: bool = True):
+		"""
+		Error: bad response.
+
+		Args:
+			response (WebResponse): Response.
+			text (str | None): Error message.
+			raise_error (bool): Condition: raise exception.
+
+		Raises:
+			ParsingError: Request error.
+		"""
+
+		if text:
+			text = text.rstrip() + " "
+		else:
+			text = ""
+
+		text = f"{text}Response code: {response.status_code}."
+		self.printer.error(text)
+
+		if self.printer.system_objects.options.DEBUG and response.json:
+			self.printer.debug(str(response.json))
+
+		if raise_error:
+			raise exceptions.parsing.ParsingError(text)
+
+	def unsupported_format(self, message: str, raise_error: bool = True):
+		"""
+		Error: unsupported format.
+
+		Args:
+			message (str): Message error or format name.
+			raise_error (bool): Condition: raise exception.
+
+		Raises:
+			UnsupportedFormatError: Unsupported format.
+		"""
+
+		self.printer.error(message)
+
+		if raise_error:
+			raise exceptions.parsers.UnsupportedFormatError(message)
+
+	@property
+	def printer(self) -> "Printer":
+		"""Output operator."""
+
+		return self.__printer
