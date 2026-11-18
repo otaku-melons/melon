@@ -93,10 +93,30 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			bool | None: `False` if processing failed.
 		"""
 
+		classificator: ClassificatorsProcessor = self.__initialize_classificators_processor(parameters)
+		self.__print_register_loading_result(parameters)
+		classification_result = classificator.classify(parameters.target, ignore_case = parameters.is_ignore_case)
+
+		if parameters.is_output_json:
+			self.printer.json(classification_result.to_dict())
+		else:
+			self.__print_result(classification_result)
+
+	def __initialize_classificators_processor(self, parameters: Parameters) -> ClassificatorsProcessor:
+		"""
+		Initialize classificators processor.
+
+		Args:
+			parameters (Parameters): Required by command parameters.
+
+		Returns:
+			ClassificatorsProcessor: Classificators processor.
+		"""
+
 		entry_point: Path = self.system_objects.options.CONFIGS_DIR / parameters.required_parser.name / "classificator" / "main.mcs"
 
 		try:
-			classificator = ClassificatorsProcessor(entry_point)
+			classificator = ClassificatorsProcessor(self.system_objects, entry_point)
 		except FileNotFoundError as exception_data:
 			self.printer.critical(f"Script entry point \"{exception_data}\" doesn't exists.")
 
@@ -107,15 +127,26 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 			self.printer.critical("Script failure due to validation errors.")
 
-		if parameters.register:
-			classificator.load_register(parameters.register)
+		return classificator
 
-		classification_result = classificator.classify(parameters.target, ignore_case = parameters.is_ignore_case)
+	def __print_register_loading_result(self, parameters: Parameters):
+		"""
+		Print classificators register loading result.
 
-		if parameters.is_output_json:
-			self.printer.json(classification_result.to_dict())
-		else:
-			self.__print_result(classification_result)
+		Args:
+			parameters (Parameters): Required by command parameters.
+		"""
+
+		is_key: bool = bool(parameters.register)
+		is_environment: bool = bool(self.system_objects.options.REGISTER)
+
+		if is_key:
+			override_part: str = "(environment option overridden)" if is_environment else ""
+			self.printer.debug(f"Classificators register loaded from key{override_part}.")
+			return
+
+		if is_environment:
+			self.printer.debug("Classificators register loaded from emvironment option.")
 
 	def __print_result(self, result: "ProcessingResult"):
 		"""

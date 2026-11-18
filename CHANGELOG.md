@@ -13,6 +13,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Parsers and extensions configs separated by directories.
 - Classificators register.
 - Image can be renamed in struct.
+- Register environment option.
 
 ### 🎨 Changed
 - Util `ClassificatorsProcessor` refactored to work with parsers scripts instead global.

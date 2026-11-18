@@ -2,7 +2,7 @@ import shlex
 from collections.abc import Callable, Sequence
 from os import PathLike
 from pathlib import Path
-from typing import cast
+from typing import TYPE_CHECKING
 
 from dublib.functions.filesystem import json, text
 
@@ -16,23 +16,31 @@ from .structs import (
 	WorkData,
 )
 
+if TYPE_CHECKING:
+	from ...core.system_objects import SystemObjects
+
 class ClassificatorsProcessor:
 	"""Classificators processor."""
 
-	def __init__(self, entry_point: PathLike[str] | str):
+	def __init__(self, system_objects: "SystemObjects", entry_point: PathLike[str] | str):
 		"""
 		Classificators processor.
 
 		Args:
+			system_objects (system_objects): System objects collection.
 			entry_point (PathLike[str] | str): Classificators processing script entry point.
 		"""
 
+		self.__system_objects: SystemObjects = system_objects
 		self.__entry_point: Path = Path(entry_point)
 
 		self.__operations: tuple[Operation, ...] = ()
 		self.__register: dict[ClassificatorType, tuple[str, ...]] = {}
 
 		self.__check_entry_point()
+
+		if self.__system_objects.options.REGISTER:
+			self.load_register(self.__system_objects.options.REGISTER)
 
 	def classify(self, target: str, ignore_case: bool = False) -> ProcessingResult:
 		"""
@@ -109,6 +117,12 @@ class ClassificatorsProcessor:
 		"""Classificators processing operations."""
 
 		return self.__operations
+
+	@property
+	def register(self) -> dict[ClassificatorType, tuple[str, ...]]:
+		"""Classificators register."""
+
+		return self.__register.copy()
 
 	@property
 	def work_directory(self) -> Path:
@@ -393,15 +407,7 @@ class ClassificatorsProcessor:
 			ERRORS.append(ScriptValidationErrorData(line, f"Unknown directive: \"@{Name}\"."))
 			return ERRORS
 
-		directive: Directive | None = None
-
-		for Element in Directive:
-			if Element.name == Name:
-				directive = Element
-				break
-
-		directive = cast("Directive", directive)
-
+		directive: Directive = Directive[Name]
 		ValidationData = directive.value
 		Values = self.__extract_directive_values(line)
 
