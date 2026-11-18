@@ -14,6 +14,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Classificators register.
 - Image can be renamed in struct.
 - Register environment option.
+- Parsing error portal.
 
 ### 🎨 Changed
 - Util `ClassificatorsProcessor` refactored to work with parsers scripts instead global.

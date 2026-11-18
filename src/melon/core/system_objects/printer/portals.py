@@ -133,6 +133,28 @@ class Portals:
 			raise exceptions.parsing.TitleNotFoundError(title_data)
 
 	@overload
+	def parsing_error(self, message: str, raise_error: Literal[True] = True) -> NoReturn: ...
+	@overload
+	def parsing_error(self, message: str, raise_error: Literal[False] = ...): ...
+
+	def parsing_error(self, message: str, raise_error: bool = True):
+		"""
+		Error: parsing problem.
+
+		Args:
+			message (str): Error message.
+			raise_error (bool): Condition: raise exception.
+
+		Raises:
+			ParsingError: Parsing error.
+		"""
+
+		self.printer.error(message)
+
+		if raise_error:
+			raise exceptions.parsing.ParsingError(message)
+
+	@overload
 	def request_error(self, response: WebResponse, text: str | None = None, raise_error: Literal[True] = True) -> NoReturn: ...
 	@overload
 	def request_error(self, response: WebResponse, text: str | None = None, raise_error: Literal[False] = ...): ...
