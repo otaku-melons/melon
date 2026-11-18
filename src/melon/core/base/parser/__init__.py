@@ -54,18 +54,18 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 
 		self._run_extensions_methods(ParsingStep.BeforeAmending)
 
-		empty_chapters: list[tuple[Branch, BaseChapter]] = []
-
-		for branch in self.title.data.branches:
-			for chapter in branch.chapters:
-				if chapter.is_empty:
-					empty_chapters.append((branch, chapter))
-
-		amended_chapters_count: int = 0
+		empty_chapters: tuple[tuple[Branch, BaseChapter], ...] = self._get_empty_chapters(self.title.data)
 		empty_chapters_count: int = len(empty_chapters)
+		is_paid_chapters_blocked: bool = False
+		amended_chapters_count: int = 0
 
 		for index in range(empty_chapters_count):
 			branch, chapter = empty_chapters[index]
+
+			if chapter.is_paid and is_paid_chapters_blocked:
+				self.portals.chapter_skipped(chapter)
+				continue
+
 			message: str | None = self._amend(branch, chapter)
 			progress: tuple[int, int] = (index + 1, empty_chapters_count)
 
@@ -75,6 +75,12 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 
 				if self._images_level is ImagesLevel.ALL:
 					self._download_images(chapter.images, subdir = str(chapter.id))
+
+				continue
+
+			if chapter.is_paid:
+				self.portals.printer.debug("Paid chapters blocked. Will be skipped.")
+				is_paid_chapters_blocked = True
 
 		self.portals.printer.templates.parsing.amending_end(amended_chapters_count)
 
@@ -316,6 +322,26 @@ class BaseParser[SO: "BaseSourceOperator", CSM: "BaseModel", T: "BaseTitleContro
 		"""
 
 		pass
+
+	def _get_empty_chapters(self, title_data: "BaseTitleData") -> tuple[tuple[Branch, "BaseChapter"], ...]:
+		"""
+		Get empty chapters.
+
+		Args:
+			title_data (BaseTitleData): Title data.
+
+		Returns:
+			tuple[tuple[Branch, BaseChapter], ...]: Empty chapters data.
+		"""
+
+		empty_chapters: list[tuple[Branch, BaseChapter]] = []
+
+		for branch in title_data.branches:
+			for chapter in branch.chapters:
+				if chapter.is_empty:
+					empty_chapters.append((branch, chapter))
+
+		return tuple(empty_chapters)
 
 	@abstractmethod
 	def _parse(self):
