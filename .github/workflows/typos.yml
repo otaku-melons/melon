@@ -6,11 +6,5 @@ permissions:
 on: [push, pull_request]
 
 jobs:
-  spelling:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v7
-
-    - name: Spell check repo
-      uses: crate-ci/typos@v1
+  call-workflow:
+    uses: otaku-melons/.github/.github/workflows/typos.yml@main

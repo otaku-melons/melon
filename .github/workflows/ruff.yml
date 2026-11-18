@@ -14,21 +14,5 @@ on:
       - ruff.toml
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v10.3.3
-        with:
-          enable-cache: true
-          python-version: "3.14"
-
-      - name: Install dependencies
-        run: uv sync --all-extras --all-groups
-
-      - name: Run Ruff
-        run: uv run ruff check .
-        
+  call-workflow:
+    uses: otaku-melons/.github/.github/workflows/ruff.yml@main
