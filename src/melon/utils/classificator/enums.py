@@ -8,7 +8,7 @@ class Case(Enum):
 	up = "up"
 	title = "title"
 
-class ClassificatorType(Enum):
+class AttributeType(Enum):
 	"""Classificator type."""
 
 	franchise = "franchises"

@@ -9,13 +9,15 @@ from dublib.validators import ValidableType
 from .....core import exceptions
 from .....core.base.parser.enums import ContentType, ImagesLevel
 from .....core.system_objects.printer.templates.parsing import ParsingStatistics
-# from .....utils.classificator import ClassificatorsProcessor
+from .....utils.classificator import AttributesClassificator
 from ....base.templates import T_ForceModeRequired, T_SingleParserRequired
 from .._base import CommandProcessorTemplate
 from . import targets
 from .enums import ParsingSignal
 
 if TYPE_CHECKING:
+	from pathlib import Path
+
 	from dublib.cli.terminalyzer import CommandEntity, CommandModel
 
 	from .....core.base.formats.base_format.controller import BaseTitleController
@@ -39,6 +41,12 @@ class Parameters(T_ForceModeRequired, T_SingleParserRequired):
 
 class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	"""Command processor."""
+
+	@property
+	def classificator(self) -> AttributesClassificator | None:
+		"""Attributes classificator."""
+
+		return self.__classificator
 
 	@override
 	def _build_model(self, model: "CommandModel") -> "CommandModel":
@@ -64,7 +72,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		self._add_force_mode_flag()
 
 		model.base.add_flag("-no-amend", description = "Disable chapters content amending.")
-		model.base.add_flag("-no-classificator", description = "Disable classificators processing scripts.")
+		model.base.add_flag("-no-classificator", description = "Disable title attributes classificator.")
 		model.base.add_flag("-no-cold-save", description = "Disable saving if local file does't exists.")
 		model.base.add_flag("-sort", description = "Enable chapters sorting after parsing.")
 
@@ -119,7 +127,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 	def _post_init(self):
 		"""Execute after instance initialization."""
 
-		# self.__classificator = Classificator()
+		self.__classificator: AttributesClassificator | None = None
 
 	@override
 	def _process(self, parameters: Parameters) -> bool | None:
@@ -144,6 +152,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			self.printer.error("No slugs for parsing.")
 			return False
 
+		self.__initialize_classificator(parameters)
 		source_operator = self._launch_source_operator(parameters.required_parser)
 		statistics = self.__parse_slugs(parameters, source_operator, slugs, start_index)
 		self.printer.templates.parsing.summary(statistics)
@@ -175,6 +184,26 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			if target.is_used: return target
 
 		raise exceptions.parsing.ParsingError("Unable determine parsing target.")
+
+	def __initialize_classificator(self, parameters: Parameters):
+		"""
+		Initialize attributes classificator.
+
+		Args:
+			parameters (Parameters): Required by command parameters.
+		"""
+
+		if not parameters.is_classificator_enabled:
+			return
+
+		script_entry_point: Path = self.system_objects.options.CONFIGS_DIR / parameters.required_parser.name / "classificator" / "main.mcs"
+
+		if not script_entry_point.exists():
+			self.printer.debug("No classification script found.")
+			return
+
+		self.__classificator = AttributesClassificator(self.system_objects, script_entry_point)
+		self.__classificator.load()
 
 	def __parse_slugs(self, parameters: Parameters, source_operator: "BaseSourceOperator", slugs: Sequence[str], start_index: int) -> ParsingStatistics:
 		"""
@@ -253,6 +282,10 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			parser.parse()
 			self.printer.emit(f"Title ID: [b]{title.data.id}[/b].")
 
+			if self.classificator:
+				self.classificator.process_title(title.data)
+				self.printer.emit("Attributes classified.")
+
 			if not parameters.force_mode:
 				MergedChaptersCount = title.merge()
 				if MergedChaptersCount: self.printer.emit(f"Merged {MergedChaptersCount} chapters.")
@@ -274,6 +307,10 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		except (JSONDecodeError, exceptions.parsers.UnsupportedFormatError):
 			self.printer.error("Unsupported JSON format or decoding error.")
+			return ParsingSignal.Error
+
+		except exceptions.utils.classificator.ClassificationError as exception:
+			self.printer.error(str(exception), origin = "classificator")
 			return ParsingSignal.Error
 
 		except Exception:

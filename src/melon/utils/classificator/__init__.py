@@ -4,10 +4,12 @@ from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from dublib.functions.data.dictionary import deep_merge
 from dublib.functions.filesystem import json, text
 
 from ...core import exceptions
-from .enums import Case, ClassificatorType, Directive
+from ...core.base.formats.base_format.person import Person
+from .enums import AttributeType, Case, Directive
 from .structs import (
 	ExecutableLine,
 	Operation,
@@ -17,30 +19,31 @@ from .structs import (
 )
 
 if TYPE_CHECKING:
+	from ...core.base.formats.base_format.data import BaseTitleData
 	from ...core.system_objects import SystemObjects
 
-class ClassificatorsProcessor:
-	"""Classificators processor."""
+class AttributesClassificator:
+	"""Attributes classificator."""
 
 	def __init__(self, system_objects: "SystemObjects", entry_point: PathLike[str] | str):
 		"""
-		Classificators processor.
+		Attributes classificator.
 
 		Args:
 			system_objects (system_objects): System objects collection.
 			entry_point (PathLike[str] | str): Classificators processing script entry point.
+
+		Raises:
+			FileNotFoundError: Script entry point not found.
 		"""
 
 		self.__system_objects: SystemObjects = system_objects
 		self.__entry_point: Path = Path(entry_point)
 
 		self.__operations: tuple[Operation, ...] = ()
-		self.__register: dict[ClassificatorType, tuple[str, ...]] = {}
+		self.__register: dict[AttributeType, tuple[str, ...]] = {}
 
 		self.__check_entry_point()
-
-		if self.__system_objects.options.REGISTER:
-			self.load_register(self.__system_objects.options.REGISTER)
 
 	def classify(self, target: str, ignore_case: bool = False) -> ProcessingResult:
 		"""
@@ -64,8 +67,6 @@ class ClassificatorsProcessor:
 			return ProcessingResult()
 
 		name: str | None = target_operation.process(target)
-		is_renamed: bool | None = not target == name
-		if target_operation.delete: is_renamed = None
 
 		return ProcessingResult(
 			is_operation_found = True,
@@ -73,12 +74,11 @@ class ClassificatorsProcessor:
 			name = name,
 			type = target_operation.type,
 			delete = target_operation.delete,
-			is_renamed = is_renamed,
 		)
 
 	def load(self) -> tuple[ScriptValidationErrorData, ...] | None:
 		"""
-		Load and validate script.  Also clear exists operations data.
+		Load and validate script. Also clear exists operations data.
 
 		Returns:
 			tuple[ScriptValidationErrorData, ...] | None: Script validation errors or `None` if no errors.
@@ -94,7 +94,7 @@ class ClassificatorsProcessor:
 
 	def load_register(self, file: PathLike[str] | str):
 		"""
-		Loag classificators register. Also clear exists register data.
+		Load attributes register. Also clear exists register data.
 
 		Args:
 			file (PathLike[str] | str): Path to register file.
@@ -103,8 +103,29 @@ class ClassificatorsProcessor:
 		data: dict[str, list[str]] = json.read(file)
 		self.__register.clear()
 
-		for classificator_type in ClassificatorType:
-			self.__register[classificator_type] = tuple(data[classificator_type.value])
+		for attribute_type in AttributeType:
+			self.__register[attribute_type] = tuple(data[attribute_type.value])
+
+	def process_title(self, data: "BaseTitleData"):
+		"""
+		Process title attributes.
+
+		Args:
+			title (BaseTitleController[BaseTitleData]): Title controller.
+		"""
+
+		attributes: dict[AttributeType, list[str]] = {}
+
+		deep_merge(attributes, self.__process_title_attributes(data.genres))
+		deep_merge(attributes, self.__process_title_attributes(data.tags))
+
+		data.set_genres(attributes.get(AttributeType.genre, ()))
+		data.set_tags(attributes.get(AttributeType.tag, ()))
+		data.set_franchises(attributes.get(AttributeType.franchise, ()))
+
+		for person_name in attributes.get(AttributeType.person, ()):
+			if not data.find_person(person_name):
+				data.add_person(Person(person_name))
 
 	@property
 	def entry_point(self) -> Path:
@@ -119,7 +140,7 @@ class ClassificatorsProcessor:
 		return self.__operations
 
 	@property
-	def register(self) -> dict[ClassificatorType, tuple[str, ...]]:
+	def register(self) -> dict[AttributeType, tuple[str, ...]]:
 		"""Classificators register."""
 
 		return self.__register.copy()
@@ -309,9 +330,44 @@ class ClassificatorsProcessor:
 		value = self.__extract_directive_values(line)[0]
 
 		try:
-			work_data.current_type = ClassificatorType(value)
+			work_data.current_type = AttributeType(value)
 		except ValueError:
 			raise exceptions.utils.classificator.UnknownDirectiveValueError(Directive.type, value)
+
+	def __process_title_attributes(self, classificators: "Sequence[str]") -> dict[AttributeType, list[str]]:
+		"""
+		Process title classificators.
+
+		Args:
+			classificators (Sequence[str]): Classificators.
+
+		Returns:
+			dict[AttributeType, list[str]]: Processed classificators.
+
+		Raises:
+			exceptions.utils.classificator.ClassificationError: Description.
+		"""
+
+		results: dict[AttributeType, list[str]] = {}
+
+		for classificator in classificators:
+			result = self.classify(classificator, ignore_case = True)
+
+			if result.delete:
+				continue
+
+			if result.is_found_in_register is False:
+				raise exceptions.utils.classificator.ClassificationError(f"Attribute \"{classificator}\" not found in register.")
+
+			if not result.is_operation_found or not result.name:
+				raise exceptions.utils.classificator.ClassificationError(f"Operation not found for attribute: \"{classificator}\".")
+
+			if not result.type:
+				raise exceptions.utils.classificator.ClassificationError(f"Unknown attribute type: \"{classificator}\".")
+
+			results.setdefault(result.type, []).append(result.name)
+
+		return results
 
 	def __read_script_file(self, script_file: Path, entry_point: bool = True) -> list[ExecutableLine]:
 		"""
@@ -357,12 +413,12 @@ class ClassificatorsProcessor:
 
 		return executable_lines
 
-	def __search_in_register(self, classificator_type: ClassificatorType | None, name: str | None) -> bool | None:
+	def __search_in_register(self, classificator_type: AttributeType | None, name: str | None) -> bool | None:
 		"""
 		Search classificator in register.
 
 		Args:
-			classificator_type (ClassificatorType | None): Classificator type.
+			classificator_type (AttributeType | None): Classificator type.
 			name (str | None): Classificator name.
 
 		Returns:
@@ -375,7 +431,7 @@ class ClassificatorsProcessor:
 		if classificator_type:
 			return name in self.__register[classificator_type]
 
-		for classificator_type in ClassificatorType:
+		for classificator_type in AttributeType:
 			if name in self.__register[classificator_type]:
 				return True
 

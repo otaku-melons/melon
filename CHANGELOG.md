@@ -11,11 +11,12 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 
 ### ✨ Added
 - Parsers and extensions configs separated by directories.
-- Classificators register.
-- Image can be renamed in struct.
+- Title attributes register.
 - Register environment option.
+- Image can be renamed in struct.
 - Parsing error portal.
 - Paid chapters blocker in base parser.
+- Title attributes classification after parsing.
 
 ### 🎨 Changed
 - Util `ClassificatorsProcessor` refactored to work with parsers scripts instead global.
@@ -32,6 +33,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 
 ### 🐛 Fixed
 - Identical footnotes ID.
+- Some sequences in title data dictionary not cleared before setters called.
 
 ## [1.0.0-rc.7] - 2026-11-07
 

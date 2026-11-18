@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, override
 
 from dublib.validators import ValidableType
 
-from ....utils.classificator import ClassificatorsProcessor, ProcessingResult
+from ....utils.classificator import AttributesClassificator, ProcessingResult
 from ...base.templates import T_SingleParserRequired
 from ..melon._base import CommandProcessorTemplate
 
@@ -93,7 +93,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			bool | None: `False` if processing failed.
 		"""
 
-		classificator: ClassificatorsProcessor = self.__initialize_classificators_processor(parameters)
+		classificator: AttributesClassificator = self.__initialize_classificator(parameters)
 		self.__print_register_loading_result(parameters)
 		classification_result = classificator.classify(parameters.target, ignore_case = parameters.is_ignore_case)
 
@@ -102,23 +102,23 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		else:
 			self.__print_result(classification_result)
 
-	def __initialize_classificators_processor(self, parameters: Parameters) -> ClassificatorsProcessor:
+	def __initialize_classificator(self, parameters: Parameters) -> AttributesClassificator:
 		"""
-		Initialize classificators processor.
+		Initialize attributes classificator.
 
 		Args:
 			parameters (Parameters): Required by command parameters.
 
 		Returns:
-			ClassificatorsProcessor: Classificators processor.
+			AttributesClassificator: Attributes classificator.
 		"""
 
 		entry_point: Path = self.system_objects.options.CONFIGS_DIR / parameters.required_parser.name / "classificator" / "main.mcs"
 
-		try:
-			classificator = ClassificatorsProcessor(self.system_objects, entry_point)
-		except FileNotFoundError as exception_data:
-			self.printer.critical(f"Script entry point \"{exception_data}\" doesn't exists.")
+		if not entry_point.exists():
+			self.printer.critical(f"Script entry point not found: \"{entry_point}\".")
+
+		classificator = AttributesClassificator(self.system_objects, entry_point)
 
 		if validation_errors := classificator.load():
 			for error_data in validation_errors:
@@ -126,6 +126,9 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 				self.printer.error(f"{error_data.message}", origin = origin)
 
 			self.printer.critical("Script failure due to validation errors.")
+
+		if parameters.register:
+			classificator.load_register(parameters.register)
 
 		return classificator
 
@@ -136,6 +139,9 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		Args:
 			parameters (Parameters): Required by command parameters.
 		"""
+
+		if parameters.is_output_json:
+			return
 
 		is_key: bool = bool(parameters.register)
 		is_environment: bool = bool(self.system_objects.options.REGISTER)
@@ -150,29 +156,24 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 	def __print_result(self, result: "ProcessingResult"):
 		"""
-		Print result.
+		Print attribute classification result.
 
 		Args:
-			result (ProcessingResult): Classificator processing result.
+			result (ProcessingResult): Attribute classification result.
 		"""
 
 		if not result.is_operation_found:
 			self.printer.error("Operation not found.")
 			return
 
-		if result.is_found_in_register is not None:
-			self.printer.debug("Register checked.")
-
 		if result.is_found_in_register is False:
-			self.printer.error("Classificator not found in gerister.")
+			self.printer.error("Attribute not found in register.")
 			return
 
 		if result.delete:
-			self.printer.emit("Classificator must be deleted.")
+			self.printer.emit("Attribute must be deleted.")
 			return
 
 		self.printer.emit(f"Name: [i]{result.name}[/i]")
-		is_renamed: str = str(result.is_renamed).lower()
-		self.printer.emit(f"Renamed: {is_renamed}")
 		classificator_type :str = result.type.name.lower() if result.type else "[red]null[/red]"
 		self.printer.emit(f"Type: {classificator_type}")

@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from .enums import Case, ClassificatorType, Directive
+from .enums import AttributeType, Case, Directive
 
 @dataclass
 class WorkData:
 	"""Script parsing process data."""
 
-	current_type: ClassificatorType | None = None
+	current_type: AttributeType | None = None
 	current_case: Case | None = None
 	is_delete: bool = False
 
@@ -18,9 +18,8 @@ class ProcessingResult:
 	is_operation_found: bool = False
 	is_found_in_register: bool | None = None
 	name: str | None = None
-	type: ClassificatorType | None = None
+	type: AttributeType | None = None
 	delete: bool | None = None
-	is_renamed: bool | None = None
 
 	def to_dict(self) -> dict:
 		"""
@@ -36,7 +35,6 @@ class ProcessingResult:
 			"name": self.name,
 			"type": self.type.name.lower() if self.type else None,
 			"delete": self.delete,
-			"is_renamed": self.is_renamed,
 		}
 
 @dataclass(frozen = True)
@@ -74,7 +72,7 @@ class Operation:
 	"""Classificator processing operation."""
 
 	name: str
-	type: ClassificatorType | None
+	type: AttributeType | None
 	delete: bool | None
 	rename: str | None
 	case: Case | None

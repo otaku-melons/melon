@@ -281,47 +281,52 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 	def set_covers(self, covers: "Sequence[ImageData]"):
 		"""
-		Задаёт последовательность обложек.
+		Set covers.
 
-		:param covers: Последовательность обложек.
-		:type covers: Sequence[Cover]
-		:raises ValueError: Выбрасывается при отсутствии ссылки в данных обложки.
+		Args:
+			covers (Sequence[ImageData]): Covers.
 		"""
 
-		for CurrentCover in covers:
-			self.add_cover(CurrentCover)
+		self._clear_root_list("covers")
+
+		for cover in covers:
+			self.add_cover(cover)
 
 	def set_authors(self, authors: "Sequence[str]"):
 		"""
-		Задаёт список авторов.
+		Set authors.
 
-		:param authors: Список авторов.
-		:type authors: Sequence[str]
+		Args:
+			authors (Sequence[str]): Authors.
 		"""
 
-		for Author in authors:
-			self.add_author(Author)
+		self._clear_root_list("authors")
+
+		for author in authors:
+			self.add_author(author)
 
 	def set_genres(self, genres: "Sequence[str]"):
 		"""
-		Задаёт список жанров.
+		Set genres.
 
-		:param genres: Список жанров.
-		:type genres: Sequence[str]
+		Args:
+			genres (Sequence[str]): Genres.
 		"""
 
-		for Genre in genres:
-			self.add_genre(Genre)
+		self._clear_root_list("genres")
+
+		for genre in genres:
+			self.add_genre(genre)
 
 	def set_tags(self, tags: "Sequence[str]"):
 		"""
-		Set new tags and clear exists.
+		Set tags.
 
 		Args:
-			tags (Sequence[str]): New tags.
+			tags (Sequence[str]): Tags.
 		"""
 
-		self._data["tags"] = []
+		self._clear_root_list("tags")
 
 		for tag in tags:
 			self.add_tag(tag)
@@ -678,6 +683,21 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 		for person in self._persons:
 			self._data["persons"].append(person.to_dict(self._title_controller.parser.settings.common.sizing_images))
+
+	def _clear_root_list(self, key: str):
+		"""
+		Clear root list elements.
+
+		Args:
+			key (str): Description.
+		"""
+
+		root_list: Any = self._data.get(key)
+
+		if not isinstance(root_list, list):
+			raise TypeError("Required clearing of non-list value.")
+
+		root_list.clear()
 
 	@abstractmethod
 	def _export_chapter_type(self) -> type[C]:
