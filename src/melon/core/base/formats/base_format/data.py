@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Literal
 
-from dublib.functions.data import to_sequence
+from dublib.functions.data import to_sequence, zerotify
 from dublib.functions.data.dictionary import insert_item
 from dublib.validators import types
 
-from .... import exceptions
 from ....html.elements import Paragraph
 from ...structs.image import ImageData, ImageType
 from .branch import Branch
@@ -47,122 +46,113 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 	def add_another_name(self, another_name: str):
 		"""
-		Добавляет альтернативное название.
+		Add another name.
 
-		:param another_name: Название.
-		:type another_name: str
+		Args:
+			another_name (str): Another name.
 		"""
 
 		another_name = another_name.strip()
-		if another_name != self._data["localized_name"] and another_name != self._data["eng_name"] and another_name and another_name not in self._data["another_names"]:
-			self._data["another_names"].append(another_name)
+
+		if another_name == self.localized_name or another_name == self.eng_name:
+			return
+
+		self._add_root_list_item("another_names", another_name)
 
 	def add_cover(self, cover: ImageData):
 		"""
-		Добавляет обложку.
+		Add cover.
 
-		:param cover: Обложка.
-		:type cover: ImageData
-		:raises ValueError: Отсутствует ссылка на обложку.
+		Args:
+			cover (ImageData): Cover image data.
 		"""
 
-		if not cover.link:
-			raise ValueError("Cover must have a link.")
-
-		for CurrentCover in self._covers:
-			if CurrentCover.link == cover.link:
-				return
+		if self.find_cover(cover.link):
+			return
 
 		self._covers.append(cover)
 
 	def add_author(self, author: str):
 		"""
-		Добавляет автора.
+		Add author.
 
-		:param author: Имя автора.
-		:type author: str
+		Args:
+			author (str): Author.
 		"""
 
-		author = author.strip()
-		if author and author not in self._data["authors"]:
-			self._data["authors"].append(author)
+		self._add_root_list_item("authors", author)
 
 	def add_genre(self, genre: str):
 		"""
-		Добавляет жанр.
+		Add genre.
 
-		:param genre: Жанр.
-		:type genre: str
+		Args:
+			genre (str): Genre.
 		"""
 
-		genre = genre.strip()
-		if genre not in self._data["genres"]:
-			self._data["genres"].append(genre)
+		self._add_root_list_item("genres", genre)
 
 	def add_tag(self, tag: str):
 		"""
-		Добавляет тег.
+		Add tag.
 
-		:param tag: Тег.
-		:type tag: str
+		Args:
+			tag (str): Tag.
 		"""
 
-		tag = tag.strip()
-		if tag not in self._data["tags"]:
-			self._data["tags"].append(tag)
+		self._add_root_list_item("tags", tag)
 
 	def add_franchise(self, franchise: str):
 		"""
-		Добавляет франшизу.
+		Add franchise.
 
-		:param franchise: Франшиза.
-		:type franchise: str
+		Args:
+			franchise (str): Franchise.
 		"""
 
-		franchise = franchise.strip()
-		if franchise and franchise not in self._data["franchises"]:
-			self._data["franchises"].append(franchise)
+		self._add_root_list_item("franchises", franchise)
 
-	def add_person(self, person: Person):
+	def add_person(self, person: Person, unique: bool = True):
 		"""
-		Добавляет персонажа.
+		Add person.
 
-		:param person: Персонаж.
-		:type person: Person
+		Args:
+			person (Person): Person.
+			unique (bool): Condition: is person name must be unique.
 		"""
 
-		for CurrentPerson in self._persons:
-			if CurrentPerson.name == person.name:
-				return
+		if unique and self.find_person(person.name):
+			return
 
 		self._persons.append(person)
 
 	def add_branch(self, branch: Branch) -> int:
 		"""
-		Добавляет ветвь.
+		Add branch.
 
-		:param branch: Ветвь контента. Если ветвь с таким ID уже существует, будут добавлены только отсутствующие главы.
-		:type branch: Branch
-		:return: Количество добавленных глав.
-		:rtype: int
-		:raises ParsingError: Ветвь не имеет ID или ветвь с таким ID уже добавлена в тайтл.
+		Args:
+			branch (Branch): Branch.
+
+		Returns:
+			int: Added chapters count.
 		"""
 
-		AddedCount = branch.chapters_count
+		if branch.id in self._branches:
+			return self._merge_branch(branch)
 
-		if not branch.id:
-			exceptions.parsing.ParsingError("Branch must have ID.")
+		self._branches[branch.id] = branch
+		self._branches = {
+			element.id: element
+			for element in sorted(
+				self._branches.values(),
+				key = lambda Value: Value.chapters_count, reverse = True,
+			)
+		}
 
-		if branch.id in self._branches.keys():
-			AddedCount = self._merge_branch(branch)
-		else:
-			self._branches[branch.id] = branch
-			self._branches = {CurrentBranch.id: CurrentBranch for CurrentBranch in sorted(self._branches.values(), key = lambda Value: Value.chapters_count, reverse = True)}
-
-		return AddedCount
+		return branch.chapters_count
 
 	def clear_covers(self):
-		"""Удаляет данные обо всех обложках."""
+		"""Clear covers."""
 
 		self._covers.clear()
 
@@ -270,14 +260,16 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 	def set_another_names(self, another_names: "Sequence[str]"):
 		"""
-		Задаёт набор альтернативных названий.
+		Set another names.
 
-		:param another_names: Набор альтернативных названий.
-		:type another_names: Sequence[str]
+		Args:
+			another_names (Sequence[str]): Another names.
 		"""
 
-		for Name in another_names:
-			self.add_another_name(Name)
+		self._clear_root_list("another_names")
+
+		for name in another_names:
+			self.add_another_name(name)
 
 	def set_covers(self, covers: "Sequence[ImageData]"):
 		"""
@@ -333,25 +325,29 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 	def set_franchises(self, franchises: "Sequence[str]"):
 		"""
-		Задаёт список франшиз.
+		Set franchises.
 
-		:param franchises: Список франшиз.
-		:type franchises: Sequence[str]
+		Args:
+			franchises (Sequence[str]): Franchises.
 		"""
 
-		for Franchise in franchises:
-			self.add_franchise(Franchise)
+		self._clear_root_list("franchises")
+
+		for franchise in franchises:
+			self.add_franchise(franchise)
 
 	def set_persons(self, persons: "Sequence[Person]"):
 		"""
-		Задаёт список персонажей.
+		Set persons.
 
-		:param persons: Список персонажей.
-		:type persons: Sequence[Person]
+		Args:
+			persons (Sequence[Person]): Persons.
 		"""
 
-		for CurrentPerson in persons:
-			self.add_person(CurrentPerson)
+		self._clear_root_list("persons")
+
+		for person in persons:
+			self.add_person(person)
 
 	def set_extra_data(self, key: str, data: Any, target_key: str | None = None):
 		"""
@@ -375,7 +371,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 	def set_branches(self, branches: "Sequence[Branch]"):
 		"""
-		Set new branches and clear all exists.
+		Set branches.
 
 		Args:
 			branches (Sequence[Branch]): Branches.
@@ -386,26 +382,25 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 		for branch in branches:
 			self.add_branch(branch)
 
-	def set_domain(self, domain: str | None):
+	def set_domain(self, domain: str):
 		"""
-		Задаёт домен источника.
+		Set source domain.
 
-		:param site: Домен источника.
-		:type site: str | None
-		:raises ValueError: Некорректный домен.
+		Args:
+			domain (str): Source domain.
+
+		Raises:
+			ValidationError: Incorrect domain.
 		"""
 
-		if domain and not types.Domain.validate(domain):
-			raise ValueError("Incorrect domain.")
+		self._data["domain"] = types.Domain.parse(domain)
 
-		self._data["domain"] = domain
-
-	def set_id(self, title_id: int | None):
+	def set_id(self, title_id: int):
 		"""
-		Задаёт ID тайтла.
+		Set ID.
 
-		:param id: ID тайтла.
-		:type id: int | None
+		Args:
+			title_id (int): Title ID.
 		"""
 
 		self._data["id"] = title_id
@@ -425,30 +420,36 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 	def set_localized_name(self, localized_name: str | None):
 		"""
-		Задаёт локализованное название тайтла.
+		Set localized name.
 
-		:param localized_name: Локализованное название.
-		:type localized_name: str | None
+		Args:
+			localized_name (str | None): Localized name.
 		"""
 
-		self._data["localized_name"] = localized_name.strip() if localized_name else None
+		if localized_name:
+			localized_name = zerotify(localized_name.strip())
+
+		self._data["localized_name"] = localized_name
 
 	def set_eng_name(self, eng_name: str | None):
 		"""
-		Задаёт название на английском языке.
+		Set english name.
 
-		:param eng_name: Название на английском языке.
-		:type eng_name: str | None
+		Args:
+			eng_name (str | None): English name.
 		"""
 
-		self._data["eng_name"] = eng_name.strip() if eng_name else None
+		if eng_name:
+			eng_name = zerotify(eng_name.strip())
+
+		self._data["eng_name"] = eng_name
 
 	def set_publication_year(self, publication_year: int | None):
 		"""
-		Задаёт год публикации тайтла.
+		Set publication year.
 
-		:param publication_year: Год публикации тайтла.
-		:type publication_year: int | None
+		Args:
+			publication_year (int | None): Publication year.
 		"""
 
 		self._data["publication_year"] = publication_year
@@ -468,184 +469,215 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 	def set_age_limit(self, age_limit: int | None):
 		"""
-		Задаёт возрастной рейтинг.
+		Set age limit.
 
-		:param age_limit: Возрастной рейтинг.
-		:type age_limit: int | None
+		Args:
+			age_limit (int | None): Age limit.
+
+		Raises:
+			ValueError: Age limit must be 21 or less.
 		"""
+
+		if age_limit and age_limit > 21:
+			raise ValueError("Age limit must be 21 or less.")
 
 		self._data["age_limit"] = age_limit
 
 	def set_slug(self, slug: str):
 		"""
-		Изменяет алиас тайтла. Если алиас используется в качестве имени описательного файла, последний будет переименован соответственно.
+		Set slug.
 
-		:param slug: Алиас тайтла.
-		:type slug: str
+		Args:
+			slug (str): Slug.
 		"""
-
-		if slug == self.slug:
-			return
 
 		self._data["slug"] = slug
 
 	def set_status(self, status: Status | None):
 		"""
-		Задаёт статус тайтла.
+		Set status.
 
-		:param status: Статус тайтла.
-		:type status: Status | None
+		Args:
+			status (Status | None): Title status.
 		"""
 
 		self._data["status"] = status.value if status else None
 
 	def set_is_licensed(self, is_licensed: bool | None):
 		"""
-		Задаёт состояние: лицензирован ли тайтл в источнике.
+		Set is licensed status.
 
-		:param is_licensed: Состояние: лицензирован ли тайтл в источнике.
-		:type is_licensed: bool | None
+		Args:
+			is_licensed (bool | None): Condition: is title licensed.
 		"""
 
 		self._data["is_licensed"] = is_licensed
 
-	def to_dict(self, sorting: bool = True) -> dict[str, Any]:
+	def to_dict(self, sorting: bool) -> dict[str, Any]:
 		"""
-		Возвращает словарное представление объекта.
-		:param sorting: Указывает, нужно ли провести сортировку глав на основе их нумерации.
-		:type sorting: bool
+		Get dictionary representation of data.
 
-		:return: Словарное представление объекта.
-		:rtype: dict[str, Any]
+		Args:
+			sorting (bool): Condition: is chapters sorting bu numeration required.
+
+		Returns:
+			dict[str, Any]: Dictionary representation of data.
 		"""
 
 		self._build_description()
 		self._build_covers()
 		self._build_persons()
 		self._update_branches_info()
-		self._build_content(sorting = sorting)
+		self._build_content(sorting)
 
 		return self._data.copy()
 
 	@property
 	def format(self) -> Literal["melon-manga", "melon-ranobe"]:
-		"""Формат данных."""
+		"""JSON format."""
 
 		return self._data["format"]
 
 	@property
 	def domain(self) -> str | None:
-		"""Домен источника."""
+		"""Source domain."""
 
 		return self._data["domain"]
 
 	@property
 	def id(self) -> int | None:
-		"""Целочисленный уникальный идентификатор тайтла."""
+		"""Unique ID."""
 
 		return self._data["id"]
 
 	@property
 	def slug(self) -> str:
-		"""Алиас."""
+		"""Slug."""
 
 		return self._data["slug"]
 
 	@property
 	def content_language(self) -> str | None:
-		"""Код языка контента по стандарту ISO 639-3."""
+		"""Content language code by ISO 639-3."""
 
 		return self._data["content_language"]
 
 	@property
 	def localized_name(self) -> str | None:
-		"""Локализованное название."""
+		"""Localized name."""
 
 		return self._data["localized_name"]
 
 	@property
 	def eng_name(self) -> str | None:
-		"""Название на английском."""
+		"""English name."""
 
 		return self._data["eng_name"]
 
 	@property
 	def another_names(self) -> tuple[str, ...]:
-		"""Последовательность альтернативных названий."""
+		"""Another names."""
 
 		return tuple(self._data["another_names"])
 
 	@property
 	def covers(self) -> tuple[ImageData, ...]:
-		"""Последовательность данных обложек."""
+		"""Covers images data."""
 
 		return tuple(self._covers)
 
 	@property
 	def authors(self) -> tuple[str, ...]:
-		"""Последовательность авторов."""
+		"""Authors."""
 
 		return tuple(self._data["authors"])
 
 	@property
 	def publication_year(self) -> int | None:
-		"""Год публикации."""
+		"""Publication year."""
 
 		return self._data["publication_year"]
 
 	@property
 	def description(self) -> tuple["Paragraph", ...]:
-		"""Description elements."""
+		"""Description paragraphs."""
 
 		return self._description
 
 	@property
 	def age_limit(self) -> int | None:
-		"""Возрастное ограничение."""
+		"""Age limit."""
 
 		return self._data["age_limit"]
 
 	@property
 	def genres(self) -> tuple[str, ...]:
-		"""Последовательность жанров."""
+		"""Genres."""
 
 		return tuple(self._data["genres"])
 
 	@property
 	def tags(self) -> tuple[str, ...]:
-		"""Последовательность тегов."""
+		"""Tags."""
 
 		return tuple(self._data["tags"])
 
 	@property
 	def franchises(self) -> tuple[str, ...]:
-		"""Последовательность франшиз."""
+		"""Franchises."""
 
 		return tuple(self._data["franchises"])
 
 	@property
 	def perons(self) -> tuple[Person, ...]:
-		"""Последовательность персонажей."""
+		"""Persons."""
 
 		return tuple(self._persons)
 
 	@property
 	def status(self) -> Status | None:
-		"""Статус тайтла."""
+		"""Status."""
 
 		return self._data["status"]
 
 	@property
 	def is_licensed(self) -> bool | None:
-		"""Состояние: лицензирован ли тайтл на данном ресурсе."""
+		"""Cindition: is title licensed on source."""
 
 		return self._data["is_licensed"]
 
 	@property
 	def branches(self) -> tuple[Branch, ...]:
-		"""Последовательность ветвей тайтла."""
+		"""Branches."""
 
 		return tuple(self._branches.values())
+
+	def _add_root_list_item(self, key: str, item: str):
+		"""
+		Add root list item.
+
+		Args:
+			key (str): List key.
+			item (str): Item.
+
+		Raises:
+			TypeError: Required root non-list value.
+		"""
+
+		item = item.strip()
+
+		if not item:
+			return
+
+		root_list: Any = self._data.get(key)
+
+		if not isinstance(root_list, list):
+			raise TypeError("Required root non-list value.")
+
+		if item in root_list:
+			return
+
+		root_list.append(item)
 
 	def _build_content(self, branch_id: int | None = None, sorting: bool = True):
 		"""
@@ -690,6 +722,9 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 
 		Args:
 			key (str): Description.
+
+		Raises:
+			TypeError: Required clearing of non-list value.
 		"""
 
 		root_list: Any = self._data.get(key)

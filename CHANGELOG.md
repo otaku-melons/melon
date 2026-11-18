@@ -17,6 +17,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Parsing error portal.
 - Paid chapters blocker in base parser.
 - Title attributes classification after parsing.
+- Age limit check (21 or less).
 
 ### 🎨 Changed
 - Util `ClassificatorsProcessor` refactored to work with parsers scripts instead global.
