@@ -160,6 +160,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 		:rtype: SavingResult
 		"""
 
+		self._sort_attributes()
 		data: dict[str, Any] = self._data.to_dict(sorting)
 
 		is_local_file_equal: bool = self._is_local_file_equal(data)
@@ -475,6 +476,17 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 			except (JSONDecodeError, exceptions.parsers.UnsupportedFormatError): pass
 
 		return None
+
+	def _sort_attributes(self):
+		"""Sort title attributes."""
+
+		self._data.set_genres(sorted(self._data.genres))
+		self._data.set_tags(sorted(self._data.tags))
+		self._data.set_franchises(sorted(self._data.franchises))
+
+		self._data.set_persons(
+			sorted(self._data.perons, key = lambda person: person.name),
+		)
 
 	def _update_journal(self):
 		"""Обновляет кэш пары алиас-ID."""

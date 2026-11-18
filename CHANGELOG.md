@@ -16,8 +16,9 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Image can be renamed in struct.
 - Parsing error portal.
 - Paid chapters blocker in base parser.
-- Title attributes classification after parsing.
+- Title attributes now classified after parsing.
 - Age limit check (21 or less).
+- Sorting title attributes.s
 
 ### 🎨 Changed
 - Util `ClassificatorsProcessor` refactored to work with parsers scripts instead global.

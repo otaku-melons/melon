@@ -344,7 +344,7 @@ class BaseTitleData[C: "BaseChapter"](ABC):
 			persons (Sequence[Person]): Persons.
 		"""
 
-		self._clear_root_list("persons")
+		self._persons.clear()
 
 		for person in persons:
 			self.add_person(person)
