@@ -6,6 +6,7 @@ from pick import Picker
 from dublib.functions.data import to_sequence
 
 from ...base import BaseCommandProcessor
+from ...base.structs import ProcessorOptions
 from ...base.templates import T_SingleParserRequired
 
 if TYPE_CHECKING:
@@ -53,9 +54,94 @@ class CustomPicker(Picker):
 class CommandProcessor(BaseCommandProcessor[Parameters]):
 	"""Command processor."""
 
-	#==========================================================================================#
-	# >>>>> PRIVATE METHODS <<<<< #
-	#==========================================================================================#
+	@override
+	def _build_model(self, model: "CommandModel") -> "CommandModel":
+		"""
+		Build commands model.
+
+		Args:
+			model (CommandModel): Commands model.
+
+		Returns:
+			CommandModel: Commands model.
+		"""
+
+		self._add_parser_position()
+
+		position = model.create_position("OPERATION", "Switch extension activation status.")
+		position.add_key("--enable", description = "Enable extension.")
+		position.add_key("--disable", description = "Disable extension.")
+
+		return model
+
+	@override
+	def _export_description(self) -> str:
+		"""
+		Export command description.
+
+		Returns:
+			str: Description.
+		"""
+
+		return "Manage parser extensions activation states. By default run TUI."
+
+	@override
+	def _export_options(self) -> ProcessorOptions:
+		"""
+		Export processor options.
+
+		Returns:
+			ProcessorOptions: Processor options.
+		"""
+
+		return ProcessorOptions(use_timer = False, check_parsers_dependencies = False)
+
+	@override
+	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> Parameters:
+		"""
+		Parse command parameters.
+
+		Args:
+			entity (CommandEntity): Command entity.
+			prepared_data (PreparedData): Prepared from templates data.
+
+		Returns:
+			PARAMS: Command parameters.
+		"""
+
+		operation: tuple[str, bool] | None = None
+
+		value: str | None = entity.get_position_value("OPERATION", expected_type = str)
+		if value:
+			state: bool = entity.check_key("--enable")
+			operation = (value, state)
+
+		return Parameters(
+			required_parser =  prepared_data.required_parsers[0],
+			operation = operation,
+		)
+
+	@override
+	def _process(self, parameters: Parameters) -> bool | None:
+		"""
+		Process command.
+
+		Args:
+			parameters (Parameters): Required by command parameters.
+
+		Returns:
+			bool | None: `False` if processing failed.
+		"""
+
+		operation: tuple[str, bool] | None = parameters.operation
+
+		if operation:
+			if parameters.required_parser.extensions.set_state(*operation):
+				self.printer.emit("Enabled." if operation[1] else "Disabled.")
+			else:
+				self.printer.emit("No changes.")
+		else:
+			self.__run_tui(parameters.required_parser.extensions)
 
 	def __run_tui(self, extensions_manager: "ExtensionsManager"):
 		"""
@@ -108,85 +194,3 @@ class CommandProcessor(BaseCommandProcessor[Parameters]):
 			self.printer.emit(f"Enabled: {enabled_count}. Disabled: {disabled_count}.")
 		else:
 			self.printer.emit("No changes.")
-
-	#==========================================================================================#
-	# >>>>> OVERRIDABLE METHODS <<<<< #
-	#==========================================================================================#
-
-	@override
-	def _build_model(self, model: "CommandModel") -> "CommandModel":
-		"""
-		Build commands model.
-
-		Args:
-			model (CommandModel): Commands model.
-
-		Returns:
-			CommandModel: Commands model.
-		"""
-
-		self._add_parser_position()
-
-		position = model.create_position("OPERATION", "Switch extension activation status.")
-		position.add_key("--enable", description = "Enable extension.")
-		position.add_key("--disable", description = "Disable extension.")
-
-		return model
-
-	@override
-	def _export_description(self) -> str:
-		"""
-		Export command description.
-
-		Returns:
-			str: Description.
-		"""
-
-		return "Manage parser extensions activation states. By default run TUI."
-
-	@override
-	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> Parameters:
-		"""
-		Parse command parameters.
-
-		Args:
-			entity (CommandEntity): Command entity.
-			prepared_data (PreparedData): Prepared from templates data.
-
-		Returns:
-			PARAMS: Command parameters.
-		"""
-
-		operation: tuple[str, bool] | None = None
-
-		value: str | None = entity.get_position_value("OPERATION", expected_type = str)
-		if value:
-			state: bool = entity.check_key("--enable")
-			operation = (value, state)
-
-		return Parameters(
-			required_parser =  prepared_data.required_parsers[0],
-			operation = operation,
-		)
-
-	@override
-	def _process(self, parameters: Parameters) -> bool | None:
-		"""
-		Process command.
-
-		Args:
-			parameters (Parameters): Required by command parameters.
-
-		Returns:
-			bool | None: `False` if processing failed.
-		"""
-
-		operation: tuple[str, bool] | None = parameters.operation
-
-		if operation:
-			if parameters.required_parser.extensions.set_state(*operation):
-				self.printer.emit("Enabled." if operation[1] else "Disabled.")
-			else:
-				self.printer.emit("No changes.")
-		else:
-			self.__run_tui(parameters.required_parser.extensions)
