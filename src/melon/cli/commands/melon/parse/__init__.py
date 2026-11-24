@@ -202,7 +202,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			self.printer.debug("No classification script found.")
 			return
 
-		self.__classificator = AttributesClassificator(self.system_objects, script_entry_point)
+		self.__classificator = AttributesClassificator(script_entry_point)
 		self.__classificator.load()
 
 	def __parse_slugs(self, parameters: Parameters, source_operator: "BaseSourceOperator", slugs: Sequence[str], start_index: int) -> ParsingStatistics:

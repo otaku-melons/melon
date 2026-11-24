@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from pathlib import Path
 
 from .enums import AttributeType, Case, Directive
 
@@ -12,36 +11,10 @@ class WorkData:
 	is_delete: bool = False
 
 @dataclass(frozen = True)
-class ProcessingResult:
-	"""Classificator processing result."""
-
-	is_operation_found: bool = False
-	is_found_in_register: bool | None = None
-	name: str | None = None
-	type: AttributeType | None = None
-	delete: bool | None = None
-
-	def to_dict(self) -> dict:
-		"""
-		Generate dictionary representation of data.
-
-		Returns:
-			dict: Dictionary representation of data..
-		"""
-
-		return {
-			"is_operation_found": self.is_operation_found,
-			"is_found_in_register": self.is_found_in_register,
-			"name": self.name,
-			"type": self.type.name.lower() if self.type else None,
-			"delete": self.delete,
-		}
-
-@dataclass(frozen = True)
 class ExecutableLine:
 	"""Script executable line."""
 
-	file: Path
+	module: str
 	is_entry_point: bool
 	number: int
 	value: str
@@ -70,36 +43,35 @@ class ExecutableLine:
 
 @dataclass(frozen = True)
 class Operation:
-	"""Classificator processing operation."""
+	"""Attributes processing operation."""
 
-	name: str
+	value: str
+
 	type: AttributeType | None
-	delete: bool | None
-	rename: str | None
+	is_deleted: bool
+	is_renamed: bool
 	case: Case | None
 
-	def process(self, value: str) -> str | None:
+	result: str | None
+	in_register: bool | None
+
+	def to_dict(self) -> dict:
 		"""
-		Обрабатывает значение.
+		Generate dictionary representation of data.
 
-		:param value: Обрабатываемое значение.
-		:type value: str
-		:return: Результат обработки.
-		:rtype: str | None
+		Returns:
+			dict: Dictionary representation of data..
 		"""
 
-		if self.delete:
-			return None
-
-		if self.rename:
-			return self.rename
-
-		match self.case:
-			case Case.low: return value.lower()
-			case Case.title: return value.title()
-			case Case.up: return value.upper()
-
-		return value
+		return {
+			"value": self.value,
+			"type": self.type.name.lower() if self.type else None,
+			"is_deleted": self.is_deleted,
+			"is_renamed": self.is_renamed,
+			"case": self.case,
+			"result": self.result,
+			"in_register": self.in_register,
+		}
 
 @dataclass(frozen = True)
 class ScriptValidationErrorData:

@@ -4,7 +4,8 @@ from typing import TYPE_CHECKING, override
 
 from dublib.validators import ValidableType
 
-from ....utils.classificator import AttributesClassificator, ProcessingResult
+from ....core import exceptions
+from ....utils.classificator import AttributesClassificator, Operation
 from ...base.templates import T_SingleParserRequired
 from ..melon._base import CommandProcessorTemplate
 
@@ -44,8 +45,8 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		self._add_parser_position("--use")
 		self._add_json_output_flag()
 
-		model.base.add_flag("-i", aliases = ("--ignorecase",), description = "Ignore characters case in procedures searching.")
-		model.base.add_key("--register", value_type = ValidableType.ExistingFilePath, description = "Classificators register file.")
+		model.base.add_flag("-i", description = "Ignore characters case in procedures searching.")
+		model.base.add_key("--register", value_type = ValidableType.ExistingFilePath, description = "Attributes register file.")
 
 		return model
 
@@ -58,7 +59,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			str: Description.
 		"""
 
-		return "Process titles classificators."
+		return "Classify titles attributes."
 
 	@override
 	def _parse_parameters(self, entity: "CommandEntity", prepared_data: "PreparedData") -> Parameters:
@@ -94,13 +95,40 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 
 		classificator: AttributesClassificator = self.__initialize_classificator(parameters)
-		self.__print_register_loading_result(parameters)
-		classification_result = classificator.classify(parameters.target, ignore_case = parameters.is_ignore_case)
+		self.__compare(classificator)
+		operation: Operation | None = classificator.classify(parameters.target, ignore_case = parameters.is_ignore_case)
+
+		if not operation:
+			self.printer.error("Operation not found.")
+			return
 
 		if parameters.is_output_json:
-			self.printer.json(classification_result.to_dict())
+			self.printer.json(operation.to_dict())
 		else:
-			self.__print_result(classification_result)
+			self.__print_result(operation)
+
+	def __compare(self, classificator: AttributesClassificator):
+		"""
+		Compare operations with register.
+
+		Args:
+			classificator (AttributesClassificator): Attributes classificator.
+		"""
+
+		if not classificator.register:
+			return
+
+		if operations := classificator.compare_with_register():
+			for not_found_operation in operations:
+				type_name: str = not_found_operation.type.name.title() if not_found_operation.type else "Attribute"
+
+				if not_found_operation.is_deleted:
+					self.printer.error(f"{type_name} deleted, but it's processing result found in register: \"{not_found_operation.value}\".")
+					continue
+
+				self.printer.error(f"{type_name} not found in register: \"{not_found_operation.result}\".")
+
+			self.printer.critical("Script failure due to register comparing errors.")
 
 	def __initialize_classificator(self, parameters: Parameters) -> AttributesClassificator:
 		"""
@@ -118,62 +146,62 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		if not entry_point.exists():
 			self.printer.critical(f"Script entry point not found: \"{entry_point}\".")
 
-		classificator = AttributesClassificator(self.system_objects, entry_point)
+		classificator = AttributesClassificator(entry_point)
+		self.__load_register(parameters, classificator)
 
-		if parameters.register:
-			classificator.load_register(parameters.register)
+		try:
+			if validation_errors := classificator.load():
+				for error_data in validation_errors:
+					origin: str = f"{error_data.line.module}.{error_data.line.number}"
+					self.printer.error(f"{error_data.message}", origin = origin)
 
-		if validation_errors := classificator.load():
-			for error_data in validation_errors:
-				origin: str = f"{error_data.line.file.name}:{error_data.line.number}"
-				self.printer.error(f"{error_data.message}", origin = origin)
+				self.printer.critical("Script failure due to syntax validation errors.")
 
-			self.printer.critical("Script failure due to validation errors.")
+		except exceptions.utils.classificator.MissingRegisterError as exception:
+			self.printer.critical(str(exception))
 
 		return classificator
 
-	def __print_register_loading_result(self, parameters: Parameters):
+	def __load_register(self, parameters: Parameters, classificator: AttributesClassificator):
 		"""
-		Print classificators register loading result.
+		Loag register if available.
 
 		Args:
 			parameters (Parameters): Required by command parameters.
+			classificator (AttributesClassificator): Attributes classificator.
 		"""
 
-		if parameters.is_output_json:
-			return
-
-		is_key: bool = bool(parameters.register)
 		is_environment: bool = bool(self.system_objects.options.REGISTER)
+		message: str | None = None
 
-		if is_key:
+		if parameters.register:
 			override_part: str = "(environment option overridden)" if is_environment else ""
-			self.printer.debug(f"Register loaded from key{override_part}.")
-			return
+			message = f"Register loaded from key{override_part}."
+			classificator.load_register(parameters.register)
 
-		if is_environment:
-			self.printer.debug("Register loaded from emvironment option.")
+		elif is_environment:
+			message = "Register loaded from environment option."
+			classificator.load_register(self.system_objects.options.REGISTER)
 
-	def __print_result(self, result: "ProcessingResult"):
+		if not parameters.is_output_json and message:
+			self.printer.debug(message)
+
+	def __print_result(self, operation: "Operation"):
 		"""
 		Print attribute classification result.
 
 		Args:
-			result (ProcessingResult): Attribute classification result.
+			result (Operation): Attribute classification result.
 		"""
 
-		if not result.is_operation_found:
-			self.printer.error("Operation not found.")
-			return
-
-		if result.is_found_in_register is False:
+		if operation.in_register is False:
 			self.printer.error("Attribute not found in register.")
 			return
 
-		if result.delete:
+		if not operation.result:
 			self.printer.emit("Attribute must be deleted.")
 			return
 
-		self.printer.emit(f"Name: [i]{result.name}[/i]")
-		classificator_type :str = result.type.name.lower() if result.type else "[red]null[/red]"
+		self.printer.emit(f"Result: [i]{operation.result}[/i]")
+		classificator_type :str = operation.type.name.lower() if operation.type else "[red]null[/red]"
 		self.printer.emit(f"Type: {classificator_type}")

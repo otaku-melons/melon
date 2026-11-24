@@ -13,89 +13,103 @@ from .enums import AttributeType, Case, Directive, _DirectiveValidationData
 from .structs import (
 	ExecutableLine,
 	Operation,
-	ProcessingResult,
 	ScriptValidationErrorData,
 	WorkData,
 )
 
 if TYPE_CHECKING:
 	from ...core.base.formats.base_format.data import BaseTitleData
-	from ...core.system_objects import SystemObjects
 
 class AttributesClassificator:
 	"""Attributes classificator."""
 
-	def __init__(self, system_objects: "SystemObjects", entry_point: PathLike[str] | str):
+	def __init__(self, entry_point: Path):
 		"""
 		Attributes classificator.
 
-		Load register from Melon environment option if exists.
-
 		Args:
-			system_objects (system_objects): System objects collection.
-			entry_point (PathLike[str] | str): Classificators processing script entry point.
-
-		Raises:
-			FileNotFoundError: Script entry point not found.
+			entry_point (Path): Script entry point file path.
 		"""
 
-		self.__system_objects: SystemObjects = system_objects
-		self.__entry_point: Path = Path(entry_point)
+		self.__entry_point: Path = entry_point
 
+		self.__script: tuple[ExecutableLine, ...] = ()
 		self.__operations: tuple[Operation, ...] = ()
+
 		self.__register: dict[AttributeType, tuple[str, ...]] = {}
 
-		self.__check_entry_point()
-
-		if self.__system_objects.options.REGISTER:
-			self.load_register(self.__system_objects.options.REGISTER)
-
-	def classify(self, target: str, ignore_case: bool = False) -> ProcessingResult:
+	def compare_with_register(self) -> tuple[Operation, ...]:
 		"""
-		Process classificator.
+		Compare operations results with register.
+
+		Returns:
+			tuple[Operation, ...] | None: Operations that not found in register or `None` if register not loaded.
+
+		Raises:
+			MissingRegisterError: Register missing.
+		"""
+
+		if not self.register:
+			raise exceptions.utils.classificator.MissingRegisterError()
+
+		results: list[Operation] = []
+
+		for operation in self.__operations:
+
+			if operation.is_deleted:
+				if operation.in_register:
+					results.append(operation)
+				continue
+
+			if not operation.in_register:
+				results.append(operation)
+
+		return tuple(results)
+
+	def classify(self, target: str, ignore_case: bool = False) -> Operation | None:
+		"""
+		Classify attribute.
 
 		Args:
 			target (str): Target for processing.
 			ignore_case (bool): Ignore letters case.
 
 		Returns:
-			ProcessingResult: Classification result.
+			Operation | None: Classification operation or `None` if not found.
 		"""
 
 		if ignore_case:
-			operations_cache = {operation.name.lower(): operation for operation in self.operations}
+			operations_cache: dict[str, Operation] = {operation.value.lower(): operation for operation in self.__operations}
 		else:
-			operations_cache = {operation.name: operation for operation in self.operations}
+			operations_cache: dict[str, Operation] = {operation.value: operation for operation in self.__operations}
 
-		target_operation: Operation | None = operations_cache.get(target.lower() if ignore_case else target)
-		if not target_operation:
-			return ProcessingResult()
-
-		name: str | None = target_operation.process(target)
-
-		return ProcessingResult(
-			is_operation_found = True,
-			is_found_in_register = self.__search_in_register(target_operation.type, name),
-			name = name,
-			type = target_operation.type,
-			delete = target_operation.delete,
-		)
+		return operations_cache.get(target.lower() if ignore_case else target)
 
 	def load(self) -> tuple[ScriptValidationErrorData, ...] | None:
 		"""
-		Load and validate script. Also clear exists operations data.
+		Load script from entry point file.
 
 		Returns:
-			tuple[ScriptValidationErrorData, ...] | None: Script validation errors or `None` if no errors.
+			tuple[ScriptValidationErrorData, ...] | None: Script syntax validation errors.
+
+		Raises:
+			FileNotFoundError: Entry point not found.
+			IsADirectoryError: Given directory instead entry point file.
 		"""
 
-		self.__operations = ()
-		script: tuple[ExecutableLine, ...] = tuple(self.__read_script_file(self.entry_point, entry_point = True))
+		if not self.entry_point.exists():
+			raise FileNotFoundError(self.entry_point)
 
-		if errors := self.__validate_script(script):
+		if not self.entry_point.is_file():
+			raise IsADirectoryError(self.entry_point)
+
+		script: list[ExecutableLine] = self.__read_script_file(self.entry_point, entry_point = True)
+
+		if errors := self.__validate_script():
 			return errors
 
-		self.__operations = self.__parse_operations(script)
+		self.__script = tuple(script)
+		self.__operations = self.__parse_operations(self.__script)
 
 	def load_register(self, file: PathLike[str] | str):
 		"""
@@ -140,7 +154,7 @@ class AttributesClassificator:
 
 	@property
 	def operations(self) -> tuple[Operation, ...]:
-		"""Classificators processing operations."""
+		"""Attributes processing operations."""
 
 		return self.__operations
 
@@ -155,21 +169,6 @@ class AttributesClassificator:
 		"""Script work directory."""
 
 		return self.__entry_point.parent
-
-	def __check_entry_point(self):
-		"""
-		Check entry point.
-
-		Raises:
-			FileNotFoundError: Entry point not found.
-			IsADirectoryError: Given directory instead entry point file.
-		"""
-
-		if not self.__entry_point.exists():
-			raise FileNotFoundError(self.__entry_point)
-
-		if not self.__entry_point.is_file():
-			raise IsADirectoryError(self.__entry_point)
 
 	def __extract_directive_values(self, line: ExecutableLine) -> tuple[str, ...]:
 		"""
@@ -220,13 +219,13 @@ class AttributesClassificator:
 
 	def __parse_operations(self, script: Sequence[ExecutableLine]) -> tuple[Operation, ...]:
 		"""
-		Parse classificators processing operations.
+		Parse attributes processing operations.
 
 		Args:
 			script (Sequence[ExecutableLine]): Script executable lines.
 
 		Returns:
-			tuple[Operation, ...]: Classificators processing operations.
+			tuple[Operation, ...]: Attributes processing operations.
 		"""
 
 		operations: list[Operation] = []
@@ -244,17 +243,22 @@ class AttributesClassificator:
 			if line.is_operation:
 				operation_line: str = line.value
 				parts: list[str] = shlex.split(operation_line)
-				rename: str | None = None
+				value: str = parts[0]
+				new_name: str | None = None
 
 				if len(parts) == 3 and parts[1] == ">":
-					rename = parts[2]
+					new_name = parts[2]
+
+				result: str = new_name if new_name else self.__transform_operation_value_case(value, work_data)
 
 				operations.append(Operation(
-					name = parts[0],
+					value = value,
 					type = work_data.current_type,
-					delete = work_data.is_delete,
-					rename = rename,
+					is_deleted = work_data.is_delete,
+					is_renamed = bool(new_name),
 					case = work_data.current_case,
+					result = None if work_data.is_delete else result,
+					in_register = self.__search_in_register(work_data.current_type, result),
 				))
 
 				continue
@@ -358,19 +362,19 @@ class AttributesClassificator:
 		for classificator in classificators:
 			result = self.classify(classificator, ignore_case = True)
 
-			if result.delete:
+			if not result or not result.value:
+				raise exceptions.utils.classificator.ClassificationError(f"Operation not found for attribute: \"{classificator}\".")
+
+			if not result.result:
 				continue
 
-			if result.is_found_in_register is False:
+			if result.in_register is False:
 				raise exceptions.utils.classificator.ClassificationError(f"Attribute \"{classificator}\" not found in register.")
-
-			if not result.is_operation_found or not result.name:
-				raise exceptions.utils.classificator.ClassificationError(f"Operation not found for attribute: \"{classificator}\".")
 
 			if not result.type:
 				raise exceptions.utils.classificator.ClassificationError(f"Unknown attribute type: \"{classificator}\".")
 
-			results.setdefault(result.type, []).append(result.name)
+			results.setdefault(result.type, []).append(result.result)
 
 		return results
 
@@ -400,7 +404,7 @@ class AttributesClassificator:
 			if not line or line.startswith("#"):
 				continue
 
-			buffer = ExecutableLine(script_file, entry_point, line_number, line)
+			buffer = ExecutableLine(script_file.stem, entry_point, line_number, line)
 
 			if not entry_point:
 				for directive_type in Directive:
@@ -420,7 +424,7 @@ class AttributesClassificator:
 
 		# Add drop directive at end of file if missing.
 		if executable_lines and not executable_lines[-1].is_directive(Directive.drop):
-			executable_lines.append(ExecutableLine(script_file, entry_point, -1, f"@{Directive.drop.name}"))
+			executable_lines.append(ExecutableLine(script_file.stem, entry_point, -1, f"@{Directive.drop.name}"))
 
 		return executable_lines
 
@@ -447,6 +451,25 @@ class AttributesClassificator:
 				return True
 
 		return False
+
+	def __transform_operation_value_case(self, value: str, work_data: WorkData) -> str:
+		"""
+		Transform operation value case.
+
+		Args:
+			value (str): Operation value.
+			work_data (WorkData): Script parsing process data.
+
+		Returns:
+			str: Operation cased result.
+		"""
+
+		match work_data.current_case:
+			case Case.low: return value.lower()
+			case Case.title: return value.title()
+			case Case.up: return value.upper()
+
+		return value
 
 	def __validate_directive(self, line: ExecutableLine) -> list[ScriptValidationErrorData]:
 		"""
@@ -505,33 +528,25 @@ class AttributesClassificator:
 			list[ScriptValidationErrorData]: Validation errors.
 		"""
 
-		ERRORS: list[ScriptValidationErrorData] = []
+		errors: list[ScriptValidationErrorData] = []
+		operation_parts: tuple[str, ...] = tuple(shlex.split(line.value))
+		parts_count: int = len(operation_parts)
+		is_renaming_operator_exists: bool = parts_count > 1 and operation_parts[1] == ">"
 
-		OperationString: str = line.value.lstrip("*").lstrip()
-		OperationParts: tuple[str, ...] = tuple(shlex.split(OperationString))
+		if parts_count > 1 and not is_renaming_operator_exists:
+			errors.append(ScriptValidationErrorData(line, "Renaming operation without operator."))
 
-		if len(OperationParts) == 2:
+		if parts_count == 2 and is_renaming_operator_exists:
+			errors.append(ScriptValidationErrorData(line, "Renaming operator requires right side value."))
 
-			if OperationParts[1] not in ("-", ">"):
-				Operator: str = OperationParts[1]
-				ERRORS.append(ScriptValidationErrorData(line, f"Unknown operator: \"{Operator}\"."))
+		if parts_count > 3:
+			errors.append(ScriptValidationErrorData(line, "Too many elements in operation."))
 
-			if OperationParts[1] == ">":
-				ERRORS.append(ScriptValidationErrorData(line, "Renaming operator requires value."))
+		return errors
 
-		elif len(OperationParts) == 3:
-
-			if OperationParts[1] != ">":
-				ERRORS.append(ScriptValidationErrorData(line, "Only renaming operator supports two values."))
-
-		return ERRORS
-
-	def __validate_script(self, script: Sequence[ExecutableLine]) -> tuple[ScriptValidationErrorData, ...]:
+	def __validate_script(self) -> tuple[ScriptValidationErrorData, ...]:
 		"""
-		Validate script.
-
-		Args:
-			script (Sequence[ExecutableLine]): Script executable lines.
+		Validate script syntax.
 
 		Returns:
 			tuple[ScriptValidationErrorData, ...]: Script validation error.
@@ -539,7 +554,7 @@ class AttributesClassificator:
 
 		errors: list[ScriptValidationErrorData] = []
 
-		for line in script:
+		for line in self.__script:
 			if line.is_directive(): errors += self.__validate_directive(line)
 			elif line.is_operation: errors += self.__validate_operation(line)
 			else: errors.append(ScriptValidationErrorData(line, "Unknown string assignment."))
