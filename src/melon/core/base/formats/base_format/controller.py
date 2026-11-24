@@ -80,7 +80,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 
 		return bool(data)
 
-	def merge(self) -> int:
+	def merge(self) -> int:  # noqa: C901
 		"""
 		Считывает данные о контенте тайтла.
 

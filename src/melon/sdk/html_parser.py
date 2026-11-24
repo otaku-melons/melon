@@ -271,7 +271,7 @@ class HyperTextParser:
 
 		return blockquote
 
-	def parse_elements(self, tag: Tag, allow_footnotes: bool, paragraphs_tags: "Sequence[str]" = ("p", "pre"), from_strings: bool = True) -> tuple["BaseElement | ImageData", ...]:
+	def parse_elements(self, tag: Tag, allow_footnotes: bool, paragraphs_tags: "Sequence[str]" = ("p", "pre"), from_strings: bool = True) -> tuple["BaseElement | ImageData", ...]:  # noqa: C901
 		"""
 		Parse elements from tag childrens.
 

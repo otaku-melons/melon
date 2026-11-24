@@ -96,7 +96,7 @@ class MangaChapterHeaderParser:
 		self._Header = self._Header[len(ChapterStart):]
 		if ChapterStart.count(".") >= 3 or "…" in ChapterStart: self._Header = f"…{self._Header}"
 
-	def _ExtractPart(self):
+	def _ExtractPart(self):  # noqa: C901
 		"""Пытается извлечь из названия главы номер части и добавить его к номеру главы."""
 
 		if not self._Header or not self._WordsDictionary.part:

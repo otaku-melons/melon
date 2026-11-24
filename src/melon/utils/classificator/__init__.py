@@ -104,7 +104,7 @@ class AttributesClassificator:
 		self.__register.clear()
 
 		for attribute_type in AttributeType:
-			self.__register[attribute_type] = tuple(data[attribute_type.value])
+			self.__register[attribute_type] = tuple(data.get(attribute_type.value, ()))
 
 	def process_title(self, data: "BaseTitleData"):
 		"""

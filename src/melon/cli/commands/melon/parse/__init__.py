@@ -264,7 +264,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		return statistics
 
-	def __parse_safely(self, parameters: Parameters, parser: "BaseParser", title: "BaseTitleController[BaseTitleData]") -> ParsingSignal:
+	def __parse_safely(self, parameters: Parameters, parser: "BaseParser", title: "BaseTitleController[BaseTitleData]") -> ParsingSignal:  # noqa: C901
 		"""
 		Выполняет парсинг тайта, отлавливая общие исключения.
 
