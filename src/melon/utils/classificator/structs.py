@@ -42,6 +42,7 @@ class ExecutableLine:
 	"""Script executable line."""
 
 	file: Path
+	is_entry_point: bool
 	number: int
 	value: str
 

@@ -120,15 +120,15 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		classificator = AttributesClassificator(self.system_objects, entry_point)
 
+		if parameters.register:
+			classificator.load_register(parameters.register)
+
 		if validation_errors := classificator.load():
 			for error_data in validation_errors:
 				origin: str = f"{error_data.line.file.name}:{error_data.line.number}"
 				self.printer.error(f"{error_data.message}", origin = origin)
 
 			self.printer.critical("Script failure due to validation errors.")
-
-		if parameters.register:
-			classificator.load_register(parameters.register)
 
 		return classificator
 
@@ -148,11 +148,11 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		if is_key:
 			override_part: str = "(environment option overridden)" if is_environment else ""
-			self.printer.debug(f"Classificators register loaded from key{override_part}.")
+			self.printer.debug(f"Register loaded from key{override_part}.")
 			return
 
 		if is_environment:
-			self.printer.debug("Classificators register loaded from emvironment option.")
+			self.printer.debug("Register loaded from emvironment option.")
 
 	def __print_result(self, result: "ProcessingResult"):
 		"""

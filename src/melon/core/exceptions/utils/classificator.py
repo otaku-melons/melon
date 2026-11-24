@@ -18,19 +18,28 @@ class ClassificationError(Exception):
 
 		super().__init__(message)
 
-class IncludeDirectiveDeniedError(Exception):
-	"""Exception: directive `include` denied."""
+class DirectiveDeniedInNonEntryPointError(Exception):
+	"""Exception: directive denied in non entry point."""
 
-	def __init__(self, file: "Path", line: int):
+	def __init__(self, file: "Path", line: int, directive: str):
 		"""
-		Exception: directive `include` denied.
+		Exception: directive denied in non entry point.
 
 		Args:
 			file (Path): Path to file with error.
 			line (int): Error line number.
+			directive (str): Directive name.
 		"""
 
-		super().__init__(f"File \"{file}\". Line {line}.")
+		super().__init__(f"File \"{file}\". Directive \"@{directive}\" at line {line}.")
+
+class MissingRegisterError(Exception):
+	"""Exception: register missing."""
+
+	def __init__(self):
+		"""Exception: register missing."""
+
+		super().__init__("Register required by script, but not loaded.")
 
 class UnknownDirectiveValueError(Exception):
 	"""Exception: unknown directive value."""

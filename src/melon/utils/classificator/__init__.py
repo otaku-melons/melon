@@ -9,7 +9,7 @@ from dublib.functions.filesystem import json, text
 
 from ...core import exceptions
 from ...core.base.formats.base_format.person import Person
-from .enums import AttributeType, Case, Directive
+from .enums import AttributeType, Case, Directive, _DirectiveValidationData
 from .structs import (
 	ExecutableLine,
 	Operation,
@@ -29,6 +29,8 @@ class AttributesClassificator:
 		"""
 		Attributes classificator.
 
+		Load register from Melon environment option if exists.
+
 		Args:
 			system_objects (system_objects): System objects collection.
 			entry_point (PathLike[str] | str): Classificators processing script entry point.
@@ -44,6 +46,9 @@ class AttributesClassificator:
 		self.__register: dict[AttributeType, tuple[str, ...]] = {}
 
 		self.__check_entry_point()
+
+		if self.__system_objects.options.REGISTER:
+			self.load_register(self.__system_objects.options.REGISTER)
 
 	def classify(self, target: str, ignore_case: bool = False) -> ProcessingResult:
 		"""
@@ -166,7 +171,7 @@ class AttributesClassificator:
 		if not self.__entry_point.is_file():
 			raise IsADirectoryError(self.__entry_point)
 
-	def __extract_directive_values(self, line: ExecutableLine) -> str | tuple[str, ...]:
+	def __extract_directive_values(self, line: ExecutableLine) -> tuple[str, ...]:
 		"""
 		Extract directive value.
 
@@ -381,35 +386,41 @@ class AttributesClassificator:
 			list[ExecutableLine]: Script executable lines.
 
 		Raises:
-			exceptions.utils.classificator.IncludeDirectiveDeniedError: Include directive denied.
+			IncludeDirectiveDeniedError: Include directive denied.
+			MissingRegisterError: Register missing.
 		"""
 
-		script_lines: list[str] = text.read(script_file, split = True, strip_level = 2)
+		script_lines: list[str] = text.read(script_file, split = True, strip_level = 1)
 		executable_lines: list[ExecutableLine] = []
 
 		for index in range(len(script_lines)):
 			line: str = script_lines[index]
 			line_number: int = index + 1
 
-			if line.startswith("#"):
+			if not line or line.startswith("#"):
 				continue
 
-			if line.startswith(f"@{Directive.include.name}"):
+			buffer = ExecutableLine(script_file, entry_point, line_number, line)
 
-				if not entry_point:
-					raise exceptions.utils.classificator.IncludeDirectiveDeniedError(script_file, line_number)
+			if not entry_point:
+				for directive_type in Directive:
+					if buffer.is_directive(directive_type) and directive_type.value.only_in_entry_point:
+						raise exceptions.utils.classificator.DirectiveDeniedInNonEntryPointError(script_file, line_number, Directive.include.name)
 
-				buffer = ExecutableLine(script_file, line_number, line)
+			if buffer.is_directive(Directive.include):
 				executable_lines += self.__include_script(buffer)
 				continue
 
-			executable_lines.append(ExecutableLine(script_file, line_number, line))
+			if buffer.is_directive(Directive.register):
+				if not self.register:
+					raise exceptions.utils.classificator.MissingRegisterError()
+				continue
 
-		drop_directive: str = f"@{Directive.drop.name}"
+			executable_lines.append(buffer)
 
 		# Add drop directive at end of file if missing.
-		if executable_lines and executable_lines[-1].value != drop_directive:
-			executable_lines.append(ExecutableLine(script_file, -1, drop_directive))
+		if executable_lines and not executable_lines[-1].is_directive(Directive.drop):
+			executable_lines.append(ExecutableLine(script_file, entry_point, -1, f"@{Directive.drop.name}"))
 
 		return executable_lines
 
@@ -448,37 +459,40 @@ class AttributesClassificator:
 			list[ScriptValidationErrorData]: Validation errors.
 		"""
 
-		ERRORS: list[ScriptValidationErrorData] = []
+		errors: list[ScriptValidationErrorData] = []
 
 		if "[" in line.value and "]" not in line.value:
-			ERRORS.append(ScriptValidationErrorData(line, "Unclosed values declaration."))
+			errors.append(ScriptValidationErrorData(line, "Unclosed values declaration."))
+
 		if "]" in line.value and "[" not in line.value:
-			ERRORS.append(ScriptValidationErrorData(line, "Unopened values array."))
+			errors.append(ScriptValidationErrorData(line, "Unopened values array."))
 
-		DirectiveElements: list[str] = line.value.split("[", maxsplit = 1)
+		directive_elements: list[str] = line.value.split("[", maxsplit = 1)
+		name: str = directive_elements[0][1:].rstrip()
 
-		Name = DirectiveElements[0][1:].rstrip()
+		if name not in tuple(Element.name for Element in Directive):
+			errors.append(ScriptValidationErrorData(line, f"Unknown directive: \"@{name}\"."))
+			return errors
 
-		if Name not in tuple(Element.name for Element in Directive):
-			ERRORS.append(ScriptValidationErrorData(line, f"Unknown directive: \"@{Name}\"."))
-			return ERRORS
+		directive: Directive = Directive[name]
+		validation_data: _DirectiveValidationData = directive.value
+		values: tuple[str, ...] = self.__extract_directive_values(line)
 
-		directive: Directive = Directive[Name]
-		ValidationData = directive.value
-		Values = self.__extract_directive_values(line)
+		if not values and not validation_data.allow_empty:
+			errors.append(ScriptValidationErrorData(line, f"Directive \"@{directive.name}\" must have values."))
 
-		if not Values and not ValidationData.allow_empty:
-			ERRORS.append(ScriptValidationErrorData(line, f"Directive \"@{directive.name}\" must have values."))
+		if len(values) > 1 and not validation_data.allow_list:
+			errors.append(ScriptValidationErrorData(line, f"Directive \"@{directive.name}\" must have only one value."))
 
-		if len(Values) > 1 and not ValidationData.allow_list:
-			ERRORS.append(ScriptValidationErrorData(line, f"Directive \"@{directive.name}\" must have only one value."))
+		if validation_data.values:
+			for value in values:
+				if value not in validation_data.values:
+					errors.append(ScriptValidationErrorData(line, f"Unknown value \"{value}\" for directive \"@{directive.name}\"."))
 
-		if ValidationData.values:
-			for Value in Values:
-				if Value not in ValidationData.values:
-					ERRORS.append(ScriptValidationErrorData(line, f"Unknown value \"{Value}\" for directive \"@{directive.name}\"."))
+		if not line.is_entry_point and validation_data.only_in_entry_point:
+			errors.append(ScriptValidationErrorData(line, f"Directive \"@{directive.name}\" allowed only in entry point."))
 
-		return ERRORS
+		return errors
 
 	def __validate_operation(self, line: ExecutableLine) -> list[ScriptValidationErrorData]:
 		"""
