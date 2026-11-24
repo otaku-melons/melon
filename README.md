@@ -16,7 +16,7 @@ We welcome all developers and enthusiasts!
 
 Documentation available in [this](https://github.com/otaku-melons/docs) repository and see our [roadmap](https://github.com/orgs/otaku-melons/projects/1/views/1) for information about development progress.
 
-> [!NOTE]  
+> [!NOTE]
 > _We respect the intellectual property of content providers and do not provide any solutions designed to bypass paywalls or illegally access premium content. To minimize the load on these resources, a brief delay is enforced between requests._
 
 ## Getting started
@@ -32,19 +32,15 @@ uv venv .venv --prompt melon
 source .venv/bin/activate
 melon help && pxm help && urun help
 ```
-4. Add Git-repository of parser.
+4. Install parser and configure it by editing settings file in configs directory.
 ```
-pxm remotes add https://github.com/otaku-melons/{PARSER}
+uv pip install git+https://github.com/otaku-melons/{PARSER}
 ```
-5. Install parser and configure it by editing settings file in configs directory.
-```
-pxm install {PARSER}
-```
-6. Parse title for creation descriptive JSON file in output directory.
+5. Parse title for creation descriptive JSON file in output directory.
 ```
 melon parse {SLUG} --use {PARSER}
 ```
-7. Build read-ready content from descriptive JSON file.
+6. Build read-ready content from descriptive JSON file.
 ```Bash
 melon build manga {FILE} --use {PARSER} -cbz
 ```
