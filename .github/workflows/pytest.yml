@@ -6,8 +6,7 @@ permissions:
 on:
   push:
     paths: &monitored_paths
-      - "src/melon/core/html/**"
-      - "src/melon/sdk/html_parser/**"
+      - "src/**"
       - "tests/**"
       - pyproject.toml
   pull_request:
