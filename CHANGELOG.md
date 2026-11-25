@@ -21,6 +21,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Sorting title attributes.s
 
 ### 🎨 Changed
+- Moved into SDK `ChapterHeaderParser` and unified.
 - Util `ClassificatorsProcessor` refactored to work with parsers scripts instead global.
 - Chapters types renamed with lower case.
 - Settings reworked with [pydantic](https://github.com/pydantic/PYDANTIC) models.
