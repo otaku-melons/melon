@@ -36,10 +36,15 @@ class DirectiveDeniedInNonEntryPointError(Exception):
 class MissingRegisterError(Exception):
 	"""Exception: register missing."""
 
-	def __init__(self):
-		"""Exception: register missing."""
+	def __init__(self, register_path: "Path"):
+		"""
+		Exception: register missing.
 
-		super().__init__("Register required by script, but not loaded.")
+		Args:
+			register_path (Path): Register file path.
+		"""
+
+		super().__init__(register_path)
 
 class UnknownDirectiveValueError(Exception):
 	"""Exception: unknown directive value."""

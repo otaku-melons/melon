@@ -156,7 +156,6 @@ def test_compare_with_register(tmp_path: "Path"):
 	text.write(entry_point, script)
 
 	classificator = AttributesClassificator(entry_point)
-	classificator.load_register(register_path)
 	assert classificator.load() is None
 	compare_result = classificator.compare_with_register()
 	assert len(compare_result) == 1

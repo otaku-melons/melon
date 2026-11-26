@@ -147,7 +147,6 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			self.printer.critical(f"Script entry point not found: \"{entry_point}\".")
 
 		classificator = AttributesClassificator(entry_point)
-		self.__load_register(parameters, classificator)
 
 		try:
 			if validation_errors := classificator.load():
@@ -161,30 +160,6 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			self.printer.critical(str(exception))
 
 		return classificator
-
-	def __load_register(self, parameters: Parameters, classificator: AttributesClassificator):
-		"""
-		Loag register if available.
-
-		Args:
-			parameters (Parameters): Required by command parameters.
-			classificator (AttributesClassificator): Attributes classificator.
-		"""
-
-		is_environment: bool = bool(self.system_objects.options.REGISTER)
-		message: str | None = None
-
-		if parameters.register:
-			override_part: str = "(environment option overridden)" if is_environment else ""
-			message = f"Register loaded from key{override_part}."
-			classificator.load_register(parameters.register)
-
-		elif is_environment:
-			message = "Register loaded from environment option."
-			classificator.load_register(self.system_objects.options.REGISTER)
-
-		if not parameters.is_output_json and message:
-			self.printer.debug(message)
 
 	def __print_result(self, operation: "Operation"):
 		"""

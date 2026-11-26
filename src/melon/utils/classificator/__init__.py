@@ -1,6 +1,5 @@
 import shlex
 from collections.abc import Callable, Sequence
-from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -32,6 +31,7 @@ class AttributesClassificator:
 		"""
 
 		self.__entry_point: Path = entry_point
+		self.__register_path: Path = self.entry_point.parent / "register.json"
 
 		self.__script: tuple[ExecutableLine, ...] = ()
 		self.__operations: tuple[Operation, ...] = ()
@@ -50,7 +50,7 @@ class AttributesClassificator:
 		"""
 
 		if not self.register:
-			raise exceptions.utils.classificator.MissingRegisterError()
+			raise exceptions.utils.classificator.MissingRegisterError(self.__register_path)
 
 		results: list[Operation] = []
 
@@ -110,20 +110,6 @@ class AttributesClassificator:
 
 		self.__script = tuple(script)
 		self.__operations = self.__parse_operations(self.__script)
-
-	def load_register(self, file: PathLike[str] | str):
-		"""
-		Load attributes register. Also clear exists register data.
-
-		Args:
-			file (PathLike[str] | str): Path to register file.
-		"""
-
-		data: dict[str, list[str]] = json.read(file)
-		self.__register.clear()
-
-		for attribute_type in AttributeType:
-			self.__register[attribute_type] = tuple(data.get(attribute_type.value, ()))
 
 	def process_title(self, data: "BaseTitleData"):
 		"""
@@ -216,6 +202,17 @@ class AttributesClassificator:
 			raise FileNotFoundError(script_file)
 
 		return self.__read_script_file(script_file, entry_point = False)
+
+	def __load_register(self):
+		"""Load attributes register."""
+
+		if not self.__register_path.exists():
+			raise exceptions.utils.classificator.MissingRegisterError(self.__register_path)
+
+		data: dict[str, list[str]] = json.read(self.__register_path)
+
+		for attribute_type in AttributeType:
+			self.__register[attribute_type] = tuple(data.get(attribute_type.value, ()))
 
 	def __parse_operations(self, script: Sequence[ExecutableLine]) -> tuple[Operation, ...]:
 		"""
@@ -416,8 +413,7 @@ class AttributesClassificator:
 				continue
 
 			if buffer.is_directive(Directive.register):
-				if not self.register:
-					raise exceptions.utils.classificator.MissingRegisterError()
+				self.__load_register()
 				continue
 
 			executable_lines.append(buffer)
