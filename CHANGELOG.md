@@ -10,6 +10,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 ## [1.0.0-rc.8]
 
 ### ✨ Added
+- Collector now can switch synchronization mode.
 - Parsers and extensions configs separated by directories.
 - Title attributes register.
 - Register environment option.
