@@ -203,6 +203,11 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			return
 
 		self.__classificator = AttributesClassificator(script_entry_point)
+
+		if self.system_objects.options.REGISTER:
+			self.__classificator.load_register(self.system_objects.options.REGISTER)
+			self.printer.debug("Register loaded from environment option.")
+
 		self.__classificator.load()
 
 	def __parse_slugs(self, parameters: Parameters, source_operator: "BaseSourceOperator", slugs: Sequence[str], start_index: int) -> ParsingStatistics:

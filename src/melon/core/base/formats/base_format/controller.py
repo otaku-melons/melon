@@ -3,7 +3,6 @@ import os
 import shutil
 from abc import ABC, abstractmethod
 from json import JSONDecodeError
-from os import PathLike
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, cast
 
@@ -12,15 +11,17 @@ import orjson
 from dublib.functions.data import zerotify
 from dublib.functions.filesystem import json
 
-from .... import exceptions
 from ....html.interpreter import HyperTextInterpreter
 from ...structs.image import ImageType
 from .enums import By
 from .structs import SavingResult
 
 if TYPE_CHECKING:
+	from os import PathLike
+
 	from pydantic import BaseModel
 
+	from ....system_objects.temper.journal import Journal
 	from ...parser import BaseParser
 	from ...source_operator import BaseSourceOperator
 	from .data import BaseTitleData
@@ -65,30 +66,32 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 
 	def load(self, identifier: int | str, selector_type: By = By.Slug) -> bool:
 		"""
-		Открывает локальный JSON файл и интерпретирует его данные.
+		Load title data from descriptive JSON file.
 
-		:param identifier: Идентификатор тайтла: имя файла (без расширения), ID или алиас тайтла.
-		:type identifier: int | str
-		:param selector_type: Режим поиска файла. По умолчанию `By.Slug` – идентификатор соответствует алиасу тайтла.
-		:type selector_type: By
-		:return: Возвращает `True`, если удалось найти и открыть файл.
-		:rtype: bool
+		Args:
+			identifier (int | str): Title identifier.
+			selector_type (By): Identifier type.
+
+		Returns:
+			bool: `True` if data loaded.
 		"""
 
-		data: dict | None = self._load_data(identifier, selector_type)
-		if data: self._data.from_dict(data)
+		data: dict | None = self._load_raw_data(identifier, selector_type)
+
+		if data:
+			self._data.from_dict(data)
 
 		return bool(data)
 
 	def merge(self) -> int:  # noqa: C901
 		"""
-		Считывает данные о контенте тайтла.
+		Merge title chapters content from descriptive file if exists.
 
-		:return: Количество глав, для которых считан контент.
-		:rtype: int
+		Returns:
+			int: Count of merged chapters.
 		"""
 
-		data: dict | None = self._load_data(self._slug)
+		data: dict | None = self._load_raw_data(self._slug)
 
 		if not data:
 			return 0
@@ -191,21 +194,21 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 
 	@property
 	def chapters_count(self) -> int:
-		"""Количество глав во всех ветвях."""
+		"""Chapters count in all branches."""
 
-		return sum(Branch.chapters_count for Branch in self._data.branches)
+		return sum(branch.chapters_count for branch in self.data.branches)
 
 	@property
 	def data(self) -> TD:
-		"""Данные тайтла."""
+		"""Title data."""
 
 		return self._data
 
 	@property
 	def empty_chapters_count(self) -> int:
-		"""Количество глав без контента во всех ветвях."""
+		"""Empty chapters count in all branches."""
 
-		return sum(Branch.empty_chapters_count for Branch in self._data.branches)
+		return sum(branch.empty_chapters_count for branch in self._data.branches)
 
 	@property
 	def html_interpreter(self) -> HyperTextInterpreter:
@@ -357,8 +360,6 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 			self._local_file_path = FilePath
 			return json.read(FilePath)
 
-		return None
-
 	def _load_data_by_id(self, title_id: int) -> dict | None:
 
 		Journal = self._parser.source_operator.shared_data.journal
@@ -378,56 +379,77 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 		return self._search_file_in_directory(TitlesDirectory, title_id, By.ID) or {}
 
 	def _load_data_by_slug(self, slug: str) -> dict | None:
+		"""
+		Load title raw data by slug.
 
-		Journal = self._parser.source_operator.shared_data.journal
-		TitlesDirectory = self._parser.settings.directories.titles
+		Args:
+			slug (str): Title slug.
+
+		Returns:
+			dict | None: Title raw data or `None` if unable.
+		"""
+
+		journal: Journal = self._parser.source_operator.shared_data.journal
+		titles_directory: Path = self._parser.settings.directories.titles
 
 		if self._parser.settings.common.use_id_as_filename:
-			ID = Journal.get_id_by_slug(slug)
+			title_id: int | None = journal.get_id_by_slug(slug)
 
-			if ID:
-				FilePath = TitlesDirectory / f"{ID}.json"
-				if FilePath.exists(): return json.read(FilePath)
+			if title_id:
+				file_path: Path = titles_directory / f"{title_id}.json"
+
+				if file_path.exists():
+					return json.read(file_path)
 
 		else:
-			FilePath = TitlesDirectory / f"{slug}.json"
-			if FilePath.exists(): return json.read(FilePath)
+			file_path: Path = titles_directory / f"{slug}.json"
 
-		return self._search_file_in_directory(TitlesDirectory, slug, By.Slug)
+			if file_path.exists():
+				return json.read(file_path)
 
-	def _load_data(self, identifier: int | str, selector_type: By = By.Slug) -> dict | None:
+		return self._search_file_in_directory(titles_directory, slug, By.Slug)
+
+	def _load_raw_data(self, identifier: int | str, selector_type: By = By.Slug) -> dict | None:
 		"""
-		Открывает локальный JSON файл и считывает его данные.
+		Load title raw data from descriptive JSON file.
 
-		:param identifier: Идентификатор тайтла: имя файла (без расширения), ID или алиас тайтла.
-		:type identifier: int | str
-		:param selector_type: Режим поиска файла. По умолчанию `By.Slug` – идентификатор соответствует алиасу тайтла.
-		:type selector_type: By
-		:return: Словарь данных тайтла или `None` при отсутствии файла.
-		:rtype: dict | None
-		:raises JSONDecodeError: Ошибка десериализации JSON.
-		:raises UnsupportedFormatError: Неподдерживаемый формат JSON.
+		Args:
+			identifier (int | str): Title identifier: slug or ID.
+			selector_type (By): Selector type for title loading.
+
+		Returns:
+			dict | None: Loaded raw data or `None` if not found.
+
+		Raises:
+			TypeError: Identifier type isn't correct for selector.
 		"""
 
-		DataBuffer: dict | None = None
+		data: dict | None = None
 
 		match selector_type:
 
 			case By.Filename:
-				if type(identifier) is not str: raise ValueError("Filename must be str.")
-				DataBuffer = self._load_data_by_filename(identifier)
+
+				if not isinstance(identifier, str):
+					raise TypeError("Filename must be str.")
+
+				data = self._load_data_by_filename(identifier)
 
 			case By.Slug:
-				if type(identifier) is not str: raise ValueError("Slug must be str.")
-				DataBuffer = self._load_data_by_slug(identifier)
+
+				if not isinstance(identifier, str):
+					raise TypeError("Slug must be str.")
+
+				data = self._load_data_by_slug(identifier)
 
 			case By.ID:
-				if type(identifier) is not int: raise ValueError("ID must be int.")
-				DataBuffer = self._load_data_by_id(identifier)
 
-		self._IsLocalFileLoaded = bool(DataBuffer)
+				if not isinstance(identifier, int):
+					raise TypeError("ID must be int.")
 
-		return zerotify(DataBuffer)
+				data = self._load_data_by_id(identifier)
+
+		return zerotify(data)
 
 	# OVERRIDABLE
 	def _post_init(self):
@@ -450,32 +472,37 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 		if not any(images_directory.iterdir()):
 			images_directory.rmdir()
 
-	def _search_file_in_directory(self, directory: str | PathLike[str], identifier: int | str, identifier_type: Literal[By.ID, By.Slug]) -> dict | None:
+	def _search_file_in_directory(self, directory: Path, identifier: int | str, identifier_type: Literal[By.ID, By.Slug]) -> dict | None:
 		"""
-		Находит файл JSON в директории по идентификатору определённого типа.
+		Search descriptive file in directory and read it's content.
 
-		:param directory: Путь к каталогу файлов.
-		:type directory: str | PathLike[str]
-		:param identifier: Идентификатор: ID или алиас.
-		:type identifier: int | str
-		:param identifier_type: Тип идентификатора.
-		:type identifier_type: Literal[By.ID, By.Slug]
-		:return: Содержимое файла или `None` при отсутствии оного или ошибке.
-		:rtype: dict | None
+		If `MELON_USE_CACHE` options enabled, always return `None`.
+
+		Args:
+			directory (Path): Directory path.
+			identifier (int | str): Title identifier: slug or ID.
+			identifier_type (Literal[By.ID, By.Slug]): Supported selector type for loading.
+
+		Returns:
+			dict | None: Title data or `None` if not found.
 		"""
 
-		for Element in os.scandir(directory):
-			if not Element.is_file() or not Element.name.endswith(".json"): continue
+		if self._parser.source_operator.system_objects.options.USE_CACHE:
+			return
 
-			try:
-				Data = json.read(Element.path)
-				if Data.get(identifier_type.value) == identifier:
-					self._local_file_path = Path(Element.path)
-					return Data
+		for entry in os.scandir(directory):
 
-			except (JSONDecodeError, exceptions.parsers.UnsupportedFormatError): pass
+			if not entry.is_file() or not entry.name.endswith(".json"):
+				continue
 
-		return None
+			data: dict | None = self._try_read_json(entry.path)
+
+			if not data:
+				continue
+
+			if data.get(identifier_type.value) == identifier:
+				self._local_file_path = Path(entry.path)
+				return data
 
 	def _sort_attributes(self):
 		"""Sort title attributes."""
@@ -487,6 +514,23 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 		self._data.set_persons(
 			sorted(self._data.perons, key = lambda person: person.name),
 		)
+
+	def _try_read_json(self, file: "PathLike[str] | str") -> dict | None:
+		"""
+		Try read JSON file (only dictionary-like).
+
+		Args:
+			file (PathLike[str] | str): Path to JSON file.
+
+		Returns:
+			dict | None: JSON data or `None` if not found or broken.
+		"""
+
+		if Path(file).exists():
+			try:
+				return json.read(file)
+			except JSONDecodeError:
+				pass
 
 	def _update_journal(self):
 		"""Обновляет кэш пары алиас-ID."""
