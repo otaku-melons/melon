@@ -188,7 +188,7 @@ class ExtensionsManager:
 			return False
 
 		self.__states[extension_name] = state
-		json.write(self.__states_path, self.__states, atomic = self.system_objects.options.JSON_ATOMIC_WRITE)
+		json.write(self.__states_path, self.__states, atomic = self.system_objects.options.ATOMIC_WRITE)
 
 		return True
 

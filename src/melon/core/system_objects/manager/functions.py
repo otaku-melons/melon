@@ -32,7 +32,7 @@ def export_package_settings(
 	if not base_settings:
 		return ExportResult.Missing
 
-	is_atomic_write: bool = system_objects.options.JSON_ATOMIC_WRITE
+	is_atomic_write: bool = system_objects.options.ATOMIC_WRITE
 
 	# Create only if default directory.
 	if system_objects.options.CONFIGS_DIR.as_posix() == "configs":

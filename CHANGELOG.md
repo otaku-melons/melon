@@ -24,6 +24,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Sorting title attributes.s
 
 ### 🎨 Changed
+- Option `MELON_JSON_ATOMIC_WRITE` renamed to `MELON_ATOMIC_WRITE`.
 - If `MELON_USE_CACHE` option enabled scannind title directory disabled.
 - Moved into SDK `ChapterHeaderParser` and unified.
 - Util `ClassificatorsProcessor` refactored to work with parsers scripts instead global.
