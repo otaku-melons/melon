@@ -1,7 +1,13 @@
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, override
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import (
+	BaseSettings,
+	DotEnvSettingsSource,
+	EnvSettingsSource,
+	PydanticBaseSettingsSource,
+	SettingsConfigDict,
+)
 
 from dublib.validators import types
 
@@ -22,3 +28,21 @@ class Options(BaseSettings):
 	REGISTER: Annotated[Path, types.ExistingFilePath] | None = None
 	TEMP_DIR: Path = Path("temp")
 	USE_CACHE: bool = True
+
+	@override
+	@classmethod
+	def settings_customise_sources(
+		cls,
+		settings_cls: type[BaseSettings],
+		init_settings: PydanticBaseSettingsSource,
+		env_settings: PydanticBaseSettingsSource,
+		dotenv_settings: PydanticBaseSettingsSource,
+		file_secret_settings: PydanticBaseSettingsSource,
+	) -> tuple[PydanticBaseSettingsSource, ...]:
+
+		return (
+			init_settings,
+			EnvSettingsSource(settings_cls, env_prefix = "MELON_"),
+			DotEnvSettingsSource(settings_cls, env_file = ".env", env_prefix = ""),
+			file_secret_settings,
+		)
