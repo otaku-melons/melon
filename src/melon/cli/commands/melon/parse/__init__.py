@@ -1,5 +1,4 @@
 import traceback
-from collections.abc import Sequence
 from dataclasses import dataclass
 from json import JSONDecodeError
 from typing import TYPE_CHECKING, override
@@ -30,7 +29,7 @@ if TYPE_CHECKING:
 class Parameters(T_ForceModeRequired, T_SingleParserRequired):
 	"""Required by command processor parameters."""
 
-	target: targets.BaseParserTarget
+	target: targets.BaseParsingTarget
 	parse_from: str | None
 
 	is_sorting_enabled: bool
@@ -141,23 +140,22 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			bool | None: `False` if processing failed.
 		"""
 
-		slugs: tuple[str, ...] =  tuple(sorted(parameters.target.get_slugs()))
 		start_index: int = 0
 
 		if parameters.parse_from:
-			target_start_index: int = self.__skip_slugs_before(slugs, parameters.parse_from)
+			target_start_index: int = self.__skip_slugs_before(parameters.target.collection.slugs, parameters.parse_from)
 			if target_start_index: start_index = target_start_index
 
-		if not slugs:
+		if not parameters.target.collection.slugs:
 			self.printer.error("No slugs for parsing.")
 			return False
 
 		self.__initialize_classificator(parameters)
 		source_operator = self._launch_source_operator(parameters.required_parser)
-		statistics = self.__parse_slugs(parameters, source_operator, slugs, start_index)
+		statistics = self.__parse_slugs(parameters, source_operator, start_index)
 		self.printer.templates.parsing.summary(statistics)
 
-	def __get_parsing_targets(self, data: "CommandEntity", prepared_data: "PreparedData") -> targets.BaseParserTarget:
+	def __get_parsing_targets(self, data: "CommandEntity", prepared_data: "PreparedData") -> targets.BaseParsingTarget:
 		"""
 		Определяет цель для парсинга.
 
@@ -170,7 +168,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		"""
 
 		source_operator = self._launch_source_operator(prepared_data.required_parsers[0])
-		targets_types: tuple[type[targets.BaseParserTarget], ...] = (
+		targets_types: tuple[type[targets.BaseParsingTarget], ...] = (
 			targets.PassingTarget_Collection,
 			targets.PassingTarget_ID,
 			targets.PassingTarget_Last,
@@ -210,7 +208,7 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 
 		self.__classificator.load()
 
-	def __parse_slugs(self, parameters: Parameters, source_operator: "BaseSourceOperator", slugs: Sequence[str], start_index: int) -> ParsingStatistics:
+	def __parse_slugs(self, parameters: Parameters, source_operator: "BaseSourceOperator", start_index: int) -> ParsingStatistics:
 		"""
 		Парсит набор алиасов тайтлов.
 
@@ -226,7 +224,8 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 		:rtype: ParsingStatistics
 		"""
 
-		statistics: ParsingStatistics = ParsingStatistics(len(slugs))
+		statistics: ParsingStatistics = ParsingStatistics(parameters.target.collection.count)
+		slugs: tuple[str, ...] = parameters.target.collection.slugs
 		parser: BaseParser | None = None
 
 		for index in range(start_index, statistics.total):
@@ -264,6 +263,11 @@ class CommandProcessor(CommandProcessorTemplate[Parameters]):
 			else:
 				result = parser.save(parameters.is_sorting_enabled)
 				self.printer.templates.parsing.saving_result(result)
+
+				# Replace slug in collection if changed.
+				if new_slug := result.is_slug_changed:
+					parameters.target.collection.replace(slug, new_slug)
+					self.printer.debug("Slug in collection updated.")
 
 			statistics.parsed += 1
 

@@ -16,18 +16,18 @@ if TYPE_CHECKING:
 class Collector:
 	"""Titles slugs collector."""
 
-	def __init__(self, source_operator: "BaseSourceOperator", filename: str = "collection", sync: bool = True):
+	def __init__(self, source_operator: "BaseSourceOperator", filename: str | None = None, sync: bool = True):
 		"""
 		Titles slugs collector.
 
 		Args:
 			source_operator (BaseSourceOperator): Source operator.
-			filename (str): Collection filename without suffix.
+			filename (str | None): Collection filename. By default `collection`.
 			sync (bool): Sync all changes with collection file.
 		"""
 
 		self.__source_operator = source_operator
-		self.__filename: str = filename
+		self.__filename: str = filename or "collection"
 		self.__sync: bool = sync
 
 		if self.__filename.endswith(".txt"):
@@ -38,6 +38,9 @@ class Collector:
 		self.__cache_file: Path = self.__source_operator.temp_directory / f".{self.__filename}.cache.txt"
 
 		self.__collection: list[str] = []
+
+		if self.is_synced:
+			self.load()
 
 	def add(self, slugs: str | Sequence[str]) -> int:
 		"""
@@ -181,6 +184,12 @@ class Collector:
 		"""Save collection to file."""
 
 		text.write(self.__collection_file, self.__collection)
+
+	@property
+	def count(self) -> int:
+		"""Slugs count."""
+
+		return len(self.__collection)
 
 	@property
 	def is_operation_cached(self) -> bool:

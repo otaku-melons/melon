@@ -187,7 +187,7 @@ class BaseTitleController[TD: "BaseTitleData"](ABC):
 
 		return SavingResult(
 			is_saved = not is_local_file_equal,
-			is_slug_changed = is_slug_changed,
+			is_slug_changed = self.data.slug if is_slug_changed else None,
 			is_local_file_renamed = is_local_file_renamed,
 			unused_images_removed = self._clear_unused_images(),
 		)

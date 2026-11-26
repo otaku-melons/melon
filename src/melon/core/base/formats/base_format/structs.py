@@ -22,9 +22,9 @@ class ExtraField:
 
 @dataclass(frozen = True)
 class SavingResult:
-	"""Результат сохранения тайтла."""
+	"""Title data saving result."""
 
 	is_saved: bool
-	is_slug_changed: bool
+	is_slug_changed: str | None
 	is_local_file_renamed: bool
 	unused_images_removed: int

@@ -1,261 +1,278 @@
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, override
+from uuid import uuid4
 
 from .....utils.collector import Collector
 
 if TYPE_CHECKING:
+	from collections.abc import Sequence
+
 	from dublib.cli.terminalyzer import CommandEntity
 
 	from .....core.base.source_operator import BaseSourceOperator
+	from .....core.system_objects.printer import Printer
 
-class BaseParserTarget(ABC):
-	"""Базовая цель для парсинга."""
+class BaseParsingTarget(ABC):
+	"""Base parsing target."""
 
-	#==========================================================================================#
-	# >>>>> OVERRIDABLE METHODS <<<<< #
-	#==========================================================================================#
+	def __init__(self, source_operator: "BaseSourceOperator", entity: "CommandEntity"):
+		"""
+		Base parsing target.
+
+		Args:
+			source_operator (BaseSourceOperator): Source operator.
+			entity (CommandEntity): Command entity.
+		"""
+
+		self._source_operator: BaseSourceOperator = source_operator
+		self._entity: CommandEntity = entity
+
+		self._collection: Collector = Collector(self._source_operator, filename = str(uuid4()), sync = False)
+
+		if self.is_used:
+			if slugs := self._get_slugs():
+				self.collection.add(slugs)
+
+	@property
+	def collection(self) -> Collector:
+		"""Slugs collection."""
+
+		return self._collection
+
+	@property
+	def entity(self) -> "CommandEntity":
+		"""Command entity."""
+
+		return self._entity
 
 	@property
 	def is_used(self) -> bool:
-		"""Состояние: используется ли этот тип цели."""
+		"""Condition: is this target used."""
 
-		return self._IsUsed()
+		return self._is_used()
 
-	#==========================================================================================#
-	# >>>>> PROTECTED METHODS <<<<< #
-	#==========================================================================================#
+	@property
+	def printer(self) -> "Printer":
+		"""Output operator."""
+
+		return self._source_operator.portals.printer
+
+	@property
+	def source_operator(self) -> "BaseSourceOperator":
+		"""Source operator."""
+
+		return self._source_operator
 
 	@abstractmethod
-	def _GetSlugs(self) -> list[str]:
+	def _get_slugs(self) -> "Sequence[str] | None":
 		"""
-		Возвращает список алиасов для парсинга.
+		Get parser targeted slugs.
 
-		:param data: Данные обработанной команды.
-		:type data: CommandEntity
-		:return: Список алиасов.
-		:rtype: list[str]
+		Returns:
+			Sequence[str] | None: Slugs for parsing.
 		"""
 
 		pass
 
 	@abstractmethod
-	def _IsUsed(self) -> bool:
+	def _is_used(self) -> bool:
 		"""
-		Проверяет, используется ли текущий тип цели.
+		Check is this type of parser target used.
 
-		:return: Возвращает `True`, если используется ли текущий тип цели.
-		:rtype: bool
+		Returns:
+			bool: `True` if this type of parser target used.
 		"""
 
 		pass
 
-	#==========================================================================================#
-	# >>>>> PUBLIC METHODS <<<<< #
-	#==========================================================================================#
+class PassingTarget_Collection(BaseParsingTarget):
+	"""Parsing target: collection."""
 
-	def __init__(self, source_operator: "BaseSourceOperator", data: "CommandEntity"):
+	@override
+	def _get_slugs(self) -> "Sequence[str] | None":
 		"""
-		Базовая цель для парсинга.
+		Get parser targeted slugs.
 
-		:param source_operator: Оператор источника.
-		:type source_operator: BaseSourceOperator
-		:param data: Данные обработанной команды.
-		:type data: CommandEntity
+		Returns:
+			Sequence[str] | None: Slugs for parsing.
 		"""
 
-		self._SourceOperator = source_operator
-		self._Data = data
+		filename: str | None = self.entity.get_key_value("--collection", expected_type = str)
 
-		self._Printer = self._SourceOperator.portals.printer
+		if filename == ".":
+			filename = "collection"
 
-	def get_slugs(self) -> list[str]:
+		self._collection = Collector(self.source_operator, filename, sync = True)
+		self.collection.load()
+
+		self.printer.emit(f"Titles in collection: {self.collection.count}.")
+
+	@override
+	def _is_used(self) -> bool:
 		"""
-		Возвращает список алиасов для парсинга.
+		Check is this type of parser target used.
 
-		:return: Список алиасов.
-		:rtype: list[str]
-		"""
-
-		return self._GetSlugs()
-
-class PassingTarget_Collection(BaseParserTarget):
-	"""Цель для парсинга: коллекция."""
-
-	def _GetSlugs(self) -> list[str]:
-		"""
-		Возвращает список алиасов для парсинга.
-
-		:param data: Данные обработанной команды.
-		:type data: CommandEntity
-		:return: Список алиасов.
-		:rtype: list[str]
+		Returns:
+			bool: `True` if this type of parser target used.
 		"""
 
-		Filename: str | None = self._Data.get_key_value("--collection", expected_type = str)
-		if Filename == ".": Filename = None
-		collector = Collector(self._SourceOperator, Filename)
-		collector.load()
-		Slugs = list(collector.slugs)
-		self._Printer.emit(f"Titles in collection: {len(Slugs)}.")
+		return self.entity.check_key("--collection")
 
-		return Slugs
+class PassingTarget_ID(BaseParsingTarget):
+	"""Parsing target: title by ID."""
 
-	def _IsUsed(self) -> bool:
+	@override
+	def _get_slugs(self) -> "Sequence[str] | None":
 		"""
-		Проверяет, используется ли текущий тип цели.
+		Get parser targeted slugs.
 
-		:return: Возвращает `True`, если используется ли текущий тип цели.
-		:rtype: bool
+		Returns:
+			Sequence[str] | None: Slugs for parsing.
 		"""
 
-		return self._Data.check_key("--collection")
+		title_id: int | None = self.entity.get_key_value("--id", expected_type = int)
 
-class PassingTarget_ID(BaseParserTarget):
-	"""Цель для парсинга: тайтл по ID."""
+		if not title_id:
+			return
 
-	def _GetSlugs(self) -> list[str]:
+		slug: str | None = self.source_operator.shared_data.journal.get_slug_by_id(title_id)
+
+		if slug:
+			return (slug,)
+
+		self.printer.warning(f"Title with ID {title_id} uncached.")
+
+	@override
+	def _is_used(self) -> bool:
 		"""
-		Возвращает список алиасов для парсинга.
+		Check is this type of parser target used.
 
-		:return: Список алиасов.
-		:rtype: list[str]
-		"""
-
-		ID: int | None = self._Data.get_key_value("--id", expected_type = int)
-		if not ID: return []
-
-		SlugByID = self._SourceOperator.shared_data.journal.get_slug_by_id(ID)
-		if SlugByID: return [SlugByID]
-		self._Printer.warning(f"Title with ID {SlugByID} uncached.")
-
-		return []
-
-	def _IsUsed(self) -> bool:
-		"""
-		Проверяет, используется ли текущий тип цели.
-
-		:return: Возвращает `True`, если используется ли текущий тип цели.
-		:rtype: bool
+		Returns:
+			bool: `True` if this type of parser target used.
 		"""
 
-		return self._Data.check_key("--id")
+		return self.entity.check_key("--id")
 
-class PassingTarget_Last(BaseParserTarget):
-	"""Цель для парсинга: последний обработанный тайтл."""
+class PassingTarget_Last(BaseParsingTarget):
+	"""Parsing target: last parsed title."""
 
-	def _GetSlugs(self) -> list[str]:
+	@override
+	def _get_slugs(self) -> "Sequence[str] | None":
 		"""
-		Возвращает список алиасов для парсинга.
+		Get parser targeted slugs.
 
-		:return: Список алиасов.
-		:rtype: list[str]
-		"""
-
-		Slugs: list[str] = []
-		LastParsedSlug = self._SourceOperator.shared_data.last_parsed_slug
-
-		if LastParsedSlug: Slugs.append(LastParsedSlug)
-		else: self._Printer.warning("Last slug undefined. Parse anything firstly.")
-
-		return Slugs
-
-	def _IsUsed(self) -> bool:
-		"""
-		Проверяет, используется ли текущий тип цели.
-
-		:return: Возвращает `True`, если используется ли текущий тип цели.
-		:rtype: bool
+		Returns:
+			Sequence[str] | None: Slugs for parsing.
 		"""
 
-		return self._Data.check_flag("-last")
+		if slug := self.source_operator.shared_data.last_parsed_slug:
+			return (slug,)
+		else:
+			self.printer.warning("Last slug undefined. Parse anything firstly.")
 
-class PassingTarget_Local(BaseParserTarget):
-	"""Цель для парсинга: локальные тайтлы."""
-
-	def _GetSlugs(self) -> list[str]:
+	@override
+	def _is_used(self) -> bool:
 		"""
-		Возвращает список алиасов для парсинга.
+		Check is this type of parser target used.
 
-		:return: Список алиасов.
-		:rtype: list[str]
-		"""
-
-		collector = Collector(self._SourceOperator)
-		self._SourceOperator.portals.printer.templates.collector.start()
-		ScanningResult = collector.collect_local()
-		self._Printer.templates.collector.collected(ScanningResult.added)
-
-		return list(ScanningResult.slugs)
-
-	def _IsUsed(self) -> bool:
-		"""
-		Проверяет, используется ли текущий тип цели.
-
-		:return: Возвращает `True`, если используется ли текущий тип цели.
-		:rtype: bool
+		Returns:
+			bool: `True` if this type of parser target used.
 		"""
 
-		return self._Data.check_flag("-local")
+		return self.entity.check_flag("-last")
 
-class PassingTarget_Slug(BaseParserTarget):
-	"""Цель для парсинга: тайтл по алиасу."""
+class PassingTarget_Local(BaseParsingTarget):
+	"""Parsing target: local titles."""
 
-	def _GetSlugs(self) -> list[str]:
+	@override
+	def _get_slugs(self) -> "Sequence[str] | None":
 		"""
-		Возвращает список алиасов для парсинга.
+		Get parser targeted slugs.
 
-		:return: Список алиасов.
-		:rtype: list[str]
+		Returns:
+			Sequence[str] | None: Slugs for parsing.
 		"""
 
-		Slug: str = self._Data.get_position_value("TARGET", expected_type = str, important = True)
-		TargetSlug: str | None = self._SourceOperator.extract_slug_from_string(Slug)
-		if TargetSlug: return [TargetSlug]
-		else: self._Printer.warning("Unable to parse title slug from target.")
+		self.source_operator.portals.printer.templates.collector.start()
+		result = self.collection.collect_local()
+		self.printer.templates.collector.collected(result.added)
 
-		return []
-
-	def _IsUsed(self) -> bool:
+	@override
+	def _is_used(self) -> bool:
 		"""
-		Проверяет, используется ли текущий тип цели.
+		Check is this type of parser target used.
 
-		:return: Возвращает `True`, если используется ли текущий тип цели.
-		:rtype: bool
+		Returns:
+			bool: `True` if this type of parser target used.
+		"""
+
+		return self.entity.check_flag("-local")
+
+class PassingTarget_Slug(BaseParsingTarget):
+	"""Parsing target: title by slug."""
+
+	@override
+	def _get_slugs(self) -> "Sequence[str] | None":
+		"""
+		Get parser targeted slugs.
+
+		Returns:
+			Sequence[str] | None: Slugs for parsing.
+		"""
+
+		string: str = self.entity.get_position_value("TARGET", expected_type = str, important = True)
+		slug: str | None = self.source_operator.extract_slug_from_string(string)
+
+		if not slug:
+			self.printer.warning("Unable to parse title slug from target.")
+			return
+
+		return (slug,)
+
+	@override
+	def _is_used(self) -> bool:
+		"""
+		Check is this type of parser target used.
+
+		Returns:
+			bool: `True` if this type of parser target used.
 		"""
 
 		return not any((
-			self._Data.check_flag("-last"),
-			self._Data.check_flag("-local"),
+			self.entity.check_flag("-last"),
+			self.entity.check_flag("-local"),
 
-			self._Data.check_key("--collection"),
-			self._Data.check_key("--id"),
-			self._Data.check_key("--updates"),
+			self.entity.check_key("--collection"),
+			self.entity.check_key("--id"),
+			self.entity.check_key("--updates"),
 		))
 
-class PassingTarget_Updates(BaseParserTarget):
-	"""Цель для парсинга: обновления."""
+class PassingTarget_Updates(BaseParsingTarget):
+	"""Parsing target: updates."""
 
-	def _GetSlugs(self) -> list[str]:
+	@override
+	def _get_slugs(self) -> "Sequence[str] | None":
 		"""
-		Возвращает список алиасов для парсинга.
+		Get parser targeted slugs.
 
-		:return: Список алиасов.
-		:rtype: list[str]
-		"""
-
-		Period: int = self._Data.get_key_value("--period", expected_type = int) or 24
-		self._Printer.emit("Collecting updates…")
-		Slugs = list(self._SourceOperator.collect_slugs(Period))
-		self._Printer.emit(f"Updates collected: {len(Slugs)}.")
-
-		return Slugs
-
-	def _IsUsed(self) -> bool:
-		"""
-		Проверяет, используется ли текущий тип цели.
-
-		:return: Возвращает `True`, если используется ли текущий тип цели.
-		:rtype: bool
+		Returns:
+			Sequence[str] | None: Slugs for parsing.
 		"""
 
-		return self._Data.check_key("--updates")
+		period: int = self.entity.get_key_value("--period", expected_type = int) or 24
+		self.printer.emit("Collecting updates…")
+		slugs: tuple[str, ...] = self.source_operator.collect_slugs(period)
+		self.printer.emit(f"Updates collected: {len(slugs)}.")
+
+		return slugs
+
+	@override
+	def _is_used(self) -> bool:
+		"""
+		Check is this type of parser target used.
+
+		Returns:
+			bool: `True` if this type of parser target used.
+		"""
+
+		return self.entity.check_key("--updates")
