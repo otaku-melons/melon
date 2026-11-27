@@ -366,7 +366,7 @@ class AttributesClassificator:
 				continue
 
 			if result.in_register is False:
-				raise exceptions.utils.classificator.ClassificationError(f"Attribute \"{classificator}\" not found in register.")
+				raise exceptions.utils.classificator.ClassificationError(f"Attribute \"{result.result}\" not found in register.")
 
 			if not result.type:
 				raise exceptions.utils.classificator.ClassificationError(f"Unknown attribute type: \"{classificator}\".")

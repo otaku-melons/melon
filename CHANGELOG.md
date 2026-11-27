@@ -21,7 +21,7 @@ For visual categorization of changes emojis are used in accordance with [gitmoji
 - Paid chapters blocker in base parser.
 - Title attributes now classified after parsing.
 - Age limit check (21 or less).
-- Sorting title attributes.s
+- Sorting title attributes.
 
 ### 🎨 Changed
 - Option `MELON_JSON_ATOMIC_WRITE` renamed to `MELON_ATOMIC_WRITE`.
